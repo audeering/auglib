@@ -1,0 +1,60 @@
+stages:
+  - test
+  - doc
+
+variables:
+  PIP_INDEX_URL: http://artifactory.audeering.local/artifactory/api/pypi/pypi/simple
+  PIP_TRUSTED_HOST: artifactory.audeering.local
+
+.pytest:
+  before_script:
+    - python -V
+    - pip install -r requirements.txt
+  script:
+    # Test code
+    - pip install -r tests/requirements.txt
+    - python -m pytest
+
+python-3.5:
+  extends: .pytest
+  stage: test
+  image: python:3.5
+
+python-3.6:
+  extends: .pytest
+  stage: test
+  image: python:3.6
+
+python-3.7:
+  extends: .pytest
+  stage: test
+  image: python:3.7
+
+docs:
+  extends: .pytest
+  stage: test
+  image: python:3.7
+  script:
+    # Test documentation
+    - pip install -r docs/requirements.txt
+    - python -m sphinx -W docs/ build/html -b html
+    - python -m sphinx -W docs/ build/linkcheck -b linkcheck
+  artifacts:
+    paths:
+      - build/
+
+pages:
+  stage: doc
+  image: alpine
+  variables:
+    GIT_STRATEGY: none  # disable git fetch
+  script:
+    - cp -r build/html public
+  dependencies:
+    - docs
+  artifacts:
+    paths:
+      - public
+  only:
+    refs:
+      - tags

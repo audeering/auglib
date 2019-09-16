@@ -6,6 +6,7 @@ A Python wrapper for auglib_, a C++ library for audio data augmentation.
 
 .. _auglib: http://gitlab2.audeering.local/tools/auglib
 
+
 Installation
 ============
 
@@ -14,14 +15,24 @@ To install ``auglib`` run:
 .. code-block:: bash
 
     $ # Create and activate Python virtual environment, e.g.
-    $ # virtualenv --python=python3 ${HOME}/.envs/opensmile
-    $ # source ${HOME}/.envs/opensmile/bin/activate
+    $ # virtualenv --python=python3 ${HOME}/.envs/auglib
+    $ # source ${HOME}/.envs/auglib/bin/activate
     $ pip install auglib
+
 
 Basic usage
 ===========
 
-TODO
+.. code-block:: python
+
+    >>>from auglib import AudioBuffer
+    >>>base = AudioBuffer(10, 8000)
+    >>>aux = AudioBuffer(5, 8000)
+    >>>aux.data += 1
+    >>>base.mix(aux)
+    >>>base
+    array([1., 1., 1., 1., 1., 0., 0., 0., 0., 0.], dtype=float32)
+
 
 Documentation
 =============
@@ -35,6 +46,7 @@ To build the documentation run the following commands:
 
 The generated files will be available in the directory ``build/sphinx/html/``
 
+
 Tests
 =====
 
@@ -44,3 +56,4 @@ To run the tests do:
 
     pip install -r tests/requirements.txt
     pytest tests/
+
