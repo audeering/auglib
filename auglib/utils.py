@@ -4,8 +4,8 @@ import humanfriendly as hf
 import numpy as np
 
 
-def gain2db(gain: float):
-    r"""Convert gain to decibels (dB)
+def gain_to_db(gain: float):
+    r"""Convert gain to decibels (dB).
 
     Args:
         gain: input gain
@@ -19,10 +19,24 @@ def gain2db(gain: float):
     return gain_db
 
 
-def dur2samples(dur: float,
-                sampling_rate: int,
-                *,
-                unit: str = 'seconds') -> int:
+def db_to_gain(gain_db: float):
+    r"""Convert decibels (dB) to gain.
+
+    Args:
+        gain_db: input gain in decibels
+
+    Returns:
+        db: corresponding value
+
+    """
+    gain = pow(10.0, gain_db / 20.0)
+    return gain
+
+
+def dur_to_samples(dur: float,
+                   sampling_rate: int,
+                   *,
+                   unit: str = 'seconds') -> int:
     r"""Express duration in samples.
 
     Examples (``sample_rate==8000``):

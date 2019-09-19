@@ -4,5 +4,5 @@ auglib.utils
 Utils
 -----
 
-.. autofunction::  auglib.utils.gain2db
-.. autofunction::  auglib.utils.dur2samples
+.. autofunction::  auglib.utils.gain_to_db
+.. autofunction::  auglib.utils.dur_to_samples

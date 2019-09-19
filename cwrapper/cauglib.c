@@ -100,8 +100,18 @@ extern "C"
         obj->butterworthBandPassFilter(ord, centerFreq, bw);
     }
 
-    void AudioBuffer_normalize(cAudioBuffer<float> *obj, float peak_db = 0.0)
+    void AudioBuffer_clip(cAudioBuffer<float> *obj, float threshold = 0.0, bool soft = false, bool asRatio = false, bool normalize = false)
     {
-        obj->normalize(peak_db, false);
+        obj->clip(threshold, soft, asRatio, normalize);
+    }
+
+    void AudioBuffer_normalizeByPeak(cAudioBuffer<float> *obj, float peak_db = 0.0, bool clip = false)
+    {
+        obj->normalizeByPeak(peak_db, clip);
+    }
+
+    void AudioBuffer_gainStage(cAudioBuffer<float> *obj, float gain_dB, bool clip = false)
+    {
+        obj->gainStage(gain_dB, clip);
     }
 }

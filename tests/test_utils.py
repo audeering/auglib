@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from auglib.utils import dur2samples, gain2db
+from auglib.utils import dur_to_samples, gain_to_db, db_to_gain
 
 
 @pytest.mark.parametrize('dur,sr,unit,n',
@@ -11,13 +11,13 @@ from auglib.utils import dur2samples, gain2db
                           (1000, 8000, 'ms', 8000),
                           (1 / 60, 8000, 'm', 8000),
                           (1 / 3600, 8000, 'hour', 8000)])
-def test_dur2samples(dur, sr, unit, n):
+def test_duration(dur, sr, unit, n):
     if unit is None:
-        assert dur2samples(dur, sr) == n
+        assert dur_to_samples(dur, sr) == n
     else:
-        assert dur2samples(dur, sr, unit=unit) == n
+        assert dur_to_samples(dur, sr, unit=unit) == n
 
 
 @pytest.mark.parametrize('gain', [1.0, 10.0])
-def test_gain2db(gain):
-    assert gain2db(gain) == 20 * np.log10(gain)
+def test_gain(gain):
+    assert db_to_gain(gain_to_db(gain)) == gain
