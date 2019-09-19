@@ -84,3 +84,39 @@ def test_mix(base_dur, aux_dur, sr, unit):
     base.free()
 
     aux.free()
+
+
+@pytest.mark.parametrize('base_dur,aux_dur,sr,unit',
+                         [(1.0, 1.0, 8000, None),
+                          (16000, 8000, 16000, 'samples'),
+                          (500, 1000, 44100, 'ms')])
+def test_append(base_dur, aux_dur, sr, unit):
+
+    unit = unit or 'seconds'
+    n_base = dur_to_samples(base_dur, sr, unit=unit)
+    n_aux = dur_to_samples(aux_dur, sr, unit=unit)
+
+    aux = AudioBuffer(aux_dur, sr, unit=unit)
+    aux.data += 1
+
+    base = AudioBuffer(base_dur, sr, unit=unit)
+    base.append(aux)
+    np.testing.assert_equal(base.data[:n_base], np.zeros(n_base))
+    np.testing.assert_equal(base.data[n_base:], np.ones(n_aux))
+    base.free()
+
+    base = AudioBuffer(base_dur, sr, unit=unit)
+    base.append(aux, read_pos_aux=n_aux - 1)
+    np.testing.assert_equal(base.data[:n_base], np.zeros(n_base))
+    assert len(base.data) == n_base + 1
+    assert base.data[-1] == 1
+    base.free()
+
+    base = AudioBuffer(base_dur, sr, unit=unit)
+    base.append(aux, read_dur_aux=1, unit='samples')
+    np.testing.assert_equal(base.data[:n_base], np.zeros(n_base))
+    assert len(base.data) == n_base + 1
+    assert base.data[-1] == 1
+    base.free()
+
+    aux.free()

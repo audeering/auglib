@@ -16,9 +16,14 @@ def test_random_generator(seed):
     random_seed(seed)
     noise = WhiteNoiseUniform(dur, sr)
     random_seed(seed)
-    assert noise == WhiteNoiseUniform(dur, sr)
+    noise2 = WhiteNoiseUniform(dur, sr)
+    assert noise == noise2
+    noise2.free()
     random_seed(seed + 1)
-    assert noise != WhiteNoiseUniform(dur, sr)
+    noise2 = WhiteNoiseUniform(dur, sr)
+    assert noise != noise2
+    noise2.free()
+    noise.free()
 
 
 @pytest.mark.parametrize('dur,sr,gain,seed',
@@ -31,6 +36,8 @@ def test_WhiteNoiseUniform(dur, sr, gain, seed):
     random_seed(seed)
     lib.AudioBuffer_addWhiteNoiseUniform(buf.obj, gain)
     np.testing.assert_equal(noise.data, buf.data)
+    buf.free()
+    noise.free()
 
 
 @pytest.mark.parametrize('dur,sr,gain,stddev,seed',
@@ -43,6 +50,8 @@ def test_WhiteNoiseGaussian(dur, sr, gain, stddev, seed):
     random_seed(seed)
     lib.AudioBuffer_addWhiteNoiseGaussian(buf.obj, gain, stddev)
     np.testing.assert_equal(noise.data, buf.data)
+    buf.free()
+    noise.free()
 
 
 @pytest.mark.parametrize('dur,sr,gain,seed',
@@ -55,3 +64,5 @@ def test_PinkNoise(dur, sr, gain, seed):
     random_seed(seed)
     lib.AudioBuffer_addPinkNoise(buf.obj, gain)
     np.testing.assert_equal(noise.data, buf.data)
+    buf.free()
+    noise.free()

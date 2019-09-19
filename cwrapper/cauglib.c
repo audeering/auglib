@@ -45,6 +45,11 @@ extern "C"
                  readLength_aux, clipMix, loopAux, extendBase);
     }
 
+    void AudioBuffer_append(cAudioBuffer<float> *obj, cAudioBuffer<float> *aux, size_t readPos_aux = 0, size_t readLength_aux = 0)
+    {
+        obj->append(*aux, readPos_aux, readLength_aux);
+    }
+
     void AudioBuffer_addWhiteNoiseGaussian(cAudioBuffer<float> *obj, float gain_dB, float stddev = 0.3)
     {
         obj->addWhiteNoiseGaussian(gain_dB, auglib_randEngine, stddev, false);
@@ -114,4 +119,5 @@ extern "C"
     {
         obj->gainStage(gain_dB, clip);
     }
+        
 }

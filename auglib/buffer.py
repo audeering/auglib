@@ -97,13 +97,32 @@ class AudioBuffer(object):
         Base and auxiliary buffer may differ in length but must have the
         same sampling rate.
 
+        Mix the content of an auxiliary buffer ``aux`` on top of the base
+        buffer (possibly changing its content). Individual gains can be set
+        for the two signals (``gain_base_db`` and ``gain_aux_db`` expressed
+        in decibels). The starting point of the mixing (with respect to the
+        base buffer) can be set via the ``write_pos_base`` argument.
+        Selecting a sub-segment of the auxiliary buffer is possible by means of
+        ``read_pos_aux`` (the initial position of the reading pointer) and
+        ``read_dur_aux`` (the total length of the selected segment). Note:
+        ``read_dur_aux = 0`` (default value) has the effect of selecting
+        the whole auxiliary buffer. In order to force clipping of the mixed
+        signal between 1.0 and -1.0, the ``clip_mix``  argument can be
+        set. In order to allow the looping of the auxiliary buffer (or the
+        selected sub-segment), the ``loop_aux`` argument can be used. In case
+        the auxiliary buffer (or the selected sub-segment) ends beyond the
+        original ending point, the extra portion will be discarded, unless
+        the ``extend_base`` is set turned on, in which case the base buffer is
+        extended accordingly.
+
         Args:
             aux_buf: auxiliary buffer
             gain_base_db: gain of base buffer
             gain_aux_db: gain of auxiliary buffer
             write_pos_base: write position of base buffer (see ``unit``)
             read_pos_aux: read position of auxiliary buffer (see ``unit``)
-            read_dur_aux: duration to read from auxiliary buffer (see ``unit``)
+            read_dur_aux: duration to read from auxiliary buffer (see
+                ``unit``). Set to 0 to read the whole buffer.
             clip_mix: clip amplitude values of base buffer to the [-1, 1]
                 interval (after mixing)
             loop_aux: loop auxiliary buffer if shorter than base buffer
@@ -123,6 +142,31 @@ class AudioBuffer(object):
         lib.AudioBuffer_mix(self.obj, aux_buf.obj, gain_base_db, gain_aux_db,
                             write_pos_base, read_pos_aux, read_dur_aux,
                             clip_mix, loop_aux, extend_base)
+
+    @_check_data_decorator
+    def append(self, aux_buf: 'AudioBuffer', *, read_pos_aux: int = 0,
+               read_dur_aux: int = 0, unit: str = 'seconds'):
+        r"""Append an auxiliary buffer at the end of the base buffer.
+
+        Base and auxiliary buffer may differ in length but must have the
+        same sampling rate.
+
+        Options are provided for selecting a specific portion of the
+        auxiliary buffer (see ``readPos_aux`` and ``read_dur_aux``).
+        After the operation is complete, the final length of the base buffer
+        will be ``read_dur_aux` samples greater then the original length.
+
+        Args:
+            aux_buf: auxiliary buffer
+            read_pos_aux: read position of auxiliary buffer (see ``unit``)
+            read_dur_aux: duration to read from auxiliary buffer (see
+                ``unit``). Set to 0 to read the whole buffer.
+            unit: literal specifying the format of ``read_pos_aux`` and
+                ``read_dur_aux`` (see :meth:`auglib.utils.dur2samples`)
+
+        """
+        lib.AudioBuffer_append(self.obj, aux_buf.obj, read_pos_aux,
+                               read_dur_aux)
 
     @_check_data_decorator
     def fft_convolve(self, aux_buf: 'AudioBuffer', *, keep_tail: bool = True):
