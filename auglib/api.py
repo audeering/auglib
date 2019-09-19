@@ -68,5 +68,14 @@ lib.AudioBuffer_butterworthBandPassFilter.argtypes = [ctypes.c_void_p,
                                                       ctypes.c_float]
 lib.AudioBuffer_butterworthBandPassFilter.restype = ctypes.c_void_p
 
-lib.AudioBuffer_normalize.argtypes = [ctypes.c_void_p, ctypes.c_float]
-lib.AudioBuffer_normalize.restype = ctypes.c_void_p
+lib.AudioBuffer_clip.argtypes = [ctypes.c_void_p, ctypes.c_float,
+                                 ctypes.c_bool, ctypes.c_bool, ctypes.c_bool]
+lib.AudioBuffer_clip.restype = ctypes.c_void_p
+
+lib.AudioBuffer_normalizeByPeak.argtypes = [ctypes.c_void_p, ctypes.c_float,
+                                            ctypes.c_bool]
+lib.AudioBuffer_normalizeByPeak.restype = ctypes.c_void_p
+
+lib.AudioBuffer_gainStage.argtypes = [ctypes.c_void_p, ctypes.c_float,
+                                      ctypes.c_bool]
+lib.AudioBuffer_gainStage.restype = ctypes.c_void_p

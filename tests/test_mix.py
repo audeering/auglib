@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from auglib import AudioBuffer
-from auglib.utils import gain2db, dur2samples
+from auglib.utils import gain_to_db, dur_to_samples
 
 
 @pytest.mark.parametrize('base_dur,aux_dur,sr,unit',
@@ -12,8 +12,8 @@ from auglib.utils import gain2db, dur2samples
 def test_mix(base_dur, aux_dur, sr, unit):
 
     unit = unit or 'seconds'
-    n_base = dur2samples(base_dur, sr, unit=unit)
-    n_aux = dur2samples(aux_dur, sr, unit=unit)
+    n_base = dur_to_samples(base_dur, sr, unit=unit)
+    n_aux = dur_to_samples(aux_dur, sr, unit=unit)
 
     n_min = min(n_base, n_aux)
     n_max = max(n_base, n_aux)
@@ -70,16 +70,16 @@ def test_mix(base_dur, aux_dur, sr, unit):
     # set gain of auxiliary
 
     base = AudioBuffer(base_dur, sr, unit=unit)
-    base.mix(aux, gain_aux_db=gain2db(2), loop_aux=True)
+    base.mix(aux, gain_aux_db=gain_to_db(2), loop_aux=True)
     assert all(base.data == 2)
-    base.mix(aux, gain_base_db=gain2db(0.5), loop_aux=True)
+    base.mix(aux, gain_base_db=gain_to_db(0.5), loop_aux=True)
     assert all(base.data == 2)
     base.free()
 
     # clipping
 
     base = AudioBuffer(base_dur, sr, unit=unit)
-    base.mix(aux, gain_aux_db=gain2db(2), loop_aux=True, clip_mix=True)
+    base.mix(aux, gain_aux_db=gain_to_db(2), loop_aux=True, clip_mix=True)
     assert all(base.data == 1)
     base.free()
 
