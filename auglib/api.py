@@ -28,6 +28,10 @@ lib.AudioBuffer_mix.argtypes = [ctypes.c_void_p, ctypes.c_void_p,
                                 ctypes.c_bool, ctypes.c_bool]
 lib.AudioBuffer_mix.restypes = ctypes.c_void_p
 
+lib.AudioBuffer_append.argtypes = [ctypes.c_void_p, ctypes.c_void_p,
+                                   ctypes.c_size_t, ctypes.c_size_t]
+lib.AudioBuffer_append.restype = ctypes.c_void_p
+
 lib.auglib_random_seed.argtypes = [ctypes.c_int]
 lib.auglib_random_seed.restype = ctypes.c_void_p
 

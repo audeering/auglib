@@ -42,6 +42,7 @@ def test_normalize(n, sr):
     buf = AudioBuffer.FromArray(np.random.uniform(-0.5, 0.5, n), sr)
     buf.normalize_by_peak()
     assert np.isclose(np.abs(buf.data).max(), 1.0)
+    buf.free()
 
 
 @pytest.mark.parametrize('n,sr',
@@ -56,24 +57,29 @@ def test_clip(n, sr):
     buf = AudioBuffer.FromArray(x, sr)
     buf.clip()
     np.isclose(np.abs(buf.data).max(), 1.0)
+    # buf.free()  TODO: randomly fails on CI/CD
 
     buf = AudioBuffer.FromArray(x, sr)
     buf.clip(threshold=0.5)
     np.isclose(np.abs(buf.data).max(), 0.5)
+    # buf.free()  TODO: randomly fails on CI/CD
 
     buf = AudioBuffer.FromArray(x, sr)
     buf.clip(threshold=0.5, normalize=True)
     assert np.isclose(np.abs(buf.data).max(), 1.0)
+    # buf.free()  TODO: randomly fails on CI/CD
 
     x = np.random.uniform(1, 2, n)
 
     base = AudioBuffer.FromArray(x, sr)
     base.clip(threshold=0.5, normalize=False, as_ratio=True)
     assert base.data.max() <= np.median(x)
+    # buf.free()  TODO: randomly fails on CI/CD
 
     base = AudioBuffer.FromArray(x, sr)
     base.clip(threshold=0.5, normalize=True, as_ratio=True)
     assert np.isclose(np.abs(buf.data).max(), 1.0)
+    # buf.free()  TODO: randomly fails on CI/CD
 
 
 @pytest.mark.parametrize('n,sr,clip',
@@ -88,6 +94,7 @@ def test_gain_stage(n, sr, clip):
         assert np.abs(buf.data).max() <= 1.0
     else:
         assert np.isclose(np.abs(buf.data).max(), 10.0 * np.abs(x).max())
+    buf.free()
 
 
 @pytest.mark.parametrize('n,sr',
@@ -101,6 +108,8 @@ def test_fft_convolve(n, sr):
     aux.data += 1
     base.fft_convolve(aux, keep_tail=False)
     np.testing.assert_equal(base.data, np.ones(len(base)))
+    base.free()
+    aux.free()
 
 
 @pytest.mark.parametrize('n,sr',
@@ -128,8 +137,10 @@ def test_filter(n, sr):
 
     b, a = signal.butter(1, (2.0 / 8) * np.array([1, 3]), 'bandpass')
     sig_out = signal.lfilter(b, a, sig_in)
+    base.free()
 
     base = AudioBuffer(n, sr)
     base.data += 1
     base.band_pass(1, sr // 4, sr // 4)
     np.testing.assert_almost_equal(base.data, sig_out)
+    base.free()
