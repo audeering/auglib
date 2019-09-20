@@ -7,9 +7,9 @@ that need improvement, please create an issue_.
 Contributions are always welcome!
 
 .. _issue:
-    http://gitlab2.audeering.local/jwagner/pyauglib/issues/new?issue%5BD=
+    https://gitlab.audeering.com/jwagner/pyauglib/issues/new?issue%5BD=
 .. _merge request:
-    http://gitlab2.audeering.local/jwagner/pyauglib/merge_requests/new
+    https://gitlab.audeering.com/jwagner/pyauglib/merge_requests/new
 
 Development Installation
 ------------------------
@@ -22,7 +22,7 @@ newest development version from Gitlab_::
     # Use virtual environment
     pip install -r requirements.txt
 
-.. _Gitlab: http://gitlab2.audeering.local/jwagner/pyauglib
+.. _Gitlab: https://gitlab.audeering.com/jwagner/pyauglib
 
 This way, your installation always stays up-to-date, even if you pull new
 changes from the Gitlab repository.
