@@ -2,6 +2,7 @@ import numpy as np
 from typing import Union
 from enum import IntEnum
 import ctypes
+from functools import wraps
 
 from .api import lib
 from .utils import dur_to_samples
@@ -15,6 +16,9 @@ class FilterDesign(IntEnum):
 
 
 def _check_data_decorator(func):
+    # Preserve docstring, see:
+    # https://docs.python.org/3.6/library/functools.html#functools.wraps
+    @wraps(func)
     def inner(*args, **kwargs):
         self = args[0]
         old_ptr = ctypes.addressof(lib.AudioBuffer_data(self.obj).contents)
@@ -34,7 +38,11 @@ class AudioBuffer(object):
 
     By default an audio buffer is initialized with zeros. See
     :doc:`api-noise` and :doc:`api-tone` for other initialization
-    methods.
+    methods. Use :meth:`auglib.AudioBuffer.FromArray` to create an audio
+    buffer from a :class:`numpy.ndarray`.
+
+    Note: always call ``free()`` when a buffer is no longer needed. This
+    will free the memory. Consider to use a ``with`` statement if possible.
 
     * attr:`obj` holds the underlying c object
     * attr:`sampling_rate` holds the sampling rate in Hz
@@ -46,6 +54,13 @@ class AudioBuffer(object):
         unit: literal specifying the format of ``duration``
              (see :meth:`auglib.utils.dur2samples`)
 
+    Example:
+        >>> from auglib import AudioBuffer
+        >>> with AudioBuffer(1.0, 8000) as buf:
+        >>>     buf.data += 1
+        >>>     buf
+        [1. 1. 1. ... 1. 1. 1.]
+
     """
     def __init__(self, duration: float, sampling_rate: int,
                  *, unit: str = 'seconds'):
@@ -55,6 +70,12 @@ class AudioBuffer(object):
         self.data = np.ctypeslib.as_array(lib.AudioBuffer_data(self.obj),
                                           shape=(length, ))
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.free()
+
     def free(self):
         r"""Free the audio buffer.
 
@@ -62,7 +83,10 @@ class AudioBuffer(object):
         release its memory.
 
         """
-        lib.AudioBuffer_free(self.obj)
+        if self.obj:
+            lib.AudioBuffer_free(self.obj)
+            self.data = None
+            self.obj = None
 
     @staticmethod
     def FromArray(x: np.ndarray, sampling_rate: int) -> 'AudioBuffer':
@@ -71,9 +95,15 @@ class AudioBuffer(object):
         Note: The input array will be flatten.
 
         Args:
-            x: a Numpy  :class:`nd.ndarray`
+            x: a Numpy  :class:`numpy.ndarray`
             sampling_rate: sampling rate in Hz
 
+        Example:
+            >>> from auglib import AudioBuffer
+            >>> import numpy as np
+            >>> with AudioBuffer.FromArray(np.ones(5), 8000) as buf:
+            >>>     buf
+            [1. 1. 1. 1. 1.]
         """
         buf = AudioBuffer(x.size, sampling_rate, unit='samples')
         np.copyto(buf.data, x.flatten())  # takes care of data type
@@ -132,6 +162,14 @@ class AudioBuffer(object):
                 ``read_pos_aux`` and ``read_dur_aux``
                 (see :meth:`auglib.utils.dur2samples`)
 
+        Example:
+            >>> with AudioBuffer(1.0, 8000) as base
+            >>>     with AudioBuffer(1.0, 8000) as aux:
+            >>>         aux.data += 1
+            >>>         base.mix(aux)
+            >>>         base
+            [1. 1. 1. ... 1. 1. 1.]
+
         """
         write_pos_base = dur_to_samples(write_pos_base, self.sampling_rate,
                                         unit=unit)
@@ -154,7 +192,7 @@ class AudioBuffer(object):
         Options are provided for selecting a specific portion of the
         auxiliary buffer (see ``readPos_aux`` and ``read_dur_aux``).
         After the operation is complete, the final length of the base buffer
-        will be ``read_dur_aux` samples greater then the original length.
+        will be ``read_dur_aux`` samples greater then the original length.
 
         Args:
             aux_buf: auxiliary buffer
@@ -163,6 +201,13 @@ class AudioBuffer(object):
                 ``unit``). Set to 0 to read the whole buffer.
             unit: literal specifying the format of ``read_pos_aux`` and
                 ``read_dur_aux`` (see :meth:`auglib.utils.dur2samples`)
+
+        >>> with AudioBuffer(1.0, 8000) as base:
+        >>>     with AudioBuffer(1.0, 8000) as aux:
+        >>>         aux.data += 1
+        >>>         base.append(aux)
+        >>>         base
+        [0. 0. 0. ... 1. 1. 1.]
 
         """
         lib.AudioBuffer_append(self.obj, aux_buf.obj, read_pos_aux,

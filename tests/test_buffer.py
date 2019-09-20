@@ -15,12 +15,13 @@ def test_init(dur, sr, unit):
 
     unit = unit or 'seconds'
     n = dur_to_samples(dur, sr, unit=unit)
-    buf = AudioBuffer(dur, sr, unit=unit)
-    assert len(buf) == n
-    np.testing.assert_equal(buf.data, np.zeros(n))
-    buf.data += 1
-    np.testing.assert_equal(buf.data, np.ones(n))
-    buf.free()
+    with AudioBuffer(dur, sr, unit=unit) as buf:
+        assert len(buf) == n
+        np.testing.assert_equal(buf.data, np.zeros(n))
+        buf.data += 1
+        np.testing.assert_equal(buf.data, np.ones(n))
+    assert buf.obj is None
+    assert buf.data is None
 
 
 @pytest.mark.parametrize('n,sr',
@@ -29,9 +30,8 @@ def test_init(dur, sr, unit):
 def test_fromarray(n, sr):
 
     x = np.random.random(n).astype(np.float32)
-    buf = AudioBuffer.FromArray(x, sr)
-    np.testing.assert_equal(x, buf.data)
-    buf.free()
+    with AudioBuffer.FromArray(x, sr) as buf:
+        np.testing.assert_equal(x, buf.data)
 
 
 @pytest.mark.parametrize('n,sr',
@@ -39,10 +39,9 @@ def test_fromarray(n, sr):
                           (10, 44100)])
 def test_normalize(n, sr):
 
-    buf = AudioBuffer.FromArray(np.random.uniform(-0.5, 0.5, n), sr)
-    buf.normalize_by_peak()
-    assert np.isclose(np.abs(buf.data).max(), 1.0)
-    buf.free()
+    with AudioBuffer.FromArray(np.random.uniform(-0.5, 0.5, n), sr) as buf:
+        buf.normalize_by_peak()
+        assert np.isclose(np.abs(buf.data).max(), 1.0)
 
 
 @pytest.mark.parametrize('n,sr',
@@ -54,32 +53,27 @@ def test_clip(n, sr):
               np.random.uniform(1.0, 1.5, n - (n // 2))]
     np.random.shuffle(x)
 
-    buf = AudioBuffer.FromArray(x, sr)
-    buf.clip()
-    np.isclose(np.abs(buf.data).max(), 1.0)
-    # buf.free()  TODO: randomly fails on CI/CD
+    with AudioBuffer.FromArray(x, sr) as buf:
+        buf.clip()
+        np.isclose(np.abs(buf.data).max(), 1.0)
 
-    buf = AudioBuffer.FromArray(x, sr)
-    buf.clip(threshold=0.5)
-    np.isclose(np.abs(buf.data).max(), 0.5)
-    # buf.free()  TODO: randomly fails on CI/CD
+    with AudioBuffer.FromArray(x, sr) as buf:
+        buf.clip(threshold=0.5)
+        np.isclose(np.abs(buf.data).max(), 0.5)
 
-    buf = AudioBuffer.FromArray(x, sr)
-    buf.clip(threshold=0.5, normalize=True)
-    assert np.isclose(np.abs(buf.data).max(), 1.0)
-    # buf.free()  TODO: randomly fails on CI/CD
+    with AudioBuffer.FromArray(x, sr) as buf:
+        buf.clip(threshold=0.5, normalize=True)
+        assert np.isclose(np.abs(buf.data).max(), 1.0)
 
     x = np.random.uniform(1, 2, n)
 
-    base = AudioBuffer.FromArray(x, sr)
-    base.clip(threshold=0.5, normalize=False, as_ratio=True)
-    assert base.data.max() <= np.median(x)
-    # buf.free()  TODO: randomly fails on CI/CD
+    with AudioBuffer.FromArray(x, sr) as buf:
+        buf.clip(threshold=0.5, normalize=False, as_ratio=True)
+        assert buf.data.max() <= np.median(x)
 
-    base = AudioBuffer.FromArray(x, sr)
-    base.clip(threshold=0.5, normalize=True, as_ratio=True)
-    assert np.isclose(np.abs(buf.data).max(), 1.0)
-    # buf.free()  TODO: randomly fails on CI/CD
+    with AudioBuffer.FromArray(x, sr) as buf:
+        buf.clip(threshold=0.5, normalize=True, as_ratio=True)
+        assert np.isclose(np.abs(buf.data).max(), 1.0)
 
 
 @pytest.mark.parametrize('n,sr,clip',
@@ -88,13 +82,12 @@ def test_clip(n, sr):
 def test_gain_stage(n, sr, clip):
 
     x = np.random.uniform(-0.1, 1.0, n)
-    buf = AudioBuffer.FromArray(x, sr)
-    buf.gain_stage(20.0, clip=clip)
-    if clip:
-        assert np.abs(buf.data).max() <= 1.0
-    else:
-        assert np.isclose(np.abs(buf.data).max(), 10.0 * np.abs(x).max())
-    buf.free()
+    with AudioBuffer.FromArray(x, sr) as buf:
+        buf.gain_stage(20.0, clip=clip)
+        if clip:
+            assert np.abs(buf.data).max() <= 1.0
+        else:
+            assert np.isclose(np.abs(buf.data).max(), 10.0 * np.abs(x).max())
 
 
 @pytest.mark.parametrize('n,sr',
@@ -102,14 +95,12 @@ def test_gain_stage(n, sr, clip):
                           (10, 44100)])
 def test_fft_convolve(n, sr):
 
-    base = AudioBuffer(n, sr, unit='samples')
-    base.data[0] = 1
-    aux = AudioBuffer(n, sr, unit='samples')
-    aux.data += 1
-    base.fft_convolve(aux, keep_tail=False)
-    np.testing.assert_equal(base.data, np.ones(len(base)))
-    base.free()
-    aux.free()
+    with AudioBuffer(n, sr, unit='samples') as base:
+        with AudioBuffer(n, sr, unit='samples') as aux:
+            base.data[0] = 1
+            aux.data += 1
+            base.fft_convolve(aux, keep_tail=False)
+            np.testing.assert_equal(base.data, np.ones(len(base)))
 
 
 @pytest.mark.parametrize('n,sr',
@@ -121,26 +112,25 @@ def test_filter(n, sr):
     b, a = signal.butter(1, 2.0 / 4, 'lowpass')
     sig_out = signal.lfilter(b, a, sig_in)
 
-    base = AudioBuffer(n, sr)
-    base.data += 1
-    base.low_pass(1, sr / 4)
-    np.testing.assert_almost_equal(base.data, sig_out)
+    with AudioBuffer(n, sr) as buf:
+        buf.data += 1
+        buf.low_pass(1, sr / 4)
+        np.testing.assert_almost_equal(buf.data, sig_out)
 
-    # TODO: bring this back to life once the highpass filter is fixed in auglib
-    # b, a = signal.butter(1, 2.0 / 4, 'highpass')
-    # sig_out = signal.lfilter(b, a, sig_in)
-    #
-    # base = AudioBuffer(n, sr)
-    # base.data += 1
-    # base.high_pass(1, sr / 4)
-    # np.testing.assert_almost_equal(base.data, sig_out, decimal=3)
+        # TODO: bring this back to life once the highpass filter is fixed
+        #  in auglib
+        # b, a = signal.butter(1, 2.0 / 4, 'highpass')
+        # sig_out = signal.lfilter(b, a, sig_in)
+        #
+        # with AudioBuffer(n, sr) as buf:
+        #   buf.data += 1
+        #   buf.high_pass(1, sr / 4)
+        #   np.testing.assert_almost_equal(base.data, sig_out, decimal=3)
 
-    b, a = signal.butter(1, (2.0 / 8) * np.array([1, 3]), 'bandpass')
-    sig_out = signal.lfilter(b, a, sig_in)
-    base.free()
+        b, a = signal.butter(1, (2.0 / 8) * np.array([1, 3]), 'bandpass')
+        sig_out = signal.lfilter(b, a, sig_in)
 
-    base = AudioBuffer(n, sr)
-    base.data += 1
-    base.band_pass(1, sr // 4, sr // 4)
-    np.testing.assert_almost_equal(base.data, sig_out)
-    base.free()
+    with AudioBuffer(n, sr) as buf:
+        buf.data += 1
+        buf.band_pass(1, sr // 4, sr // 4)
+        np.testing.assert_almost_equal(buf.data, sig_out)

@@ -25,63 +25,55 @@ def test_mix(base_dur, aux_dur, sr, unit):
 
     # default mix
 
-    base = AudioBuffer(base_dur, sr, unit=unit)
-    base.mix(aux)
-    assert base.data[n_min:].sum() == 0
-    np.testing.assert_equal(base.data[:n_min], aux.data[:n_min])
-    base.free()
+    with AudioBuffer(base_dur, sr, unit=unit) as base:
+        base.mix(aux)
+        assert base.data[n_min:].sum() == 0
+        np.testing.assert_equal(base.data[:n_min], aux.data[:n_min])
 
     # loop auxiliary
 
-    base = AudioBuffer(base_dur, sr, unit=unit)
-    base.mix(aux, loop_aux=True)
-    np.testing.assert_equal(base.data, np.ones(n_base))
-    base.free()
+    with AudioBuffer(base_dur, sr, unit=unit) as base:
+        base.mix(aux, loop_aux=True)
+        np.testing.assert_equal(base.data, np.ones(n_base))
 
     # extend base
 
-    base = AudioBuffer(base_dur, sr, unit=unit)
-    base.mix(aux, extend_base=True)
-    assert len(base) == n_max
-    np.testing.assert_equal(base.data[:n_aux], np.ones(n_aux))
-    base.free()
+    with AudioBuffer(base_dur, sr, unit=unit) as base:
+        base.mix(aux, extend_base=True)
+        assert len(base) == n_max
+        np.testing.assert_equal(base.data[:n_aux], np.ones(n_aux))
 
     # restrict length of auxiliary
 
-    base = AudioBuffer(base_dur, sr, unit=unit)
-    base.mix(aux, read_dur_aux=1, unit='samples')
-    assert base.data[0] == 1 and base.data.sum() == 1
-    base.free()
+    with AudioBuffer(base_dur, sr, unit=unit) as base:
+        base.mix(aux, read_dur_aux=1, unit='samples')
+        assert base.data[0] == 1 and base.data.sum() == 1
 
     # read position of auxiliary
 
-    base = AudioBuffer(base_dur, sr, unit=unit)
-    base.mix(aux, read_pos_aux=n_aux - 1, unit='samples')
-    assert base.data[0] == 1 and base.data.sum() == 1
-    base.free()
+    with AudioBuffer(base_dur, sr, unit=unit) as base:
+        base.mix(aux, read_pos_aux=n_aux - 1, unit='samples')
+        assert base.data[0] == 1 and base.data.sum() == 1
 
     # write position of base
 
-    base = AudioBuffer(base_dur, sr, unit=unit)
-    base.mix(aux, write_pos_base=n_base - 1, unit='samples')
-    assert base.data[-1] == 1 and base.data.sum() == 1
-    base.free()
+    with AudioBuffer(base_dur, sr, unit=unit) as base:
+        base.mix(aux, write_pos_base=n_base - 1, unit='samples')
+        assert base.data[-1] == 1 and base.data.sum() == 1
 
     # set gain of auxiliary
 
-    base = AudioBuffer(base_dur, sr, unit=unit)
-    base.mix(aux, gain_aux_db=gain_to_db(2), loop_aux=True)
-    assert all(base.data == 2)
-    base.mix(aux, gain_base_db=gain_to_db(0.5), loop_aux=True)
-    assert all(base.data == 2)
-    base.free()
+    with AudioBuffer(base_dur, sr, unit=unit) as base:
+        base.mix(aux, gain_aux_db=gain_to_db(2), loop_aux=True)
+        assert all(base.data == 2)
+        base.mix(aux, gain_base_db=gain_to_db(0.5), loop_aux=True)
+        assert all(base.data == 2)
 
     # clipping
 
-    base = AudioBuffer(base_dur, sr, unit=unit)
-    base.mix(aux, gain_aux_db=gain_to_db(2), loop_aux=True, clip_mix=True)
-    assert all(base.data == 1)
-    base.free()
+    with AudioBuffer(base_dur, sr, unit=unit) as base:
+        base.mix(aux, gain_aux_db=gain_to_db(2), loop_aux=True, clip_mix=True)
+        assert all(base.data == 1)
 
     aux.free()
 
@@ -99,24 +91,21 @@ def test_append(base_dur, aux_dur, sr, unit):
     aux = AudioBuffer(aux_dur, sr, unit=unit)
     aux.data += 1
 
-    base = AudioBuffer(base_dur, sr, unit=unit)
-    base.append(aux)
-    np.testing.assert_equal(base.data[:n_base], np.zeros(n_base))
-    np.testing.assert_equal(base.data[n_base:], np.ones(n_aux))
-    base.free()
+    with AudioBuffer(base_dur, sr, unit=unit) as base:
+        base.append(aux)
+        np.testing.assert_equal(base.data[:n_base], np.zeros(n_base))
+        np.testing.assert_equal(base.data[n_base:], np.ones(n_aux))
 
-    base = AudioBuffer(base_dur, sr, unit=unit)
-    base.append(aux, read_pos_aux=n_aux - 1)
-    np.testing.assert_equal(base.data[:n_base], np.zeros(n_base))
-    assert len(base.data) == n_base + 1
-    assert base.data[-1] == 1
-    base.free()
+    with AudioBuffer(base_dur, sr, unit=unit) as base:
+        base.append(aux, read_pos_aux=n_aux - 1)
+        np.testing.assert_equal(base.data[:n_base], np.zeros(n_base))
+        assert len(base.data) == n_base + 1
+        assert base.data[-1] == 1
 
-    base = AudioBuffer(base_dur, sr, unit=unit)
-    base.append(aux, read_dur_aux=1, unit='samples')
-    np.testing.assert_equal(base.data[:n_base], np.zeros(n_base))
-    assert len(base.data) == n_base + 1
-    assert base.data[-1] == 1
-    base.free()
+    with AudioBuffer(base_dur, sr, unit=unit) as base:
+        base.append(aux, read_dur_aux=1, unit='samples')
+        np.testing.assert_equal(base.data[:n_base], np.zeros(n_base))
+        assert len(base.data) == n_base + 1
+        assert base.data[-1] == 1
 
     aux.free()
