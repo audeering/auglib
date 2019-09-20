@@ -23,7 +23,7 @@ To install ``auglib`` run:
 Basic usage
 ===========
 
-.. code-block:: Python
+.. code-block:: python
 
     >>> from auglib import AudioBuffer
     >>> base = AudioBuffer(10, 8000)
