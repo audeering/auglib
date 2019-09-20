@@ -23,14 +23,14 @@ To install ``auglib`` run:
 Basic usage
 ===========
 
-.. code-block:: python
+.. code-block:: Python
 
-    >>>from auglib import AudioBuffer
-    >>>base = AudioBuffer(10, 8000)
-    >>>aux = AudioBuffer(5, 8000)
-    >>>aux.data += 1
-    >>>base.mix(aux)
-    >>>base
+    >>> from auglib import AudioBuffer
+    >>> base = AudioBuffer(10, 8000)
+    >>> aux = AudioBuffer(5, 8000)
+    >>> aux.data += 1
+    >>> base.mix(aux)
+    >>> base
     array([1., 1., 1., 1., 1., 0., 0., 0., 0., 0.], dtype=float32)
 
 
