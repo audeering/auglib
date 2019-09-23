@@ -1,5 +1,5 @@
-auglib.noise
-============
+noise
+=====
 
 .. automodule:: auglib.noise
 

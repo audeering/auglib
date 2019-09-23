@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from scipy import signal
 import pytest
@@ -9,7 +10,6 @@ from auglib.utils import dur_to_samples
 @pytest.mark.parametrize('dur,sr,unit',
                          [(1.0, 8000, None),
                           (8000, 1600, 'samples'),
-
                           (1000, 44100, 'milliseconds')])
 def test_init(dur, sr, unit):
 
@@ -24,13 +24,31 @@ def test_init(dur, sr, unit):
     assert buf.data is None
 
 
+@pytest.mark.parametrize('dur,sr',
+                         [(1.0, 8000),
+                          (1.0, 1600),
+                          (1.0, 44100)])
+def test_file(dur, sr):
+
+    path = './test.wav'
+    n = dur_to_samples(dur, sr)
+    x = np.random.random(n).astype(np.float32)
+
+    with AudioBuffer.from_array(x, sr) as buf:
+        buf.to_file(path)
+    with AudioBuffer.from_file(path) as buf:
+        np.testing.assert_almost_equal(buf.data, x, decimal=3)
+
+    os.remove(path)
+
+
 @pytest.mark.parametrize('n,sr',
                          [(10, 8000),
                           (10, 44100)])
-def test_fromarray(n, sr):
+def test_from_array(n, sr):
 
     x = np.random.random(n).astype(np.float32)
-    with AudioBuffer.FromArray(x, sr) as buf:
+    with AudioBuffer.from_array(x, sr) as buf:
         np.testing.assert_equal(x, buf.data)
 
 
@@ -39,7 +57,7 @@ def test_fromarray(n, sr):
                           (10, 44100)])
 def test_normalize(n, sr):
 
-    with AudioBuffer.FromArray(np.random.uniform(-0.5, 0.5, n), sr) as buf:
+    with AudioBuffer.from_array(np.random.uniform(-0.5, 0.5, n), sr) as buf:
         buf.normalize_by_peak()
         assert np.isclose(np.abs(buf.data).max(), 1.0)
 
@@ -53,25 +71,25 @@ def test_clip(n, sr):
               np.random.uniform(1.0, 1.5, n - (n // 2))]
     np.random.shuffle(x)
 
-    with AudioBuffer.FromArray(x, sr) as buf:
+    with AudioBuffer.from_array(x, sr) as buf:
         buf.clip()
         np.isclose(np.abs(buf.data).max(), 1.0)
 
-    with AudioBuffer.FromArray(x, sr) as buf:
+    with AudioBuffer.from_array(x, sr) as buf:
         buf.clip(threshold=0.5)
         np.isclose(np.abs(buf.data).max(), 0.5)
 
-    with AudioBuffer.FromArray(x, sr) as buf:
+    with AudioBuffer.from_array(x, sr) as buf:
         buf.clip(threshold=0.5, normalize=True)
         assert np.isclose(np.abs(buf.data).max(), 1.0)
 
     x = np.random.uniform(1, 2, n)
 
-    with AudioBuffer.FromArray(x, sr) as buf:
+    with AudioBuffer.from_array(x, sr) as buf:
         buf.clip(threshold=0.5, normalize=False, as_ratio=True)
         assert buf.data.max() <= np.median(x)
 
-    with AudioBuffer.FromArray(x, sr) as buf:
+    with AudioBuffer.from_array(x, sr) as buf:
         buf.clip(threshold=0.5, normalize=True, as_ratio=True)
         assert np.isclose(np.abs(buf.data).max(), 1.0)
 
@@ -82,7 +100,7 @@ def test_clip(n, sr):
 def test_gain_stage(n, sr, clip):
 
     x = np.random.uniform(-0.1, 1.0, n)
-    with AudioBuffer.FromArray(x, sr) as buf:
+    with AudioBuffer.from_array(x, sr) as buf:
         buf.gain_stage(20.0, clip=clip)
         if clip:
             assert np.abs(buf.data).max() <= 1.0
