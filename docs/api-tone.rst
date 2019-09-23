@@ -1,5 +1,5 @@
-auglib.tone
-===========
+tone
+====
 
 .. automodule:: auglib.tone
 

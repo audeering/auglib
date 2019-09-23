@@ -1,5 +1,5 @@
-auglib.buffer
-=============
+buffer
+======
 
 .. automodule:: auglib.buffer
 

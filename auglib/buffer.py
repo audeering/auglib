@@ -3,6 +3,7 @@ from typing import Union
 from enum import IntEnum
 import ctypes
 from functools import wraps
+import audiofile as af
 
 from .api import lib
 from .utils import dur_to_samples
@@ -89,25 +90,65 @@ class AudioBuffer(object):
             self.obj = None
 
     @staticmethod
-    def FromArray(x: np.ndarray, sampling_rate: int) -> 'AudioBuffer':
+    def from_array(x: np.ndarray, sampling_rate: int) -> 'AudioBuffer':
         r"""Create buffer from Numpy array.
 
         Note: The input array will be flatten.
 
         Args:
-            x: a Numpy  :class:`numpy.ndarray`
+            x: a Numpy :class:`numpy.ndarray`
             sampling_rate: sampling rate in Hz
+
+        Return:
+            AudioBuffer: A new buffer object
 
         Example:
             >>> from auglib import AudioBuffer
             >>> import numpy as np
-            >>> with AudioBuffer.FromArray(np.ones(5), 8000) as buf:
+            >>> with AudioBuffer.from_array(np.ones(5), 8000) as buf:
             >>>     buf
             [1. 1. 1. 1. 1.]
         """
         buf = AudioBuffer(x.size, sampling_rate, unit='samples')
         np.copyto(buf.data, x.flatten())  # takes care of data type
         return buf
+
+    @staticmethod
+    def from_file(path: str, duration: float = None, offset: float = 0) \
+            -> 'AudioBuffer':
+        r"""Create buffer from an audio file.
+
+        Uses soundfile for WAV, FLAC, and OGG files. All other audio files are
+        first converted to WAV by sox or ffmpeg.
+
+        Note: The audio will be converted to mono.
+
+        Args:
+            path: path to audio file
+            duration: return only a specified duration in seconds
+            offset: start reading at offset in seconds.
+
+        Return:
+            AudioBuffer: A new buffer object
+
+        """
+        x, sr = af.read(path, duration=duration, offset=offset, always_2d=True)
+        return AudioBuffer.from_array(x[0, :], sr)
+
+    def to_file(self, path: str, precision: str = '16bit',
+                normalize: bool = False):
+        r"""Write buffer to an audio file.
+
+        Args:
+            path: file name of output audio file. The format (WAV, FLAC, OGG)
+                will be inferred from the file name
+            precision: precision of writen file, can be `'16bit'`, `'24bit'`,
+                `'32bit'`. Only available for WAV files
+            normalize (bool, optional): normalize audio data before writing
+
+        """
+        af.write(path, self.data, self.sampling_rate, precision=precision,
+                 normalize=normalize)
 
     @_check_data_decorator
     def mix(self, aux_buf: 'AudioBuffer',

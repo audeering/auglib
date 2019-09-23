@@ -1,5 +1,5 @@
-auglib.utils
-=============
+utils
+=====
 
 Utils
 -----
