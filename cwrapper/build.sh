@@ -1,5 +1,5 @@
 # set $AUGLIB to the installation path of auglib
-# http://gitlab2.audeering.local/tools/auglib
+# https://gitlab.audeering.com/tools/auglib
 # and build in Release before running the script
 
 g++ -c -fPIC cauglib.c -o cauglib.o \
