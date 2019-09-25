@@ -4,7 +4,7 @@ stages:
 
 variables:
   PIP_INDEX_URL: https://artifactory.audeering.com/artifactory/api/pypi/pypi/simple
-  PIP_TRUSTED_HOST: artifactory.audeering.local
+  PIP_TRUSTED_HOST: artifactory.audeering.com
 
 .pytest:
   before_script:
