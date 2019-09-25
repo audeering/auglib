@@ -3,7 +3,7 @@ stages:
   - doc
 
 variables:
-  PIP_INDEX_URL: http://artifactory.audeering.local/artifactory/api/pypi/pypi/simple
+  PIP_INDEX_URL: https://artifactory.audeering.com/artifactory/api/pypi/pypi/simple
   PIP_TRUSTED_HOST: artifactory.audeering.local
 
 .pytest:

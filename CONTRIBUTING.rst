@@ -78,5 +78,5 @@ New releases are made using the following steps:
    ``python -m twine upload --repository local dist/*``
 #. Push the commit and the tag to Gitlab
 
-.. _PyPI: http://artifactory.audeering.local/artifactory/api/pypi/pypi-local/simple/
+.. _PyPI: https://artifactory.audeering.com/artifactory/api/pypi/pypi-local/simple/
 .. _twine: https://twine.readthedocs.io/
