@@ -7,10 +7,13 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
-Version 0.1.3 (2019-09-25)
+Version 0.1.3 (2019-09-26)
 --------------------------
 
 * Changed: ``Tone`` constructor
+* Changed: ``[low,high,band]_pass()`` arguments
+* Changed: ``clip()`` arguments
+* Added: ``clip_by_ratio()``
 
 
 Version 0.1.2 (2019-09-23)
