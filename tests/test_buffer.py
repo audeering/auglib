@@ -86,11 +86,11 @@ def test_clip(n, sr):
     x = np.random.uniform(1, 2, n)
 
     with AudioBuffer.from_array(x, sr) as buf:
-        buf.clip(threshold=0.5, normalize=False, as_ratio=True)
+        buf.clip_by_ratio(0.5, normalize=False)
         assert buf.data.max() <= np.median(x)
 
     with AudioBuffer.from_array(x, sr) as buf:
-        buf.clip(threshold=0.5, normalize=True, as_ratio=True)
+        buf.clip_by_ratio(0.5, normalize=True)
         assert np.isclose(np.abs(buf.data).max(), 1.0)
 
 
@@ -132,7 +132,7 @@ def test_filter(n, sr):
 
     with AudioBuffer(n, sr) as buf:
         buf.data += 1
-        buf.low_pass(1, sr / 4)
+        buf.low_pass(sr / 4)
         np.testing.assert_almost_equal(buf.data, sig_out)
 
         # TODO: bring this back to life once the highpass filter is fixed
@@ -150,5 +150,5 @@ def test_filter(n, sr):
 
     with AudioBuffer(n, sr) as buf:
         buf.data += 1
-        buf.band_pass(1, sr // 4, sr // 4)
+        buf.band_pass(sr // 4, sr // 4)
         np.testing.assert_almost_equal(buf.data, sig_out)

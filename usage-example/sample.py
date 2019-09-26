@@ -38,7 +38,7 @@ with AudioBuffer.from_file('audio/11a04Ac.wav') as base:
         base.fft_convolve(ir)
 
     # cheap mic simulation (bandpass-filter + pink noise)
-    base.band_pass(1, 1000.0, 1800.0)
+    base.band_pass(1000.0, 1800.0)
     with PinkNoise(len(base), base.sampling_rate, unit='samples') as noise:
         base.mix(noise, gain_aux_db=-30.0)
 
