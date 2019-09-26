@@ -7,10 +7,16 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
-Version 0.1.0 (2019-09-08)
+Version 0.1.3 (2019-09-25)
 --------------------------
 
-* Added: initial release
+* Changed: ``Tone`` constructor
+
+
+Version 0.1.2 (2019-09-23)
+--------------------------
+
+* Added: add icon
 
 
 Version 0.1.1 (2019-09-23)
@@ -22,10 +28,10 @@ Version 0.1.1 (2019-09-23)
 * Changed: ``AudioBuffer.FromArray()`` to ``AudioBuffer.from_array()``
 
 
-Version 0.1.2 (2019-09-23)
+Version 0.1.0 (2019-09-08)
 --------------------------
 
-* Added: add icon
+* Added: initial release
 
 
 .. _Keep a Changelog: https://keepachangelog.com/en/1.0.0/

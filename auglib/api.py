@@ -47,8 +47,8 @@ lib.AudioBuffer_addWhiteNoiseUniform.restype = ctypes.c_void_p
 lib.AudioBuffer_addPinkNoise.argtypes = [ctypes.c_void_p, ctypes.c_float]
 lib.AudioBuffer_addPinkNoise.restype = ctypes.c_void_p
 
-lib.AudioBuffer_addTone.argtypes = [ctypes.c_void_p, ctypes.c_int,
-                                    ctypes.c_float, ctypes.c_float,
+lib.AudioBuffer_addTone.argtypes = [ctypes.c_void_p, ctypes.c_float,
+                                    ctypes.c_float, ctypes.c_int,
                                     ctypes.c_float, ctypes.c_float]
 lib.AudioBuffer_addTone.restype = ctypes.c_void_p
 
@@ -57,24 +57,28 @@ lib.AudioBuffer_fftConvolve.argtypes = [ctypes.c_void_p, ctypes.c_void_p,
 lib.AudioBuffer_fftConvolve.restype = ctypes.c_void_p
 
 lib.AudioBuffer_butterworthLowPassFilter.argtypes = [ctypes.c_void_p,
-                                                     ctypes.c_int,
-                                                     ctypes.c_float]
+                                                     ctypes.c_float,
+                                                     ctypes.c_int]
 lib.AudioBuffer_butterworthLowPassFilter.restype = ctypes.c_void_p
 
 lib.AudioBuffer_butterworthHighPassFilter.argtypes = [ctypes.c_void_p,
-                                                      ctypes.c_int,
-                                                      ctypes.c_float]
+                                                      ctypes.c_float,
+                                                      ctypes.c_int]
 lib.AudioBuffer_butterworthHighPassFilter.restype = ctypes.c_void_p
 
 lib.AudioBuffer_butterworthBandPassFilter.argtypes = [ctypes.c_void_p,
-                                                      ctypes.c_int,
                                                       ctypes.c_float,
-                                                      ctypes.c_float]
+                                                      ctypes.c_float,
+                                                      ctypes.c_int]
 lib.AudioBuffer_butterworthBandPassFilter.restype = ctypes.c_void_p
 
 lib.AudioBuffer_clip.argtypes = [ctypes.c_void_p, ctypes.c_float,
-                                 ctypes.c_bool, ctypes.c_bool, ctypes.c_bool]
+                                 ctypes.c_bool, ctypes.c_bool]
 lib.AudioBuffer_clip.restype = ctypes.c_void_p
+
+lib.AudioBuffer_clipByRatio.argtypes = [ctypes.c_void_p, ctypes.c_float,
+                                        ctypes.c_bool, ctypes.c_bool]
+lib.AudioBuffer_clipByRatio.restype = ctypes.c_void_p
 
 lib.AudioBuffer_normalizeByPeak.argtypes = [ctypes.c_void_p, ctypes.c_float,
                                             ctypes.c_bool]

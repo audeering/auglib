@@ -66,8 +66,7 @@ extern "C"
         obj->addPinkNoise(gain_dB, auglib_randEngine, false);
     }
 
-    void AudioBuffer_addTone(cAudioBuffer<float> *obj, int shape, float freq,
-     float freqLFO, float LFOrange, float gain_dB)
+    void AudioBuffer_addTone(cAudioBuffer<float> *obj, float freq, float gain_dB, int shape = 0, float freqLFO = 0, float LFOrange = 0)
     {
         std::string shape_s = "sine";
         switch (shape)
@@ -82,7 +81,7 @@ extern "C"
                 shape_s = "sawtooth";
                 break;
         }
-        obj->addTone(shape_s, freq, freqLFO, LFOrange, gain_dB);
+        obj->addTone(freq, gain_dB, shape_s, freqLFO, LFOrange, false);
     }
 
     void AudioBuffer_fftConvolve(cAudioBuffer<float> *obj, cAudioBuffer<float> *aux, bool keepTail = true)
@@ -90,24 +89,29 @@ extern "C"
         obj->fftConvolve(*aux, keepTail);
     }
 
-    void AudioBuffer_butterworthLowPassFilter(cAudioBuffer<float> *obj, int ord, float cutFreq)
+    void AudioBuffer_butterworthLowPassFilter(cAudioBuffer<float> *obj, float cutFreq, int order = 1)
     {
-        obj->butterworthLowPassFilter(ord, cutFreq);
+        obj->butterworthLowPassFilter(cutFreq, order);
     }
 
-    void AudioBuffer_butterworthHighPassFilter(cAudioBuffer<float> *obj, int ord, float cutFreq)
+    void AudioBuffer_butterworthHighPassFilter(cAudioBuffer<float> *obj, float cutFreq, int order = 1)
     {
-        obj->butterworthHighPassFilter(ord, cutFreq);
+        obj->butterworthHighPassFilter(cutFreq, order);
     }
 
-    void AudioBuffer_butterworthBandPassFilter(cAudioBuffer<float> *obj, int ord, float centerFreq, float bw)
+    void AudioBuffer_butterworthBandPassFilter(cAudioBuffer<float> *obj, float centerFreq, float bandwidth, int order = 1)
     {
-        obj->butterworthBandPassFilter(ord, centerFreq, bw);
+        obj->butterworthBandPassFilter(centerFreq, bandwidth, order);
     }
 
-    void AudioBuffer_clip(cAudioBuffer<float> *obj, float threshold = 0.0, bool soft = false, bool asRatio = false, bool normalize = false)
+    void AudioBuffer_clip(cAudioBuffer<float> *obj, float threshold = 0.0, bool soft = false, bool normalize = false)
     {
-        obj->clip(threshold, soft, asRatio, normalize);
+        obj->clip(threshold, soft, normalize);
+    }
+
+    void AudioBuffer_clipByRatio(cAudioBuffer<float> *obj, float ratio, bool soft = false, bool normalize = false)
+    {
+        obj->clipByRatio(ratio, soft, normalize);
     }
 
     void AudioBuffer_normalizeByPeak(cAudioBuffer<float> *obj, float peak_db = 0.0, bool clip = false)
