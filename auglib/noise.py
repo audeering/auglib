@@ -5,7 +5,8 @@ from .buffer import AudioBuffer
 def random_seed(seed: int = 0):
     r"""(Re-)initialize random generator..
 
-    Note: controls a random generator that is shared among all noise classes.
+    .. note:: Controls a random generator that is shared among all noise
+        classes.
 
     Args:
         seed: seed number (0 for random initialization)

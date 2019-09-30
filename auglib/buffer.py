@@ -42,12 +42,12 @@ class AudioBuffer(object):
     methods. Use :meth:`auglib.AudioBuffer.FromArray` to create an audio
     buffer from a :class:`numpy.ndarray`.
 
-    Note: always call ``free()`` when a buffer is no longer needed. This
-    will free the memory. Consider to use a ``with`` statement if possible.
+    .. note:: Always call ``free()`` when a buffer is no longer needed. This
+        will free the memory. Consider to use a ``with`` statement if possible.
 
-    * attr:`obj` holds the underlying c object
-    * attr:`sampling_rate` holds the sampling rate in Hz
-    * attr:`data` holds the audio data as a :class:`numpy.ndarray`
+    * :attr:`obj` holds the underlying c object
+    * :attr:`sampling_rate` holds the sampling rate in Hz
+    * :attr:`data` holds the audio data as a :class:`numpy.ndarray`
 
     Args:
         duration: buffer duration (see ``unit``)
@@ -80,8 +80,8 @@ class AudioBuffer(object):
     def free(self):
         r"""Free the audio buffer.
 
-        Note: Always call ``free()`` when an object is no longer needed to
-        release its memory.
+        .. note:: Always call ``free()`` when an object is no longer needed to
+            release its memory.
 
         """
         if self.obj:
@@ -93,14 +93,11 @@ class AudioBuffer(object):
     def from_array(x: np.ndarray, sampling_rate: int) -> 'AudioBuffer':
         r"""Create buffer from Numpy array.
 
-        Note: The input array will be flatten.
+        .. note:: The input array will be flatten.
 
         Args:
             x: a Numpy :class:`numpy.ndarray`
             sampling_rate: sampling rate in Hz
-
-        Return:
-            AudioBuffer: A new buffer object
 
         Example:
             >>> from auglib import AudioBuffer
@@ -121,15 +118,12 @@ class AudioBuffer(object):
         Uses soundfile for WAV, FLAC, and OGG files. All other audio files are
         first converted to WAV by sox or ffmpeg.
 
-        Note: The audio will be converted to mono.
+        .. note:: The audio will be converted to mono.
 
         Args:
             path: path to audio file
             duration: return only a specified duration in seconds
             offset: start reading at offset in seconds.
-
-        Return:
-            AudioBuffer: A new buffer object
 
         """
         x, sr = af.read(path, duration=duration, offset=offset, always_2d=True)
@@ -175,7 +169,7 @@ class AudioBuffer(object):
         base buffer) can be set via the ``write_pos_base`` argument.
         Selecting a sub-segment of the auxiliary buffer is possible by means of
         ``read_pos_aux`` (the initial position of the reading pointer) and
-        ``read_dur_aux`` (the total length of the selected segment). Note:
+        ``read_dur_aux`` (the total length of the selected segment). Note
         ``read_dur_aux = 0`` (default value) has the effect of selecting
         the whole auxiliary buffer. In order to force clipping of the mixed
         signal between 1.0 and -1.0, the ``clip_mix``  argument can be
