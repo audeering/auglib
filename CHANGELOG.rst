@@ -7,6 +7,12 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.1.4 (2019-09-30)
+--------------------------
+
+* Changed: rely on typehints in docstring
+
+
 Version 0.1.3 (2019-09-26)
 --------------------------
 
