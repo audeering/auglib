@@ -27,6 +27,7 @@ extensions = [
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',  # support for Google-style docstrings
+    'sphinx_autodoc_typehints',
 ]
 
 napoleon_use_ivar = True  # List of class attributes
