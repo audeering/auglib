@@ -7,6 +7,13 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.1.5 (2019-10-11)
+--------------------------
+
+* Fixed: high pass filter
+* Added: ``libSoundTouch`` shared library
+
+
 Version 0.1.4 (2019-09-30)
 --------------------------
 
