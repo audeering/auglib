@@ -135,18 +135,16 @@ def test_filter(n, sr):
         buf.low_pass(sr / 4)
         np.testing.assert_almost_equal(buf.data, sig_out)
 
-        # TODO: bring this back to life once the highpass filter is fixed
-        #  in auglib
-        # b, a = signal.butter(1, 2.0 / 4, 'highpass')
-        # sig_out = signal.lfilter(b, a, sig_in)
-        #
-        # with AudioBuffer(n, sr) as buf:
-        #   buf.data += 1
-        #   buf.high_pass(1, sr / 4)
-        #   np.testing.assert_almost_equal(base.data, sig_out, decimal=3)
+    b, a = signal.butter(1, 2.0 / 4, 'highpass')
+    sig_out = signal.lfilter(b, a, sig_in)
 
-        b, a = signal.butter(1, (2.0 / 8) * np.array([1, 3]), 'bandpass')
-        sig_out = signal.lfilter(b, a, sig_in)
+    with AudioBuffer(n, sr) as buf:
+        buf.data += 1
+        buf.high_pass(sr / 4)
+        np.testing.assert_almost_equal(buf.data, sig_out)
+
+    b, a = signal.butter(1, (2.0 / 8) * np.array([1, 3]), 'bandpass')
+    sig_out = signal.lfilter(b, a, sig_in)
 
     with AudioBuffer(n, sr) as buf:
         buf.data += 1
