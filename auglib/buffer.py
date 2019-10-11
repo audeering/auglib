@@ -284,19 +284,18 @@ class AudioBuffer(object):
         if design == FilterDesign.BUTTERWORTH:
             lib.AudioBuffer_butterworthLowPassFilter(self.obj, cutoff, order)
 
-    # TODO: bring this back to life once the highpass filter is fixed in auglib
-    # def high_pass(self, cutoff: float, *, order: int = 1,
-    #               design=FilterDesign.BUTTERWORTH):
-    #     r"""Run audio buffer through a high-pass filter.
-    #
-    #     Args:
-    #         cutoff: cutoff frequency in Hz
-    #         order: filter order
-    #         design: filter design (see :class:`FilterType`)
-    #
-    #     """
-    #     if design == FilterDesign.BUTTERWORTH:
-    #         lib.AudioBuffer_butterworthHighPassFilter(self.obj, cutoff, order) # NOQA
+    def high_pass(self, cutoff: float, *, order: int = 1,
+                  design=FilterDesign.BUTTERWORTH):
+        r"""Run audio buffer through a high-pass filter.
+
+        Args:
+            cutoff: cutoff frequency in Hz
+            order: filter order
+            design: filter design (see :class:`FilterType`)
+
+        """
+        if design == FilterDesign.BUTTERWORTH:
+            lib.AudioBuffer_butterworthHighPassFilter(self.obj, cutoff, order)
 
     def band_pass(self, center: float, bandwidth: float, *, order: int = 1,
                   design=FilterDesign.BUTTERWORTH):

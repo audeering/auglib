@@ -1,16 +1,8 @@
-import os
 from setuptools import setup
 
-
-if os.name == 'nt':
-    libname = 'cauglib.dll'
-else:
-    libname = 'libcauglib.so'
-
-print('auglib/bin/' + libname)
 package_data = {
     'auglib': [
-        'bin/' + libname,
+        'bin/*',
     ]
 }
 
