@@ -7,6 +7,12 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.2.0 (2019-11-04)
+--------------------------
+
+* Changed: implemented transforms as classes
+
+
 Version 0.1.5 (2019-10-11)
 --------------------------
 
