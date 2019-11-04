@@ -1,75 +1,66 @@
 import numpy as np
-from typing import Union
-from enum import IntEnum
-import ctypes
-from functools import wraps
+from typing import Union, Sequence
 import audiofile as af
+import sounddevice as sd
 
 from .api import lib
-from .utils import dur_to_samples
-
-
-class FilterDesign(IntEnum):
-    r"""
-    * `BUTTERWORTH`: Butterworth filter design
-    """
-    BUTTERWORTH = 0
-
-
-def _check_data_decorator(func):
-    # Preserve docstring, see:
-    # https://docs.python.org/3.6/library/functools.html#functools.wraps
-    @wraps(func)
-    def inner(*args, **kwargs):
-        self = args[0]
-        old_ptr = ctypes.addressof(lib.AudioBuffer_data(self.obj).contents)
-        old_length = lib.AudioBuffer_size(self.obj)
-        func(*args, **kwargs)
-        new_ptr = ctypes.addressof(lib.AudioBuffer_data(self.obj).contents)
-        new_length = lib.AudioBuffer_size(self.obj)
-        if old_ptr != new_ptr or old_length != new_length:
-            length = lib.AudioBuffer_size(self.obj)
-            self.data = np.ctypeslib.as_array(lib.AudioBuffer_data(self.obj),
-                                              shape=(length,))
-    return inner
+from .common import Object
+from .observe import observe, Number, Int, Float, Str
+from .utils import to_samples, safe_path, mk_dirs
 
 
 class AudioBuffer(object):
     r"""Holds a chunk of audio.
 
-    By default an audio buffer is initialized with zeros. See
-    :doc:`api-noise` and :doc:`api-tone` for other initialization
-    methods. Use :meth:`auglib.AudioBuffer.FromArray` to create an audio
-    buffer from a :class:`numpy.ndarray`.
+    By default an audio buffer is initialized with zeros. See ``value``
+    argument and :doc:`api-source` for other ways.
 
     .. note:: Always call ``free()`` when a buffer is no longer needed. This
         will free the memory. Consider to use a ``with`` statement if possible.
 
-    * :attr:`obj` holds the underlying c object
+    * :attr:`obj` holds the underlying C object
     * :attr:`sampling_rate` holds the sampling rate in Hz
     * :attr:`data` holds the audio data as a :class:`numpy.ndarray`
 
     Args:
         duration: buffer duration (see ``unit``)
         sampling_rate: sampling rate in Hz
+        value: initialize buffer with a value or from a `numpy.ndarray` or
+            (otherwise initialized with zeros)
         unit: literal specifying the format of ``duration``
-             (see :meth:`auglib.utils.dur2samples`)
+            (see :meth:`auglib.utils.to_samples`)
 
     Example:
         >>> from auglib import AudioBuffer
-        >>> with AudioBuffer(1.0, 8000) as buf:
-        >>>     buf.data += 1
+        >>> with AudioBuffer(5, 8000, 1.0, unit='samples') as buf:
         >>>     buf
-        [1. 1. 1. ... 1. 1. 1.]
+        [1. 1. 1. 1. 1.]
 
     """
-    def __init__(self, duration: float, sampling_rate: int,
-                 *, unit: str = 'seconds'):
-        length = dur_to_samples(duration, sampling_rate, unit=unit)
+    def __init__(self, duration: Union[int, float, Number],
+                 sampling_rate: int,
+                 value: Union[float, Float] = None, *, unit: str = 'seconds'):
+        length = to_samples(duration, sampling_rate, unit=unit)
+        sampling_rate = sampling_rate
         self.obj = lib.AudioBuffer_new(length, sampling_rate)
         self.sampling_rate = sampling_rate
         self.data = np.ctypeslib.as_array(lib.AudioBuffer_data(self.obj),
                                           shape=(length, ))
+        if value:
+            self.data += observe(value)
+
+    def __len__(self):
+        return lib.AudioBuffer_size(self.obj)
+
+    def __str__(self):
+        return str(self.data)
+
+    def __repr__(self):
+        return repr(self.data)
+
+    def __eq__(self, other: 'AudioBuffer'):
+        return self.sampling_rate == other.sampling_rate and \
+            np.array_equal(self.data, other.data)
 
     def __enter__(self):
         return self
@@ -90,300 +81,124 @@ class AudioBuffer(object):
             self.obj = None
 
     @staticmethod
-    def from_array(x: np.ndarray, sampling_rate: int) -> 'AudioBuffer':
-        r"""Create buffer from Numpy array.
+    def from_array(x: Union[np.ndarray, Sequence[float]],
+                   sampling_rate: int) -> 'AudioBuffer':
+        r"""Create buffer from an array.
 
-        .. note:: The input array will be flatten.
+        .. note:: The input array will be flatten and converted to ``float32``.
 
         Args:
-            x: a Numpy :class:`numpy.ndarray`
+            x: array with audio samples
             sampling_rate: sampling rate in Hz
 
         Example:
             >>> from auglib import AudioBuffer
             >>> import numpy as np
-            >>> with AudioBuffer.from_array(np.ones(5), 8000) as buf:
+            >>> with AudioBuffer.from_array([1] * 5, 8000) as buf:
             >>>     buf
             [1. 1. 1. 1. 1.]
+
         """
+        if not isinstance(x, np.ndarray):
+            x = np.array(x)
         buf = AudioBuffer(x.size, sampling_rate, unit='samples')
         np.copyto(buf.data, x.flatten())  # takes care of data type
         return buf
 
     @staticmethod
-    def from_file(path: str, duration: float = None, offset: float = 0) \
-            -> 'AudioBuffer':
+    def read(path: Union[str, Str], *, root: str = None,
+             duration: Union[float, Float] = None,
+             offset: Union[float, Float] = 0) -> 'AudioBuffer':
         r"""Create buffer from an audio file.
 
         Uses soundfile for WAV, FLAC, and OGG files. All other audio files are
         first converted to WAV by sox or ffmpeg.
 
-        .. note:: The audio will be converted to mono.
+        .. note:: Audio will be converted to mono with sample type ``float32``.
 
         Args:
-            path: path to audio file
+            path: path to file
+            root: optional root directory
             duration: return only a specified duration in seconds
             offset: start reading at offset in seconds.
 
         """
+        path = safe_path(path, root=root)
+        duration = observe(duration)
+        offset = observe(offset)
         x, sr = af.read(path, duration=duration, offset=offset, always_2d=True)
         return AudioBuffer.from_array(x[0, :], sr)
 
-    def to_file(self, path: str, precision: str = '16bit',
-                normalize: bool = False):
-        r"""Write buffer to an audio file.
+    def write(self, path: Union[str, Str], *, root: str = None,
+              precision: str = '16bit', normalize: bool = False):
+        r"""Write buffer to a audio file.
 
         Args:
             path: file name of output audio file. The format (WAV, FLAC, OGG)
                 will be inferred from the file name
+            root: optional root directory
             precision: precision of writen file, can be `'16bit'`, `'24bit'`,
                 `'32bit'`. Only available for WAV files
             normalize (bool, optional): normalize audio data before writing
 
         """
+        path = safe_path(path, root=root)
+        mk_dirs(path)
         af.write(path, self.data, self.sampling_rate, precision=precision,
                  normalize=normalize)
 
-    @_check_data_decorator
-    def mix(self, aux_buf: 'AudioBuffer',
-            *,
-            gain_base_db: float = 0.0,
-            gain_aux_db: float = 0.0,
-            write_pos_base: Union[int, float, str] = 0,
-            read_pos_aux: Union[int, float, str] = 0,
-            read_dur_aux: Union[int, float, str] = 0,
-            clip_mix: bool = False,
-            loop_aux: bool = False,
-            extend_base: bool = False,
-            unit='seconds'):
-        r"""Mix the audio buffer (base) with another buffer (auxiliary) by
-        adding the auxiliary buffer to the base buffer.
-
-        Base and auxiliary buffer may differ in length but must have the
-        same sampling rate.
-
-        Mix the content of an auxiliary buffer ``aux`` on top of the base
-        buffer (possibly changing its content). Individual gains can be set
-        for the two signals (``gain_base_db`` and ``gain_aux_db`` expressed
-        in decibels). The starting point of the mixing (with respect to the
-        base buffer) can be set via the ``write_pos_base`` argument.
-        Selecting a sub-segment of the auxiliary buffer is possible by means of
-        ``read_pos_aux`` (the initial position of the reading pointer) and
-        ``read_dur_aux`` (the total length of the selected segment). Note
-        ``read_dur_aux = 0`` (default value) has the effect of selecting
-        the whole auxiliary buffer. In order to force clipping of the mixed
-        signal between 1.0 and -1.0, the ``clip_mix``  argument can be
-        set. In order to allow the looping of the auxiliary buffer (or the
-        selected sub-segment), the ``loop_aux`` argument can be used. In case
-        the auxiliary buffer (or the selected sub-segment) ends beyond the
-        original ending point, the extra portion will be discarded, unless
-        the ``extend_base`` is set turned on, in which case the base buffer is
-        extended accordingly.
+    def play(self, wait: bool = True):
+        r"""Play back buffer.
 
         Args:
-            aux_buf: auxiliary buffer
-            gain_base_db: gain of base buffer
-            gain_aux_db: gain of auxiliary buffer
-            write_pos_base: write position of base buffer (see ``unit``)
-            read_pos_aux: read position of auxiliary buffer (see ``unit``)
-            read_dur_aux: duration to read from auxiliary buffer (see
-                ``unit``). Set to 0 to read the whole buffer.
-            clip_mix: clip amplitude values of base buffer to the [-1, 1]
-                interval (after mixing)
-            loop_aux: loop auxiliary buffer if shorter than base buffer
-            extend_base: if needed, extend base buffer to total required
-                length (considering length of auxiliary buffer)
-            unit: literal specifying the format of ``write_pos_base``,
-                ``read_pos_aux`` and ``read_dur_aux``
-                (see :meth:`auglib.utils.dur2samples`)
-
-        Example:
-            >>> with AudioBuffer(1.0, 8000) as base
-            >>>     with AudioBuffer(1.0, 8000) as aux:
-            >>>         aux.data += 1
-            >>>         base.mix(aux)
-            >>>         base
-            [1. 1. 1. ... 1. 1. 1.]
+            wait: pause until file has been played back
 
         """
-        write_pos_base = dur_to_samples(write_pos_base, self.sampling_rate,
-                                        unit=unit)
-        read_pos_aux = dur_to_samples(read_pos_aux, aux_buf.sampling_rate,
-                                      unit=unit)
-        read_dur_aux = dur_to_samples(read_dur_aux, aux_buf.sampling_rate,
-                                      unit=unit)
-        lib.AudioBuffer_mix(self.obj, aux_buf.obj, gain_base_db, gain_aux_db,
-                            write_pos_base, read_pos_aux, read_dur_aux,
-                            clip_mix, loop_aux, extend_base)
+        sd.play(self.data, self.sampling_rate)
+        if wait:
+            sd.wait()
 
-    @_check_data_decorator
-    def append(self, aux_buf: 'AudioBuffer', *, read_pos_aux: int = 0,
-               read_dur_aux: int = 0, unit: str = 'seconds'):
-        r"""Append an auxiliary buffer at the end of the base buffer.
 
-        Base and auxiliary buffer may differ in length but must have the
-        same sampling rate.
+class Source(Object):
+    r"""Base class for objects that create an
+    :class:`auglib.buffer.AudioBuffer`.
 
-        Options are provided for selecting a specific portion of the
-        auxiliary buffer (see ``readPos_aux`` and ``read_dur_aux``).
-        After the operation is complete, the final length of the base buffer
-        will be ``read_dur_aux`` samples greater then the original length.
+    """
+    def call(self) -> AudioBuffer:
+        raise(NotImplementedError())
 
-        Args:
-            aux_buf: auxiliary buffer
-            read_pos_aux: read position of auxiliary buffer (see ``unit``)
-            read_dur_aux: duration to read from auxiliary buffer (see
-                ``unit``). Set to 0 to read the whole buffer.
-            unit: literal specifying the format of ``read_pos_aux`` and
-                ``read_dur_aux`` (see :meth:`auglib.utils.dur2samples`)
+    def __call__(self) -> AudioBuffer:
+        return self.call()
 
-        >>> with AudioBuffer(1.0, 8000) as base:
-        >>>     with AudioBuffer(1.0, 8000) as aux:
-        >>>         aux.data += 1
-        >>>         base.append(aux)
-        >>>         base
-        [0. 0. 0. ... 1. 1. 1.]
 
-        """
-        lib.AudioBuffer_append(self.obj, aux_buf.obj, read_pos_aux,
-                               read_dur_aux)
+class Transform(Object):
+    r"""Base class for objects applying some sort of transformation to an
+    :class:`auglib.buffer.AudioBuffer`.
 
-    @_check_data_decorator
-    def fft_convolve(self, aux_buf: 'AudioBuffer', *, keep_tail: bool = True):
-        r"""Convolve the audio buffer (base) with another buffer (auxiliary)
-        using an impulse response (FFT-based approach).
+    Args:
+        bypass_prob: probability to bypass the transformation
 
-        Args:
-            aux_buf: auxiliary buffer
-            keep_tail: keep the tail of the convolution result (extending
-            the length of the buffer), or to cut it out (keeping the
-            original length of the input)
+    """
+    def __init__(self, bypass_prob: Union[float, Float] = None):
+        self.bypass_prob = bypass_prob
 
-        """
-        old_addr = ctypes.addressof(lib.AudioBuffer_data(self.obj).contents)
-        old_length = lib.AudioBuffer_size(self.obj)
-        lib.AudioBuffer_fftConvolve(self.obj, aux_buf.obj,
-                                    keep_tail)
-        new_addr = ctypes.addressof(lib.AudioBuffer_data(self.obj).contents)
-        new_length = lib.AudioBuffer_size(self.obj)
-        if old_addr != new_addr or old_length != new_length:
-            length = lib.AudioBuffer_size(self.obj)
-            self.data = np.ctypeslib.as_array(lib.AudioBuffer_data(self.obj),
-                                              shape=(length,))
+    def call(self, buf: AudioBuffer):
+        raise NotImplementedError()
 
-    def low_pass(self, cutoff: float, *, order: int = 1,
-                 design=FilterDesign.BUTTERWORTH):
-        r"""Run audio buffer through a low-pass filter.
+    def __call__(self, buf: AudioBuffer) -> AudioBuffer:
+        bypass_prob = observe(self.bypass_prob)
+        if bypass_prob is None or np.random.random_sample() >= bypass_prob:
+            self.call(buf)
+        return buf
 
-        Args:
-            cutoff: cutoff frequency in Hz
-            order: filter order
-            design: filter design (see :class:`FilterType`)
 
-        """
-        if design == FilterDesign.BUTTERWORTH:
-            lib.AudioBuffer_butterworthLowPassFilter(self.obj, cutoff, order)
+class Sink(Object):
+    r"""Base class for objects that consume an
+    :class:`auglib.buffer.AudioBuffer`.
 
-    def high_pass(self, cutoff: float, *, order: int = 1,
-                  design=FilterDesign.BUTTERWORTH):
-        r"""Run audio buffer through a high-pass filter.
+    """
+    def call(self, buf: AudioBuffer):
+        raise(NotImplementedError())
 
-        Args:
-            cutoff: cutoff frequency in Hz
-            order: filter order
-            design: filter design (see :class:`FilterType`)
-
-        """
-        if design == FilterDesign.BUTTERWORTH:
-            lib.AudioBuffer_butterworthHighPassFilter(self.obj, cutoff, order)
-
-    def band_pass(self, center: float, bandwidth: float, *, order: int = 1,
-                  design=FilterDesign.BUTTERWORTH):
-        r"""Run audio buffer through a band-pass filter.
-
-        Args:
-            center: center frequency in Hz
-            bandwidth: bandwidth frequency in Hz
-            order: filter order
-            design: filter design (see :class:`FilterType`)
-
-        """
-        if design == FilterDesign.BUTTERWORTH:
-            lib.AudioBuffer_butterworthBandPassFilter(self.obj, center,
-                                                      bandwidth, order)
-
-    def clip(self, *, threshold: float = 0.0, soft: bool = False,
-             normalize: bool = False):
-        r"""Hard/soft-clip the audio buffer.
-
-        ``threshold`` sets the amplitude level in decibels to which the
-        signal is clipped. The optional argument ``soft`` triggers a
-        soft-clipping behaviour, for which the whole waveform is warped
-        through a cubic non-linearity, resulting in a smooth transition
-        between the flat (clipped) regions and the rest of the waveform.
-
-        Args:
-            threshold: amplitude level above which samples will be clipped (in
-                decibels)
-            soft: apply soft-clipping
-            normalize: after clipping normalize buffer to 0 decibels
-
-        """
-        lib.AudioBuffer_clip(self.obj, threshold, soft, normalize)
-
-    def clip_by_ratio(self, ratio: float, *, soft: bool = False,
-                      normalize: bool = False):
-        r"""Hard/soft-clip a certain fraction of the audio buffer.
-
-        Rather than receiving a specific amplitude threshold, this function is
-        designed to get instructed about the number of samples that are meant
-        to be clipped, in relation to the total length of the signal. This
-        ratio is internally translated into the amplitude threshold needed for
-        achieving the specified intensity of the degradation. The optional
-        argument ``soft`` triggers a soft-clipping behaviour, for which the
-        whole waveform is warped through a cubic non-linearity, resulting in
-        a smooth transition between the flat (clipped) regions and the
-        rest of the waveform.
-
-        Args:
-            ratio: ratio between the number of samples that are to be clipped
-                and the total number of samples in the buffer
-            soft: apply soft-clipping
-            normalize: after clipping normalize buffer to 0 decibels
-
-        """
-        lib.AudioBuffer_clipByRatio(self.obj, ratio, soft, normalize)
-
-    def normalize_by_peak(self, *, peak_db: float = 0.0, clip: bool = False):
-        r"""Peak-normalize the audio buffer to a desired level.
-
-        Args:
-            peak_db: desired peak value in decibels
-            clip: clip sample values to the interval [-1.0, 1.0]
-
-        """
-        lib.AudioBuffer_normalizeByPeak(self.obj, peak_db, clip)
-
-    def gain_stage(self, gain_db: float, *, clip: bool = False):
-        r"""Scale the buffer by the linear factor that corresponds
-        to ``gain_dB`` (in decibels).
-
-        Args:
-            gain_db: amplification in decibels
-            clip: clip sample values to the interval [-1.0, 1.0]
-
-        """
-        lib.AudioBuffer_gainStage(self.obj, gain_db, clip)
-
-    def __len__(self):
-        return lib.AudioBuffer_size(self.obj)
-
-    def __str__(self):
-        return str(self.data)
-
-    def __repr__(self):
-        return repr(self.data)
-
-    def __eq__(self, other: 'AudioBuffer'):
-        return self.sampling_rate == other.sampling_rate and \
-            np.array_equal(self.data, other.data)
+    def __call__(self, buf: AudioBuffer):
+        self.call(buf)

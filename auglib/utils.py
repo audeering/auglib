@@ -1,36 +1,61 @@
-from typing import Union
+from typing import Union, Iterator, Any
+import warnings
+import random
+import os
+import fnmatch
+import re
 
 import humanfriendly as hf
 import numpy as np
 
+from .api import lib
+from .observe import observe, Number, Str
 
-def gain_to_db(gain: float) -> float:
+
+def random_seed(seed: int = 0):
+    r"""(Re-)initialize random generator..
+
+    .. note:: Controls a random generator that is shared among all audio
+        classes.
+
+    Args:
+        seed: seed number (0 for random initialization)
+
+    """
+    random.seed(None if seed == 0 else seed)
+    np.random.seed(None if seed == 0 else seed)
+    lib.auglib_random_seed(seed)
+
+
+def to_db(x: Union[float, Number]) -> float:
     r"""Convert gain to decibels (dB).
 
     Args:
-        gain: input gain
+        x: input gain
 
     """
-    assert gain > 0
-    gain_db = 20 * np.log10(gain)
-    return gain_db
+    x = observe(x)
+    assert x > 0, 'cannot convert gain {} to decibels'.format(x)
+    x_db = 20 * np.log10(x)
+    return x_db
 
 
-def db_to_gain(gain_db: float) -> float:
+def from_db(x_db: Union[float, Number]) -> float:
     r"""Convert decibels (dB) to gain.
 
     Args:
-        gain_db: input gain in decibels
+        x_db: input gain in decibels
 
     """
-    gain = pow(10.0, gain_db / 20.0)
-    return gain
+    x_db = observe(x_db)
+    x = pow(10.0, x_db / 20.0)
+    return x
 
 
-def dur_to_samples(dur: float,
-                   sampling_rate: int,
-                   *,
-                   unit: str = 'seconds') -> int:
+def to_samples(dur: Union[int, float, Number],
+               sampling_rate: int,
+               *,
+               unit: str = 'seconds') -> int:
     r"""Express duration in samples.
 
     Examples (``sample_rate==8000``):
@@ -51,9 +76,85 @@ def dur_to_samples(dur: float,
         unit: literal specifying the format
 
     """
-
+    dur = observe(dur)
     unit = unit.strip()
     if unit == 'samples':
         return int(dur)
     else:
         return int(hf.parse_timespan(str(dur) + unit) * sampling_rate)
+
+
+def _scan_files(root: str,
+                sub_dir: str = '',
+                recursive: bool = False,
+                max_depth: int = None) -> (str, str):
+    for entry in os.scandir(root):
+        if entry.is_dir(follow_symlinks=False):
+            if recursive and (max_depth is None or max_depth > 0):
+                yield from _scan_files(
+                    entry.path, os.path.join(sub_dir, entry.name), True,
+                    None if not max_depth else max_depth - 1)
+        else:
+            yield sub_dir, entry
+
+
+def scan_files(root: str,
+               sub_dir: str = '',
+               pattern: str = None,
+               use_regex: bool = False,
+               full_path: bool = False,
+               recursive: bool = False,
+               max_depth: int = None) -> Iterator[str]:
+    r"""Scan directory and sub-directories for files matching a pattern.
+
+    Args:
+
+        root: root directory
+        sub_dir: restrict scan to sub directory
+        pattern: return files that match pattern
+        use_regex: pattern is a regular expression
+        full_path: return full path
+        recursive: search sub-directories
+        max_depth: maximal search depth
+
+    """
+    root = os.path.expanduser(root)
+    if pattern is not None and use_regex:
+        pattern = re.compile(pattern)
+    for subdir, file in _scan_files(
+            os.path.join(root, sub_dir), sub_dir=sub_dir,
+            recursive=recursive, max_depth=max_depth):
+        if pattern is None \
+                or use_regex and pattern.match(file.name) \
+                or not use_regex and fnmatch.fnmatch(file.name, pattern):
+            path = os.path.join(subdir, file.name)
+            if full_path:
+                path = os.path.abspath(file.path)
+            yield path
+
+
+def safe_path(path: Union[str, Str], *, root: str = None) -> str:
+    r"""Turns ``path`` into an absolute path.
+
+    Args:
+        path: file path
+        root: optional root directory
+
+    """
+    path = observe(path)
+    if root:
+        path = os.path.join(root, path)
+    path = os.path.abspath(os.path.expanduser(path))
+    return path
+
+
+def mk_dirs(path: str):
+    r"""Create directory tree if it does not exist.
+
+    Args:
+        path: directory or file path
+
+    """
+    path = os.path.dirname(path)
+    if path and not os.path.exists(path):
+        os.makedirs(path)

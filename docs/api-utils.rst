@@ -1,8 +1,9 @@
 utils
 =====
 
-Utils
------
-
-.. autofunction::  auglib.utils.gain_to_db
-.. autofunction::  auglib.utils.dur_to_samples
+.. autofunction::  auglib.utils.random_seed
+.. autofunction::  auglib.utils.to_db
+.. autofunction::  auglib.utils.from_db
+.. autofunction::  auglib.utils.to_samples
+.. autofunction::  auglib.utils.scan_files
+.. autofunction::  auglib.utils.safe_path
