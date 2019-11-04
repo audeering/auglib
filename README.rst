@@ -20,8 +20,8 @@ To install ``auglib`` run:
     $ pip install auglib
 
 
-Basic usage
-===========
+Usage
+=====
 
 Create two buffers and mix them:
 
@@ -34,7 +34,7 @@ Create two buffers and mix them:
     >>>         Mix(aux)(base)
     array([1., 1., 1., 1., 1., 0., 0., 0., 0., 0.])
 
-Compose transformations (note the use of `FloatUni` and `IntUni` to randomize the outcome in every iteration):
+Compose transformations (note the use of ``FloatUni`` and ``IntUni`` to randomize the outcome in every iteration):
 
 .. code-block:: python
 
@@ -44,10 +44,10 @@ Compose transformations (note the use of `FloatUni` and `IntUni` to randomize th
     >>>     mix = Mix(aux, gain_aux_db=FloatUni(-6.0, 0.0),
     >>>               write_pos_base=IntUni(0, 2), unit='samples',
     >>>               bypass_prob=0.25)
-    >>>    c = Compose([mix, Clip()])
-    >>>    for i in range(10):
-    >>>        with AudioBuffer(1.0, 8000) as base:
-    >>>            c(base)
+    >>>     c = Compose([mix, Clip()])
+    >>>     for i in range(10):
+    >>>         with AudioBuffer(1.0, 8000) as base:
+    >>>             c(base)
     [0.         0.89406085 0.89406085 ... 0.         0.         0.        ]
     [0.         0.55691683 0.55691683 ... 0.         0.         0.        ]
     [0.91738 0.91738 0.91738 ... 0.      0.      0.     ]
@@ -103,28 +103,3 @@ Save and load a transformation:
           threshold: -6.0
           soft: false
           normalize: false
-
-
-Documentation
-=============
-
-To build the documentation run the following commands:
-
-.. code-block:: bash
-
-    pip install -r docs/requirements.txt
-    python setup.py build_sphinx
-
-The generated files will be available in the directory ``build/sphinx/html/``
-
-
-Tests
-=====
-
-To run the tests do:
-
-.. code-block:: bash
-
-    pip install -r tests/requirements.txt
-    pytest tests/
-
