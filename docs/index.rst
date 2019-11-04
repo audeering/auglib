@@ -20,7 +20,10 @@
     :hidden:
 
     api-buffer
-    api-noise
-    api-tone
+    api-common
+    api-observe
+    api-sink
+    api-source
+    api-transform
     api-utils
     genindex
