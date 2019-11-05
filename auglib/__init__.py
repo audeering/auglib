@@ -4,6 +4,7 @@ from .observe import *
 from . import source
 from . import transform
 from . import utils
+from . import interface
 
 __version__ = 'unknown'
 
