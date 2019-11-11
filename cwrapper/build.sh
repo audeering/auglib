@@ -66,4 +66,5 @@ patch_strings_in_file ../auglib/bin/libcauglib.so "$AUGLIB/soundtouch/source/Sou
 
 # add bin folder to r-path
 # https://nixos.org/patchelf.html
-patchelf --set-rpath auglib/bin ../auglib/bin/libcauglib.so
+# https://stackoverflow.com/questions/39978762/linux-executable-cant-find-shared-library-in-same-folder
+patchelf --set-rpath '${ORIGIN}' ../auglib/bin/libcauglib.so
