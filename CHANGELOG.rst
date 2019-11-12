@@ -7,6 +7,13 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.2.1 (2019-11-12)
+--------------------------
+
+* Fix: dependency to ``libSoundTouch.so.1`` is properly resolved if
+  called outside the root directory
+
+
 Version 0.2.0 (2019-11-04)
 --------------------------
 
