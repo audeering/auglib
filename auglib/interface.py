@@ -47,11 +47,11 @@ class OfflineTransform(object):
                        force_overwrite: bool = False):
         df = index.to_frame(index=False).copy()
         index_columns = list(df.columns)
-        augmented_filename = os.path.join(output_folder, 'augmented.csv')
+        augmented_filename = os.path.join(output_folder, 'augmented.pkl')
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
         elif os.path.isfile(augmented_filename) and not force_overwrite:
-            return pd.read_csv(augmented_filename)
+            return pd.read_pickle(augmented_filename)
 
         df_augmented = df.copy()
         for index, row in df.iterrows():
@@ -69,5 +69,5 @@ class OfflineTransform(object):
             )
         df_augmented['augmented_file'] = df_augmented['file'].apply(
             lambda x: os.path.join(output_folder, os.path.basename(x)))
-        df_augmented.set_index(index_columns).to_csv(augmented_filename)
+        df_augmented.set_index(index_columns).to_pickle(augmented_filename)
         return df_augmented
