@@ -26,6 +26,7 @@ def test_mix(base_dur, aux_dur, sr, unit):
     # init auxiliary buffer
 
     aux = AudioBuffer(aux_dur, sr, value=1.0, unit=unit)
+    aux_012345 = AudioBuffer.from_array(list(range(5)), sr)
 
     # default mix
 
@@ -59,6 +60,12 @@ def test_mix(base_dur, aux_dur, sr, unit):
         Mix(aux, read_pos_aux=n_aux - 1, unit='samples')(base)
         assert base.data[0] == 1 and np.sum(np.abs(base.data[1:])) == 0
 
+    for i in range(5):
+        with AudioBuffer(base_dur, sr, unit=unit) as base:
+            Mix(aux_012345, read_pos_aux=i, unit='samples')(base)
+            np.testing.assert_equal(base.data[:len(aux_012345) - i],
+                                    aux_012345.data[i:])
+
     # write position of base
 
     with AudioBuffer(base_dur, sr, unit=unit) as base:
@@ -80,6 +87,7 @@ def test_mix(base_dur, aux_dur, sr, unit):
         assert all(base.data == 1)
 
     aux.free()
+    aux_012345.free()
 
 
 @pytest.mark.parametrize('base_dur,aux_dur,sr,unit',

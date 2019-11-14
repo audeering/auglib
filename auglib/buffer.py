@@ -5,8 +5,9 @@ import sounddevice as sd
 
 from .api import lib
 from .common import Object
-from .observe import observe, Number, Int, Float, Str
+from .observe import observe, Number, Float, Str
 from .utils import to_samples, safe_path, mk_dirs
+from .exception import _check_exception_decorator
 
 
 class AudioBuffer(object):
@@ -79,6 +80,10 @@ class AudioBuffer(object):
             lib.AudioBuffer_free(self.obj)
             self.data = None
             self.obj = None
+
+    def dump(self):
+        r"""Dump audio buffer to stdout."""
+        lib.AudioBuffer_dump(self.obj)
 
     @staticmethod
     def from_array(x: Union[np.ndarray, Sequence[float]],
@@ -185,6 +190,7 @@ class Transform(Object):
     def call(self, buf: AudioBuffer):
         raise NotImplementedError()
 
+    @_check_exception_decorator
     def __call__(self, buf: AudioBuffer) -> AudioBuffer:
         bypass_prob = observe(self.bypass_prob)
         if bypass_prob is None or np.random.random_sample() >= bypass_prob:

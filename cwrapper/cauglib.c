@@ -1,9 +1,70 @@
 #include <auglib.h>
+#include <mutex>  
+
+
+#define MAX_MSG_LEN 2048
+
+#define CALL(expr)                      \
+    try                                 \
+    {                                   \
+        (expr);                         \
+    }                                   \
+    catch (const std::exception& ex)    \
+    {                                   \
+        _set_exception(ex);             \
+    }
 
 
 extern "C"
-{
+{    
     std::mt19937 auglib_randEngine(1);
+    
+
+    bool _has_exception = false;
+    char _exception_msg[MAX_MSG_LEN];
+    std::mutex _exception_mutex; 
+
+    void _copy_string(char *dst, size_t size, const char *src)
+    {
+        size_t n = strlen(src);
+        if (n >= size)
+        {
+            n = size - 1;
+        }            
+        memcpy(dst, src, n); 
+        dst[n] = '\0';
+    }
+    
+    void _set_exception(const std::exception &ex)
+    {
+        std::lock_guard<std::mutex> lock(_exception_mutex);
+        // first come, first stored...        
+        if (!_has_exception)
+        {         
+            _has_exception = true;
+            _copy_string(_exception_msg, MAX_MSG_LEN, ex.what());          
+        }
+    }
+
+    bool auglib_check_exception(char *buffer, size_t size)
+    {
+        std::lock_guard<std::mutex> lock(_exception_mutex);
+        if (_has_exception)
+        {
+            _copy_string(buffer, size, _exception_msg);
+        }
+        else
+        {
+            buffer[0] = '\0';
+        }        
+        return _has_exception;
+    }
+
+    void auglib_release_exception()
+    {
+        std::lock_guard<std::mutex> lock(_exception_mutex);        
+        _has_exception = false;
+    }
 
     void auglib_random_seed(int seed = 0)
     {
@@ -31,6 +92,16 @@ extern "C"
         return obj->data();
     }
 
+    void AudioBuffer_dump(cAudioBuffer *obj)
+    {        
+        const sample_t *data = obj->data();
+        for (size_t i = 0; i < obj->size(); i++)
+        {
+            printf("%lf ", data[i]);
+        }
+        printf("\n");
+    }
+
     size_t AudioBuffer_size(cAudioBuffer *obj)
     {
         return obj->size();
@@ -41,29 +112,29 @@ extern "C"
       size_t readPos_aux = 0, size_t readLength_aux = 0, bool clipMix = false,
       bool loopAux = false, bool extendBase = false)
     {
-        obj->mix(*auxBuf, gainBase_dB, gainAux_dB, writePos_base, readPos_aux,
-                 readLength_aux, clipMix, loopAux, extendBase);
+        CALL(obj->mix(*auxBuf, gainBase_dB, gainAux_dB, writePos_base, readPos_aux, 
+                      readLength_aux, clipMix, loopAux, extendBase))        
     }
 
     void AudioBuffer_append(cAudioBuffer *obj, cAudioBuffer *aux, size_t readPos_aux = 0, size_t readLength_aux = 0)
     {
-        obj->append(*aux, readPos_aux, readLength_aux);
+        CALL(obj->append(*aux, readPos_aux, readLength_aux))
     }
 
     void AudioBuffer_addWhiteNoiseGaussian(cAudioBuffer *obj, float gain_dB, float stddev = 0.3)
     {
-        obj->addWhiteNoiseGaussian(gain_dB, auglib_randEngine, stddev, false);
+        CALL(obj->addWhiteNoiseGaussian(gain_dB, auglib_randEngine, stddev, false))
     }
 
 
     void AudioBuffer_addWhiteNoiseUniform(cAudioBuffer *obj, float gain_dB)
     {
-        obj->addWhiteNoiseUniform(gain_dB, auglib_randEngine, false);
+        CALL(obj->addWhiteNoiseUniform(gain_dB, auglib_randEngine, false))
     }
 
     void AudioBuffer_addPinkNoise(cAudioBuffer *obj, float gain_dB)
     {        
-        obj->addPinkNoise(gain_dB, auglib_randEngine, false);
+        CALL(obj->addPinkNoise(gain_dB, auglib_randEngine, false))
     }
 
     void AudioBuffer_addTone(cAudioBuffer *obj, float freq, float gain_dB, int shape = 0, float freqLFO = 0, float LFOrange = 0)
@@ -81,47 +152,47 @@ extern "C"
                 shape_s = "sawtooth";
                 break;
         }
-        obj->addTone(freq, gain_dB, shape_s, freqLFO, LFOrange, false);
+         CALL(obj->addTone(freq, gain_dB, shape_s, freqLFO, LFOrange, false))
     }
 
     void AudioBuffer_fftConvolve(cAudioBuffer *obj, cAudioBuffer *aux, bool keepTail = true)
     {
-        obj->fftConvolve(*aux, keepTail);
+         CALL(obj->fftConvolve(*aux, keepTail))
     }
 
     void AudioBuffer_butterworthLowPassFilter(cAudioBuffer *obj, float cutFreq, int order = 1)
     {
-        obj->butterworthLowPassFilter(cutFreq, order);
+        CALL(obj->butterworthLowPassFilter(cutFreq, order))
     }
 
     void AudioBuffer_butterworthHighPassFilter(cAudioBuffer *obj, float cutFreq, int order = 1)
     {
-        obj->butterworthHighPassFilter(cutFreq, order);
+        CALL(obj->butterworthHighPassFilter(cutFreq, order))
     }
 
     void AudioBuffer_butterworthBandPassFilter(cAudioBuffer *obj, float centerFreq, float bandwidth, int order = 1)
     {
-        obj->butterworthBandPassFilter(centerFreq, bandwidth, order);
+        CALL(obj->butterworthBandPassFilter(centerFreq, bandwidth, order))
     }
 
     void AudioBuffer_clip(cAudioBuffer *obj, float threshold = 0.0, bool soft = false, bool normalize = false)
     {
-        obj->clip(threshold, soft, normalize);
+        CALL(obj->clip(threshold, soft, normalize))
     }
 
     void AudioBuffer_clipByRatio(cAudioBuffer *obj, float ratio, bool soft = false, bool normalize = false)
     {
-        obj->clipByRatio(ratio, soft, normalize);
+        CALL(obj->clipByRatio(ratio, soft, normalize))
     }
 
     void AudioBuffer_normalizeByPeak(cAudioBuffer *obj, float peak_db = 0.0, bool clip = false)
     {
-        obj->normalizeByPeak(peak_db, clip);
+        CALL(obj->normalizeByPeak(peak_db, clip))
     }
 
     void AudioBuffer_gainStage(cAudioBuffer *obj, float gain_dB, bool clip = false)
     {
-        obj->gainStage(gain_dB, clip);
+        CALL(obj->gainStage(gain_dB, clip))
     }
         
 }

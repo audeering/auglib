@@ -21,6 +21,7 @@
 
     api-buffer
     api-common
+    api-exception
     api-observe
     api-sink
     api-source

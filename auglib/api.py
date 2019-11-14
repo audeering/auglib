@@ -15,11 +15,20 @@ lib.AudioBuffer_new.restype = ctypes.c_void_p
 lib.AudioBuffer_free.argtypes = [ctypes.c_void_p]
 lib.AudioBuffer_free.restype = ctypes.c_void_p
 
+lib.AudioBuffer_dump.argtypes = [ctypes.c_void_p]
+lib.AudioBuffer_dump.restype = ctypes.c_void_p
+
 lib.AudioBuffer_data.argtypes = [ctypes.c_void_p]
 lib.AudioBuffer_data.restype = ctypes.POINTER(ctypes.c_float)
 
 lib.AudioBuffer_size.argtypes = [ctypes.c_void_p]
 lib.AudioBuffer_size.restype = ctypes.c_size_t
+
+lib.auglib_check_exception.argtypes = [ctypes.c_char_p, ctypes.c_size_t]
+lib.auglib_check_exception.restype = ctypes.c_bool
+
+lib.auglib_release_exception.argtypes = []
+lib.auglib_release_exception.restype = ctypes.c_void_p
 
 lib.AudioBuffer_mix.argtypes = [ctypes.c_void_p, ctypes.c_void_p,
                                 ctypes.c_float, ctypes.c_float,
