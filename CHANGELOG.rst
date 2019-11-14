@@ -7,6 +7,13 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.2.2 (2019-11-14)
+--------------------------
+
+* Fix: ``read_pos_aux`` bug in mix function
+* Added: handling of exceptions thrown by c library
+
+
 Version 0.2.1 (2019-11-12)
 --------------------------
 
