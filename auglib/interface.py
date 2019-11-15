@@ -51,6 +51,8 @@ class OfflineTransform(object):
                  precision: str = '16bit',
                  normalize: bool = False):
         self.transform = transform
+        self.precision = precision
+        self.normalize = normalize
 
     def apply_on_filename(self, input_filename: str, target_filename: str, *,
                           offset: int = 0, duration: int = None):
@@ -68,7 +70,8 @@ class OfflineTransform(object):
         with AudioBuffer.read(
                 input_filename, offset=offset, duration=duration) as buf:
             self.transform(buf)
-            buf.write(target_filename)
+            buf.write(target_filename, precision=self.precision,
+                      normalize=self.normalize)
 
     def apply_on_folder(self, input_folder: str, output_folder: str):
         r"""Applies transform on all files in a folder.
