@@ -36,7 +36,7 @@ class AudioModifier(object):
     it to work on:
     * files
     * folders
-    * ``DataFrame`` indices coming from the unified format
+    * :class:`pandas.DataFrame` indices coming from the unified format
 
     Augments files and then stores it on disk for future usage.
 
@@ -98,7 +98,7 @@ class AudioModifier(object):
 
     def apply_on_index(self, index: pd.MultiIndex, output_folder: str, *,
                        force_overwrite: bool = False) -> pd.DataFrame:
-        r"""Applies transform on all data indexed in a ``DataFrame``.
+        r"""Applies transform on data indexed in a :class:`pandas.DataFrame`.
 
         This is intended for usage with data coming from the unified format.
 
@@ -111,8 +111,8 @@ class AudioModifier(object):
                 returned
 
         Returns:
-            ``DataFrame`` containing identical indices with the input and
-                pointing to the generated augmented files
+            :class:`pandas.DataFrame` containing identical indices with the
+                input and pointing to the generated augmented files
 
         Example:
             >>> import audb, audata, auglib
