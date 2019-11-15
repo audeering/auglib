@@ -157,6 +157,7 @@ class AudioBuffer(object):
 
         Returns:
             np.array: buffer data
+
         """
         return self.data.copy()
 

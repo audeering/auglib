@@ -1,5 +1,6 @@
 import os
 import glob
+import numpy as np
 import pandas as pd
 import audiofile as af
 from .buffer import AudioBuffer, Transform
@@ -21,7 +22,7 @@ class OnlineTransform(object):
         self.transform = transform
         self.sampling_rate = sampling_rate
 
-    def __call__(self, signal):
+    def __call__(self, signal: np.array) -> np.array:
         with AudioBuffer.from_array(signal, self.sampling_rate) as buf:
             self.transform(buf)
             transformed = buf.to_array()
