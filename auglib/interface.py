@@ -35,7 +35,7 @@ class AudioModifier(object):
     it to work on:
     * files
     * folders
-    * :class:`pandas.DataFrame` indices coming from the unified format
+    * :class:`pandas.DataFrame` indices coming from the Unified Format
 
     Augments files and then stores it on disk for future usage.
 
