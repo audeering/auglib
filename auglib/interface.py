@@ -22,7 +22,7 @@ class NumpyTransform(object):
         self.transform = transform
         self.sampling_rate = sampling_rate
 
-    def __call__(self, signal: np.array) -> np.array:
+    def __call__(self, signal: np.ndarray) -> np.ndarray:
         with AudioBuffer.from_array(signal, self.sampling_rate) as buf:
             self.transform(buf)
             transformed = buf.to_array()
