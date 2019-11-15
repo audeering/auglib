@@ -158,7 +158,7 @@ class AudioBuffer(object):
         Returns:
             np.array: buffer data
         """
-        return self.data
+        return self.data.copy()
 
     def play(self, wait: bool = True):
         r"""Play back buffer.
