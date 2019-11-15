@@ -9,11 +9,11 @@ from .buffer import AudioBuffer, Transform
 class NumpyTransform(object):
     r"""Interface for on-line data augmentation.
 
-    Wraps a py:class:`pyaglib.buffer.Transform` under a ``Callable`` interface,
-    allowing it to be called on-the-fly on numpy arrays.
+    Wraps a py:class:`auglib.buffer.Transform` under a ``Callable``
+    interface, allowing it to be called on-the-fly on numpy arrays.
 
     Args:
-        transform: pyauglib transform to be wrapped
+        transform: auglib transform to be wrapped
         sampling_rate: sampling rate of incoming signals
 
     """
