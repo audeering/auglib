@@ -26,5 +26,6 @@
     api-sink
     api-source
     api-transform
+    api-interface
     api-utils
     genindex
