@@ -6,11 +6,11 @@ import audiofile as af
 from .buffer import AudioBuffer, Transform
 
 
-class OnlineTransform(object):
+class NumpyTransform(object):
     r"""Interface for on-line data augmentation.
 
     Wraps a py:class:`pyaglib.buffer.Transform` under a ``Callable`` interface,
-    allowing it to be called on-the-fly on input signals.
+    allowing it to be called on-the-fly on numpy arrays.
 
     Args:
         transform: pyauglib transform to be wrapped
