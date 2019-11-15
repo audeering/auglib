@@ -152,11 +152,11 @@ class AudioBuffer(object):
         af.write(path, self.data, self.sampling_rate, precision=precision,
                  normalize=normalize)
 
-    def to_array(self):
-        r"""Convert buffer to np.array.
+    def to_array(self) -> np.array:
+        r"""Returns copy of buffer data.
 
         Returns:
-            np.array: buffer data
+            buffer data
 
         """
         return self.data.copy()
