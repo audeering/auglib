@@ -9,7 +9,7 @@ from .buffer import AudioBuffer, Transform
 class NumpyTransform(object):
     r"""Interface for on-line data augmentation.
 
-    Wraps a py:class:`auglib.buffer.Transform` under a ``Callable``
+    Wraps a :class:`auglib.buffer.Transform` under a ``Callable``
     interface, allowing it to be called on-the-fly on numpy arrays.
 
     Args:
