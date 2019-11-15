@@ -99,7 +99,10 @@ class AudioModifier(object):
                        force_overwrite: bool = False) -> pd.DataFrame:
         r"""Applies transform on data indexed in a :class:`pandas.DataFrame`.
 
-        This is intended for usage with data coming from the unified format.
+        This is intended for usage with data coming from the `Unified Format`_.
+
+        .. _Unified Format:
+        http://tools.pp.audeering.com/audata/data-format.html
 
         Args:
             index: index containing filenames, start and end times, as created
