@@ -29,8 +29,8 @@ class NumpyTransform(object):
         return transformed
 
 
-class OfflineTransform(object):
-    r"""Interface for offline data augmentation.
+class AudioModifier(object):
+    r"""Interface for modifying audio offline.
 
     Provides utility functions for py:class:`pyaglib.buffer.Transform`. Enables
     it to work on:
@@ -119,7 +119,7 @@ class OfflineTransform(object):
             >>> db = audb.load('emodb')
             >>> df = audata.Filter('emotion')(db)
             >>> transform = auglib.transform.AppendValue(5.0)
-            >>> t = OfflineTransform(transform)
+            >>> t = AudioModifier(transform)
             >>> t.apply_on_index(df.index, './augmented')
 
         """
