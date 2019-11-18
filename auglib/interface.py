@@ -144,7 +144,10 @@ class AudioModifier(object):
             os.makedirs(output_folder)
 
         df_augmented = df.copy()
+        df_augmented['augmented_file'] = ''
         for index, row in df_augmented.iterrows():
+            augmented_filename = os.path.join(
+                output_folder, 'augmented_' + str(index) + '.wav')
             duration = None
             offset = 0
             if ('start' in df.columns) and ('end' in df.columns):
@@ -153,12 +156,11 @@ class AudioModifier(object):
                     duration = row['end'].total_seconds() - offset
             self.apply_on_filename(
                 row['file'],
-                os.path.join(output_folder, 'augmented_' + str(index) + '.wav'),
+                augmented_filename,
                 offset=offset,
                 duration=duration
             )
-        df_augmented['augmented_file'] = df_augmented.apply(
-            lambda x: os.path.join(output_folder, 'augmented_' + str(x.index) + '.wav'))
+            df_augmented.loc[index, 'augmented_file'] = augmented_filename
         df_augmented.set_index(index_columns).to_pickle(augmented_filename)
         df_augmented.set_index(index_columns).to_csv(
             augmented_filename + '.csv')
