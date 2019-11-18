@@ -31,7 +31,7 @@ class NumpyTransform(object):
 class AudioModifier(object):
     r"""Interface for modifying audio offline.
 
-    Provides utility functions for py:class:`pyaglib.buffer.Transform`. Enables
+    Provides utility functions for :class:`auglib.buffer.Transform`. Enables
     it to work on:
     * files
     * folders
