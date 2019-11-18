@@ -1,5 +1,6 @@
 import os
 import glob
+import shutil
 import numpy as np
 import pandas as pd
 from .buffer import AudioBuffer, Transform
@@ -139,11 +140,11 @@ class AudioModifier(object):
         elif not os.path.exists(output_folder):
             os.makedirs(output_folder)
         else:
-            os.remove(output_folder)
+            shutil.rmtree(output_folder)
             os.makedirs(output_folder)
 
         df_augmented = df.copy()
-        for index, row in df.iterrows():
+        for index, row in df_augmented.iterrows():
             duration = None
             offset = 0
             if ('start' in df.columns) and ('end' in df.columns):
@@ -152,12 +153,12 @@ class AudioModifier(object):
                     duration = row['end'].total_seconds() - offset
             self.apply_on_filename(
                 row['file'],
-                os.path.join(output_folder, os.path.basename(row['file'])),
+                os.path.join(output_folder, 'augmented_' + str(index) + '.wav'),
                 offset=offset,
                 duration=duration
             )
-        df_augmented['augmented_file'] = df_augmented['file'].apply(
-            lambda x: os.path.join(output_folder, os.path.basename(x)))
+        df_augmented['augmented_file'] = df_augmented.apply(
+            lambda x: os.path.join(output_folder, 'augmented_' + str(x.index) + '.wav'))
         df_augmented.set_index(index_columns).to_pickle(augmented_filename)
         df_augmented.set_index(index_columns).to_csv(
             augmented_filename + '.csv')
