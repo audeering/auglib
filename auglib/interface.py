@@ -147,7 +147,7 @@ class AudioModifier(object):
         df_augmented['augmented_file'] = ''
         for index, row in df_augmented.iterrows():
             augmented_filename = os.path.join(
-                output_folder, 'augmented_' + str(index) + '.wav')
+                output_folder, 'augmented_{:05d}.wav'.format(index))
             duration = None
             offset = 0
             if ('start' in df.columns) and ('end' in df.columns):
