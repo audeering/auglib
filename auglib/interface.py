@@ -101,7 +101,8 @@ class AudioModifier(object):
 
         This is intended for usage with data coming from the `Unified Format`_.
 
-        .. _Unified Format:
+        .. _Unified Format: http://tools.pp.audeering.com/audata/data-format
+            .html
         http://tools.pp.audeering.com/audata/data-format.html
 
         Args:
