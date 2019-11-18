@@ -129,6 +129,11 @@ class AudioModifier(object):
         df = index.to_frame(index=False).copy()
         index_columns = list(df.columns)
         augmented_filename = os.path.join(output_folder, 'augmented.pkl')
+
+        if len(output_folder) == 0:
+            raise ValueError('Please provide a valid string as the '
+                             'output folder.')
+
         if os.path.isfile(augmented_filename) and not force_overwrite:
             return pd.read_pickle(augmented_filename)
         elif not os.path.exists(output_folder):
