@@ -95,6 +95,9 @@ class Object:
     def __str__(self):
         return yaml.dump(self.to_dict())
 
+    def __eq__(self, other):
+        return repr(self) == repr(other)
+
     def dump(self, path: str = None):
         if path is None:
             return yaml.dump(self.to_dict())
