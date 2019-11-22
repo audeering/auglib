@@ -7,6 +7,13 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.2.3 (2019-11-22)
+--------------------------
+
+* Fix: ``read_pos_dur`` bug in mix function
+* Added: unit ``relative`` to randomize position relative to buffer length
+
+
 Version 0.2.2 (2019-11-14)
 --------------------------
 
