@@ -36,13 +36,17 @@ def test_FloatUni(n, low, high):
         assert low <= x() < high
 
 
-@pytest.mark.parametrize('n,mean,std',
-                         ([10000, 0.0, 1.0], ))
-def test_FloatNorm(n, mean, std):
+@pytest.mark.parametrize('n,mean,std,minimum,maximum',
+                         ([10000, 0.0, 1.0, -0.1, 0.1], ))
+def test_FloatNorm(n, mean, std, minimum, maximum):
     x = FloatNorm(mean, std)
     y = np.array([x() for _ in range(n)])
     np.testing.assert_almost_equal(mean, y.mean(), decimal=1)
     np.testing.assert_almost_equal(std, y.std(), decimal=1)
+    x = FloatNorm(mean, std, minimum=minimum, maximum=maximum)
+    y = np.array([x() for _ in range(n)])
+    assert min(y) >= minimum
+    assert max(y) <= maximum
 
 
 @pytest.mark.parametrize('n,strings',

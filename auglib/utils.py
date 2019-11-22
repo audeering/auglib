@@ -1,5 +1,4 @@
-from typing import Union, Iterator, Any
-import warnings
+from typing import Union, Iterator
 import random
 import os
 import fnmatch
@@ -52,36 +51,44 @@ def from_db(x_db: Union[float, Number]) -> float:
     return x
 
 
-def to_samples(dur: Union[int, float, Number],
+def to_samples(value: Union[int, float, Number],
                sampling_rate: int,
                *,
+               length: int = 0,
                unit: str = 'seconds') -> int:
     r"""Express duration in samples.
 
     Examples (``sample_rate==8000``):
 
-    =======  =========  ===================
-    dur      unit       result (in samples)
-    =======  =========  ===================
-    1.0                 8000
-    8000     'samples'  8000
-    2/3600   'hour'     16000
-    500      'ms'       4000
-    0.5      's'        4000
-    =======  =========  ===================
+    =======  ===========  =======  ====================
+    value    unit         length   result (in samples)
+    =======  ===========  =======  ====================
+    1.0                            8000
+    8000     'samples'             8000
+    2/3600   'hour'                16000
+    500      'ms'                  4000
+    0.5      's'                   4000
+    0.25     'relative'   8000     2000
+    =======  ===========  =======  ====================
 
     Args:
-        dur: duration (see description)
+        value: duration or portion (see description)
         sampling_rate: sampling rate in Hz
+        length: reference point if unit is ``relative``
         unit: literal specifying the format
 
     """
-    dur = observe(dur)
+    value = observe(value)
     unit = unit.strip()
     if unit == 'samples':
-        return int(dur)
+        return int(value)
+    elif unit == 'relative':
+        if not 0.0 <= value <= 1.0:
+            raise ValueError('relative value {} not in range ['
+                             '0...1]'.format(value))
+        return int(length * value)
     else:
-        return int(hf.parse_timespan(str(dur) + unit) * sampling_rate)
+        return int(hf.parse_timespan(str(value) + unit) * sampling_rate)
 
 
 def _scan_files(root: str,

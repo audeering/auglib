@@ -7,6 +7,15 @@ import numpy as np
 from .common import Object
 
 
+def _fit_value(value: Union[int, float], minimum: Union[int, float],
+               maximum: Union[int, float]) -> Union[int, float]:
+    if minimum is not None:
+        value = max(minimum, value)
+    if maximum is not None:
+        value = min(maximum, value)
+    return value
+
+
 class Observable(Object):
     r"""An observable object.
 
@@ -145,14 +154,21 @@ class FloatNorm(Float):
     Args:
         mean: mean (center) of the distribution
         std: standard deviation (spread) of the distribution
+        minimum: minimum value
+        maximum: maximum value
 
     """
-    def __init__(self, mean: float, std: float):
+    def __init__(self, mean: float, std: float, *,
+                 minimum: float = None,
+                 maximum: float = None):
         self.mean = mean
         self.std = std
+        self.minimum = minimum
+        self.maximum = maximum
 
     def __call__(self) -> float:
-        value = np.random.normal(self.mean, self.std)
+        value = _fit_value(np.random.normal(self.mean, self.std),
+                           minimum=self.minimum, maximum=self.maximum)
         return value
 
 

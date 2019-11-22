@@ -114,7 +114,7 @@ class Mix(Transform):
             length (considering length of auxiliary buffer)
         unit: literal specifying the format of ``write_pos_base``,
             ``read_pos_aux`` and ``read_dur_aux``
-            (see :meth:`auglib.utils.dur2samples`)
+            (see :meth:`auglib.utils.to_samples`)
         transform: transformation applied to the auxiliary buffer
         bypass_prob: probability to bypass the transformation
 
@@ -155,13 +155,11 @@ class Mix(Transform):
     @_check_data_decorator
     def _mix(self, base: AudioBuffer, aux: AudioBuffer):
         write_pos_base = to_samples(self.write_pos_base, base.sampling_rate,
-                                    unit=self.unit)
-        read_pos_aux = to_samples(self.read_pos_aux,
-                                  aux.sampling_rate,
-                                  unit=self.unit)
-        read_dur_aux = to_samples(self.read_dur_aux,
-                                  aux.sampling_rate,
-                                  unit=self.unit)
+                                    unit=self.unit, length=len(base))
+        read_pos_aux = to_samples(self.read_pos_aux, aux.sampling_rate,
+                                  unit=self.unit, length=len(aux))
+        read_dur_aux = to_samples(self.read_dur_aux, aux.sampling_rate,
+                                  unit=self.unit, length=len(aux))
         gain_aux_db = observe(self.gain_aux_db)
         gain_base_db = observe(self.gain_base_db)
         if self.transform:
@@ -201,7 +199,7 @@ class Append(Transform):
         read_dur_aux: duration to read from auxiliary buffer (see
             ``unit``). Set to 0 to read the whole buffer.
         unit: literal specifying the format of ``read_pos_aux`` and
-            ``read_dur_aux`` (see :meth:`auglib.utils.dur2samples`)
+            ``read_dur_aux`` (see :meth:`auglib.utils.to_samples`)
         transform: transformation applied to the auxiliary buffer
         bypass_prob: probability to bypass the transformation
 
@@ -257,7 +255,7 @@ class AppendValue(Transform):
         duration: duration to read from auxiliary buffer (see ``unit``)
         value: value to append
         unit: literal specifying the format of ``read_pos_aux`` and
-            ``read_dur_aux`` (see :meth:`auglib.utils.dur2samples`)
+            ``read_dur_aux`` (see :meth:`auglib.utils.to_samples`)
         bypass_prob: probability to bypass the transformation
 
     >>> with AudioBuffer(1.0, 8000) as base:
