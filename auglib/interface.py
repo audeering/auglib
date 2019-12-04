@@ -224,17 +224,20 @@ class AudioModifier(object):
             verbose: show debug messages
 
         Example:
-            >>> import audb, audata, auglib
-            >>> db = audb.load('emodb')
-            >>> df = audata.Filter('emotion')(db)
+            >>> import audata, auglib, audata.testing
+            >>> db = audata.testing.create_db(minimal=True)
+            >>> db.schemes['anger'] = audata.Scheme('int', minimum=1, maximum=5)
+            >>> audata.testing.add_table(db, table_id='anger', table_type=audata.define.TableType.SEGMENTED, scheme_ids='anger')
+            >>> audata.testing.create_audio_files(db, root='audio')
+            >>> df = db['anger'].df
             >>> transform = auglib.transform.AppendValue(5.0)
             >>> t = AudioModifier(transform)
-            >>> t.apply_on_index(df.index, './augmented')
+            >>> df_augmented = t.apply_on_index(df.index, './augmented')
 
         .. _Unified Format: http://tools.pp.audeering.com/audata/data-format
             .html
 
-        """
+        """  # noqa: E501
         if len(output_folder) == 0:
             raise ValueError('Please provide a valid string as the '
                              'output folder.')
