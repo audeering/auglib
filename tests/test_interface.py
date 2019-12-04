@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 import os
+import glob
 import audata
 import shutil
 import audata.testing
@@ -79,4 +80,33 @@ def test_audiomodifier_apply_on_database(duration):
         assert augmented_duration == original_duration + duration
 
     shutil.rmtree('db')
+    shutil.rmtree('augmented')
+
+
+@pytest.mark.parametrize('duration', [(5)])
+def test_audiomodifier_apply_on_folder(duration):
+    db = audata.testing.create_db(minimal=True)
+    db.schemes['anger'] = audata.Scheme('int', minimum=1, maximum=5)
+    audata.testing.add_table(
+        db,
+        table_id='anger',
+        table_type=audata.define.TableType.FILEWISE,
+        scheme_ids='anger'
+    )
+    audata.testing.create_audio_files(db, root='./')
+
+    transform = AppendValue(duration)
+    t = AudioModifier(transform)
+    t.apply_on_folder('audio', 'augmented')
+
+    clean_files = glob.glob('audio' + '/*.wav')
+    augmented_files = glob.glob('augmented' + '/*.wav')
+
+    assert len(clean_files) == len(augmented_files)
+
+    for augmented_file in augmented_files:
+        assert af.duration(augmented_file) == af.duration(
+            os.path.join('audio', os.path.basename(augmented_file))) + duration
+
+    shutil.rmtree('audio')
     shutil.rmtree('augmented')
