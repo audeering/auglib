@@ -110,3 +110,14 @@ def test_audiomodifier_apply_on_folder(duration):
 
     shutil.rmtree('audio')
     shutil.rmtree('augmented')
+
+
+@pytest.mark.parametrize('duration', [(5)])
+def test_audiomodifier_apply_on_file(duration):
+    os.system('sox -n -r 16000 -c 1 test.wav trim 0.0 1.0')
+    transform = AppendValue(duration)
+    t = AudioModifier(transform)
+    t.apply_on_file('test.wav', 'augmented.wav')
+    assert af.duration('augmented.wav') == af.duration('test.wav') + duration
+    os.remove('test.wav')
+    os.remove('augmented.wav')
