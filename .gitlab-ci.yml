@@ -21,22 +21,22 @@ variables:
 python-3.5:
   extends: .pytest
   stage: test
-  image: python:3.5
+  image: docker.audeering.com/python:3.5
 
 python-3.6:
   extends: .pytest
   stage: test
-  image: python:3.6
+  image: docker.audeering.com/python:3.6
 
 python-3.7:
   extends: .pytest
   stage: test
-  image: python:3.7
+  image: docker.audeering.com/python:3.7
 
 docs:
   extends: .pytest
   stage: test
-  image: python:3.7
+  image: docker.audeering.com/python:3.7
   script:
     # Test documentation
     - pip install -r docs/requirements.txt
@@ -48,7 +48,7 @@ docs:
 
 pages:
   stage: doc
-  image: alpine
+  image: docker.audeering.com/alpine
   variables:
     GIT_STRATEGY: none  # disable git fetch
   script:
