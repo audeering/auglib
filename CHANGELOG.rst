@@ -7,6 +7,12 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.3.2 (2019-12-09)
+--------------------------
+
+* Fixed: update release instructions to avoid obsolete files in wheel package
+
+
 Version 0.3.1 (2019-12-09)
 --------------------------
 
