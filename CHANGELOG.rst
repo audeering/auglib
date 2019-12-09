@@ -6,30 +6,39 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
-Unreleased
-----------
 
-* Added: to_array conversion to Buffer class
+Version 0.3.1 (2019-12-09)
+--------------------------
+
+* Changed: api documentation with toc-tree
+
+
+Version 0.3.0 (2019-12-09)
+--------------------------
+
+* Added: ``AudioModifier`` interface
+* Added: ``relative`` position argument
+* Changed: re-structured package
 
 
 Version 0.2.3 (2019-11-22)
 --------------------------
 
-* Fix: ``read_pos_dur`` bug in mix function
 * Added: unit ``relative`` to randomize position relative to buffer length
+* Fixed: ``read_pos_dur`` bug in mix function
 
 
 Version 0.2.2 (2019-11-14)
 --------------------------
 
-* Fix: ``read_pos_aux`` bug in mix function
 * Added: handling of exceptions thrown by c library
+* Fixed: ``read_pos_aux`` bug in mix function
 
 
 Version 0.2.1 (2019-11-12)
 --------------------------
 
-* Fix: dependency to ``libSoundTouch.so.1`` is properly resolved if
+* Fixed: dependency to ``libSoundTouch.so.1`` is properly resolved if
   called outside the root directory
 
 
@@ -42,8 +51,8 @@ Version 0.2.0 (2019-11-04)
 Version 0.1.5 (2019-10-11)
 --------------------------
 
-* Fixed: high pass filter
 * Added: ``libSoundTouch`` shared library
+* Fixed: high pass filter
 
 
 Version 0.1.4 (2019-09-30)
@@ -55,10 +64,10 @@ Version 0.1.4 (2019-09-30)
 Version 0.1.3 (2019-09-26)
 --------------------------
 
+* Added: ``clip_by_ratio()``
 * Changed: ``Tone`` constructor
 * Changed: ``[low,high,band]_pass()`` arguments
 * Changed: ``clip()`` arguments
-* Added: ``clip_by_ratio()``
 
 
 Version 0.1.2 (2019-09-23)
