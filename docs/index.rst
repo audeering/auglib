@@ -19,13 +19,9 @@
     :caption: API Documentation
     :hidden:
 
-    api-buffer
-    api-common
-    api-exception
-    api-observe
+    api-auglib
     api-sink
     api-source
     api-transform
-    api-interface
     api-utils
     genindex

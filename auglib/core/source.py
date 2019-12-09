@@ -35,7 +35,7 @@ class FromArray(Source):
 
 
 class Read(Source):
-    r"""Create :class:`auglib.buffer.AudioBuffer` from an audio file.
+    r"""Create :class:`auglib.AudioBuffer` from an audio file.
 
     Uses soundfile for WAV, FLAC, and OGG files. All other audio files are
     first converted to WAV by sox or ffmpeg.

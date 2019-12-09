@@ -2,7 +2,8 @@ import numpy as np
 from scipy import signal
 import pytest
 
-from auglib import AudioBuffer, lib
+from auglib import AudioBuffer
+from auglib.core.buffer import lib
 from auglib.utils import random_seed
 from auglib.transform import Mix, Append, NormalizeByPeak, Clip, ClipByRatio, \
     GainStage, FFTConvolve, LowPass, HighPass, BandPass, WhiteNoiseUniform,\

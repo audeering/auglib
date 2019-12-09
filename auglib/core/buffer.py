@@ -175,11 +175,17 @@ class AudioBuffer(object):
 
 class Source(Object):
     r"""Base class for objects that create an
-    :class:`auglib.buffer.AudioBuffer`.
+    :class:`auglib.AudioBuffer`.
 
     """
     def call(self) -> AudioBuffer:
-        raise(NotImplementedError())
+        r"""Creates an :class:`auglib.AudioBuffer`.
+
+        Raises:
+            NotImplementedError: raised if not overwritten in child class
+
+        """
+        raise NotImplementedError()
 
     def __call__(self) -> AudioBuffer:
         return self.call()
@@ -187,7 +193,7 @@ class Source(Object):
 
 class Transform(Object):
     r"""Base class for objects applying some sort of transformation to an
-    :class:`auglib.buffer.AudioBuffer`.
+    :class:`auglib.AudioBuffer`.
 
     Args:
         bypass_prob: probability to bypass the transformation
@@ -197,6 +203,15 @@ class Transform(Object):
         self.bypass_prob = bypass_prob
 
     def call(self, buf: AudioBuffer):
+        r"""Transforms an :class:`auglib.AudioBuffer`.
+
+        Args:
+            buf: audio buffer
+
+        Raises:
+            NotImplementedError: raised if not overwritten in child class
+
+        """
         raise NotImplementedError()
 
     @_check_exception_decorator
@@ -209,11 +224,20 @@ class Transform(Object):
 
 class Sink(Object):
     r"""Base class for objects that consume an
-    :class:`auglib.buffer.AudioBuffer`.
+    :class:`auglib.AudioBuffer`.
 
     """
     def call(self, buf: AudioBuffer):
-        raise(NotImplementedError())
+        r"""Consume an :class:`auglib.AudioBuffer`.
+
+        Args:
+            buf: audio buffer
+
+        Raises:
+            NotImplementedError: raised if not overwritten in child class
+
+        """
+        raise NotImplementedError()
 
     def __call__(self, buf: AudioBuffer):
         self.call(buf)

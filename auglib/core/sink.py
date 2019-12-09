@@ -29,7 +29,9 @@ class Write(Sink):
 
 
 class Play(Sink):
+    r"""Play back buffer.
 
+    """
     def __init__(self):
         pass
 

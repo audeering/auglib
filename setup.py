@@ -2,7 +2,7 @@ from setuptools import setup
 
 package_data = {
     'auglib': [
-        'bin/*',
+        'core/bin/*',
     ]
 }
 

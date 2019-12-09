@@ -1,7 +1,7 @@
 import pytest
 
 from auglib.utils import random_seed
-from auglib.buffer import AudioBuffer
+from auglib import AudioBuffer
 from auglib.transform import WhiteNoiseUniform
 
 

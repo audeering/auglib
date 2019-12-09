@@ -41,7 +41,7 @@ def _make_tree(files: Sequence[str]):
 class NumpyTransform(object):
     r"""Interface for data augmentation on numpy arrays.
 
-    Wraps a :class:`auglib.buffer.Transform` under a ``Callable``
+    Wraps a :class:`auglib.Transform` under a ``Callable``
     interface, allowing it to be called on-the-fly on numpy arrays.
 
     Args:
@@ -64,7 +64,7 @@ class NumpyTransform(object):
 class AudioModifier(object):
     r"""Interface for modifying audio offline.
 
-    Provides utility functions for :class:`auglib.buffer.Transform`. Enables
+    Provides utility functions for :class:`auglib.Transform`. Enables
     it to work on:
 
     * files

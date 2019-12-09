@@ -7,7 +7,7 @@ import shutil
 import audata.testing
 import audiofile as af
 from auglib.transform import NormalizeByPeak, AppendValue
-from auglib.interface import NumpyTransform, AudioModifier
+from auglib import NumpyTransform, AudioModifier
 
 
 @pytest.mark.parametrize('n,sr',
