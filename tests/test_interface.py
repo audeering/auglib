@@ -28,7 +28,7 @@ def test_audiomodifier_apply_on_index(duration):
         db,
         table_id='anger',
         table_type=audata.define.TableType.FILEWISE,
-        scheme_ids='anger'
+        columns='anger'
     )
     audata.testing.create_audio_files(db, root='./')
     df = db['anger'].df
@@ -54,7 +54,7 @@ def test_audiomodifier_apply_on_database(duration):
         db,
         table_id='anger',
         table_type=audata.define.TableType.FILEWISE,
-        scheme_ids='anger'
+        columns='anger'
     )
     audata.testing.create_audio_files(db, root='db')
     db.save('db')
@@ -91,7 +91,7 @@ def test_audiomodifier_apply_on_folder(duration):
         db,
         table_id='anger',
         table_type=audata.define.TableType.FILEWISE,
-        scheme_ids='anger'
+        columns='anger'
     )
     audata.testing.create_audio_files(db, root='./')
 
