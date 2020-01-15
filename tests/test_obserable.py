@@ -1,8 +1,8 @@
 import pytest
 import numpy as np
 
-from auglib import StrList, FloatNorm, FloatUni, IntUni, BoolRand
-from auglib.core.observe import observe, Observable
+from auglib import StrList, FloatNorm, FloatUni, IntUni
+from auglib.core.observe import observe, Observable, BoolRand
 from auglib.utils import random_seed
 
 

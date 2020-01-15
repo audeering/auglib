@@ -124,6 +124,10 @@ class StrList(Str):
 class BoolRand(Bool):
     r"""Draws a boolean value with a given probability for True (0.5 by
     default).
+
+    Args:
+        prob_true: probability for True values to be drawn (the probability for
+            False values is simply 1.0 - prob_true)
     """
     def __init__(self, prob_true: float = 0.5):
         self.prob_true = prob_true
