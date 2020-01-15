@@ -122,8 +122,7 @@ class StrList(Str):
 
 
 class BoolRand(Bool):
-    r"""Draws a boolean value with a given probability for True (0.5 by
-    default).
+    r"""Draws a boolean value with a given probability for True.
 
     Args:
         prob_true: probability for True values to be drawn (the probability for
