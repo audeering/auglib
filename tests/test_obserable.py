@@ -22,7 +22,7 @@ def test_observe(x):
         assert x == observe(x)
 
 
-@pytest.mark.parametrize('n', ([1000], ))
+@pytest.mark.parametrize('n', [1000])
 def test_BoolRand(n):
     x = BoolRand()
     draws = []
