@@ -48,6 +48,12 @@ class Number(Observable):
         raise(NotImplementedError())
 
 
+class Bool(Observable):
+    r"""An observable boolean."""
+    def __call__(self) -> bool:
+        raise(NotImplementedError())
+
+
 class Int(Number):
     r"""An observable integer."""
     def __call__(self) -> int:
@@ -113,6 +119,15 @@ class StrList(Str):
         if not self._iter:
             raise StopIteration()
         return self()
+
+
+class BoolUni(Bool):
+    r"""Draws a boolean value with a 50/50 chance.
+    """
+    def __call__(self) -> bool:
+        bool_list = [True, False]
+        value = bool_list[np.random.randint(0, 2)]
+        return value
 
 
 class IntUni(Int):

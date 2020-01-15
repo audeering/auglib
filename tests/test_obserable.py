@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from auglib import StrList, FloatNorm, FloatUni, IntUni
+from auglib import StrList, FloatNorm, FloatUni, IntUni, BoolUni
 from auglib.core.observe import observe, Observable
 from auglib.utils import random_seed
 
@@ -20,6 +20,16 @@ def test_observe(x):
         assert tmp == observe(x)
     else:
         assert x == observe(x)
+
+
+@pytest.mark.parametrize('n', ([1000], ))
+def test_BoolUni(n):
+    x = BoolUni()
+    draws = []
+    for _ in range(n):
+        draws += [x()]
+    assert (True in draws) and (False in draws)
+
 
 @pytest.mark.parametrize('n,low,high',
                          ([1000, 0, 100], ))
