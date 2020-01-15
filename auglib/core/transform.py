@@ -8,7 +8,7 @@ import numpy as np
 from .api import lib
 from .buffer import AudioBuffer, Transform, Source
 from .utils import to_samples
-from .observe import observe, Number, Float, Str
+from .observe import observe, Number, Bool, Float, Str
 
 
 def _check_data_decorator(func):
@@ -132,9 +132,9 @@ class Mix(Transform):
                  write_pos_base: Union[int, float, Number] = 0.0,
                  read_pos_aux: Union[int, float, Number] = 0.0,
                  read_dur_aux: Union[int, float, Number] = None,
-                 clip_mix: bool = False,
-                 loop_aux: bool = False,
-                 extend_base: bool = False,
+                 clip_mix: Union[bool, Bool] = False,
+                 loop_aux: Union[bool, Bool] = False,
+                 extend_base: Union[bool, Bool] = False,
                  unit='seconds',
                  transform: Transform = None,
                  bypass_prob: Union[float, Float] = None):
@@ -162,12 +162,14 @@ class Mix(Transform):
                                   unit=self.unit, length=len(aux))
         gain_aux_db = observe(self.gain_aux_db)
         gain_base_db = observe(self.gain_base_db)
+        clip_mix = observe(self.clip_mix)
+        loop_aux = observe(self.loop_aux)
+        extend_base = observe(self.extend_base)
         if self.transform:
             self.transform(aux)
         lib.AudioBuffer_mix(base.obj, aux.obj, gain_base_db,
                             gain_aux_db, write_pos_base, read_pos_aux,
-                            read_dur_aux, self.clip_mix, self.loop_aux,
-                            self.extend_base)
+                            read_dur_aux, clip_mix, loop_aux, extend_base)
 
     def call(self, buf: AudioBuffer) -> AudioBuffer:
         if isinstance(self.aux, AudioBuffer):
@@ -300,8 +302,8 @@ class Clip(Transform):
     """
     def __init__(self, *,
                  threshold: Union[float, Float] = 0.0,
-                 soft: bool = False,
-                 normalize: bool = False,
+                 soft: Union[bool, Bool] = False,
+                 normalize: Union[bool, Bool] = False,
                  bypass_prob: Union[float, Float] = None):
         super().__init__(bypass_prob)
         self.threshold = threshold
@@ -310,7 +312,9 @@ class Clip(Transform):
 
     def call(self, buf: AudioBuffer) -> AudioBuffer:
         threshold = observe(self.threshold)
-        lib.AudioBuffer_clip(buf.obj, threshold, self.soft, self.normalize)
+        soft = observe(self.soft)
+        normalize = observe(self.normalize)
+        lib.AudioBuffer_clip(buf.obj, threshold, soft, normalize)
         return buf
 
 
@@ -336,8 +340,8 @@ class ClipByRatio(Transform):
 
     """
     def __init__(self, ratio: Union[float, Float], *,
-                 soft: bool = False,
-                 normalize: bool = False,
+                 soft: Union[bool, Bool] = False,
+                 normalize: Union[bool, Bool] = False,
                  bypass_prob: Union[float, Float] = None):
         super().__init__(bypass_prob)
         self.ratio = ratio
@@ -346,7 +350,9 @@ class ClipByRatio(Transform):
 
     def call(self, buf: AudioBuffer) -> AudioBuffer:
         ratio = observe(self.ratio)
-        lib.AudioBuffer_clipByRatio(buf.obj, ratio, self.soft, self.normalize)
+        soft = observe(self.soft)
+        normalize = observe(self.normalize)
+        lib.AudioBuffer_clipByRatio(buf.obj, ratio, soft, normalize)
         return buf
 
 
@@ -361,7 +367,7 @@ class NormalizeByPeak(Transform):
     """
     def __init__(self, *,
                  peak_db: Union[float, Float] = 0.0,
-                 clip: bool = False,
+                 clip: Union[bool, Bool] = False,
                  bypass_prob: Union[float, Float] = None):
         super().__init__(bypass_prob)
         self.peak_db = peak_db
@@ -369,7 +375,8 @@ class NormalizeByPeak(Transform):
 
     def call(self, buf: AudioBuffer) -> AudioBuffer:
         peak_db = observe(self.peak_db)
-        lib.AudioBuffer_normalizeByPeak(buf.obj, peak_db, self.clip)
+        clip = observe(self.clip)
+        lib.AudioBuffer_normalizeByPeak(buf.obj, peak_db, clip)
         return buf
 
 
@@ -384,7 +391,7 @@ class GainStage(Transform):
 
     """
     def __init__(self, gain_db: Union[float, Float], *,
-                 clip: bool = False,
+                 clip: Union[bool, Bool] = False,
                  bypass_prob: Union[float, Float] = None):
         super().__init__(bypass_prob)
         self.gain_db = gain_db
@@ -392,7 +399,8 @@ class GainStage(Transform):
 
     def call(self, buf: AudioBuffer) -> AudioBuffer:
         gain_db = observe(self.gain_db)
-        lib.AudioBuffer_gainStage(buf.obj, gain_db, self.clip)
+        clip = observe(self.clip)
+        lib.AudioBuffer_gainStage(buf.obj, gain_db, clip)
         return buf
 
 
@@ -410,7 +418,7 @@ class FFTConvolve(Transform):
 
     """
     def __init__(self, aux: Union[str, Str, Source, AudioBuffer], *,
-                 keep_tail: bool = True,
+                 keep_tail: Union[bool, Bool] = True,
                  transform: Transform = None,
                  bypass_prob: Union[float, Float] = None):
         super().__init__(bypass_prob)
@@ -421,7 +429,8 @@ class FFTConvolve(Transform):
     def _fft_convolve(self, base: AudioBuffer, aux: AudioBuffer):
         if self.transform:
             self.transform(aux)
-        lib.AudioBuffer_fftConvolve(base.obj, aux.obj, self.keep_tail)
+        keep_tail = observe(self.keep_tail)
+        lib.AudioBuffer_fftConvolve(base.obj, aux.obj, keep_tail)
 
     @_check_data_decorator
     def call(self, buf: AudioBuffer) -> AudioBuffer:

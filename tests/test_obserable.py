@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from auglib import StrList, FloatNorm, FloatUni, IntUni, BoolUni
+from auglib import StrList, FloatNorm, FloatUni, IntUni, BoolRand
 from auglib.core.observe import observe, Observable
 from auglib.utils import random_seed
 
@@ -23,8 +23,8 @@ def test_observe(x):
 
 
 @pytest.mark.parametrize('n', ([1000], ))
-def test_BoolUni(n):
-    x = BoolUni()
+def test_BoolRand(n):
+    x = BoolRand()
     draws = []
     for _ in range(n):
         draws += [x()]

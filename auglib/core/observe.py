@@ -121,13 +121,15 @@ class StrList(Str):
         return self()
 
 
-class BoolUni(Bool):
-    r"""Draws a boolean value with a 50/50 chance.
+class BoolRand(Bool):
+    r"""Draws a boolean value with a given probability for True (0.5 by
+    default).
     """
+    def __init__(self, prob_true: float = 0.5):
+        self.prob_true = prob_true
+
     def __call__(self) -> bool:
-        bool_list = [True, False]
-        value = bool_list[np.random.randint(0, 2)]
-        return value
+        return np.random.random() <= self.prob_true
 
 
 class IntUni(Int):
