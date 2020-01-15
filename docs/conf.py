@@ -4,7 +4,7 @@ from subprocess import check_output
 # Project -----------------------------------------------------------------
 
 project = 'auglib'
-copyright = '2019 audEERING GmbH'
+copyright = '2019-2020 audEERING GmbH'
 author = ('Johannes Wagner')
 # The x.y.z version read from tags
 try:

@@ -7,6 +7,13 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.3.3 (2020-01-15)
+--------------------------
+
+* Added: ``Bool`` and ``BoolRand`` class
+* Changed: copyright years
+
+
 Version 0.3.2 (2019-12-09)
 --------------------------
 
