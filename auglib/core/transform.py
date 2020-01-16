@@ -8,7 +8,7 @@ import numpy as np
 from .api import lib
 from .buffer import AudioBuffer, Transform, Source
 from .utils import to_samples
-from .observe import observe, Number, Bool, Float, Str
+from .observe import observe, Number, Bool, Float, Int, Str
 
 
 def _check_data_decorator(func):
@@ -464,7 +464,7 @@ class LowPass(Transform):
 
     """
     def __init__(self, cutoff: Union[float, Float], *,
-                 order: int = 1,
+                 order: Union[int, Int] = 1,
                  design: str = FilterDesign.BUTTERWORTH.value,
                  bypass_prob: Union[float, Float] = None):
         super().__init__(bypass_prob)
@@ -474,9 +474,9 @@ class LowPass(Transform):
 
     def call(self, buf: AudioBuffer) -> AudioBuffer:
         cutoff = observe(self.cutoff)
+        order = observe(self.order)
         if self.design == FilterDesign.BUTTERWORTH.value:
-            lib.AudioBuffer_butterworthLowPassFilter(buf.obj, cutoff,
-                                                     self.order)
+            lib.AudioBuffer_butterworthLowPassFilter(buf.obj, cutoff, order)
         else:
             assert False, 'unknown filter design {}'.format(self.design)
         return buf
@@ -493,7 +493,7 @@ class HighPass(Transform):
 
     """
     def __init__(self, cutoff: Union[float, Float], *,
-                 order: int = 1,
+                 order: Union[int, Int] = 1,
                  design: str = FilterDesign.BUTTERWORTH.value,
                  bypass_prob: Union[float, Float] = None):
         super().__init__(bypass_prob)
@@ -503,9 +503,9 @@ class HighPass(Transform):
 
     def call(self, buf: AudioBuffer) -> AudioBuffer:
         cutoff = observe(self.cutoff)
+        order = observe(self.order)
         if self.design == FilterDesign.BUTTERWORTH.value:
-            lib.AudioBuffer_butterworthHighPassFilter(buf.obj, cutoff,
-                                                      self.order)
+            lib.AudioBuffer_butterworthHighPassFilter(buf.obj, cutoff, order)
         else:
             assert False, 'unknown filter design {}'.format(self.design)
         return buf
@@ -524,7 +524,7 @@ class BandPass(Transform):
     """
     def __init__(self, center: Union[float, Float],
                  bandwidth: Union[float, Float], *,
-                 order: int = 1,
+                 order: Union[int, Int] = 1,
                  design: str = FilterDesign.BUTTERWORTH.value,
                  bypass_prob: Union[float, Float] = None):
         super().__init__(bypass_prob)
@@ -536,9 +536,10 @@ class BandPass(Transform):
     def call(self, buf: AudioBuffer) -> AudioBuffer:
         center = observe(self.center)
         bandwidth = observe(self.bandwidth)
+        order = observe(self.order)
         if self.design == FilterDesign.BUTTERWORTH.value:
             lib.AudioBuffer_butterworthBandPassFilter(buf.obj, center,
-                                                      bandwidth, self.order)
+                                                      bandwidth, order)
         else:
             assert False, 'unknown filter design {}'.format(self.design)
         return buf
