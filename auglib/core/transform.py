@@ -384,23 +384,41 @@ class GainStage(Transform):
     r"""Scale the buffer by the linear factor that corresponds
     to ``gain_dB`` (in decibels).
 
+    .. note:: If ``max_peak_db`` is not ``None`` and the resulting peak level
+        exceeds the given value, the actual gain is adjusted so that the
+        peak level of the output matches the specified ceiling level. This
+        means that the final gain applied might be different to that
+        specified. Also note that if ``max_peak_db`` > 0dB, ``clip`` is
+        ``True``, and the peak resulting from scaling the signal is greater
+        than 0dB, then the final peak level is actually forced to 0dB (with
+        clipping)
+
     Args:
         gain_db: amplification in decibels
+        max_peak_db: maximum peak level allowed in decibels (see note)
         clip: clip sample values to the interval [-1.0, 1.0]
         bypass_prob: probability to bypass the transformation
 
     """
     def __init__(self, gain_db: Union[float, Float], *,
+                 max_peak_db: Union[float, Float] = None,
                  clip: Union[bool, Bool] = False,
                  bypass_prob: Union[float, Float] = None):
         super().__init__(bypass_prob)
         self.gain_db = gain_db
+        self.max_peak_db = max_peak_db
         self.clip = clip
 
     def call(self, buf: AudioBuffer) -> AudioBuffer:
         gain_db = observe(self.gain_db)
         clip = observe(self.clip)
-        lib.AudioBuffer_gainStage(buf.obj, gain_db, clip)
+        max_peak_db = observe(self.max_peak_db)
+        if max_peak_db is not None:
+            lib.AudioBuffer_gainStageSafe(buf.obj, gain_db, max_peak_db)
+            if self.clip:
+                lib.AudioBuffer_clip(buf.obj, 0.0, False, False)
+        else:
+            lib.AudioBuffer_gainStage(buf.obj, gain_db, clip)
         return buf
 
 

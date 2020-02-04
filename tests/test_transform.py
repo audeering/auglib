@@ -8,7 +8,7 @@ from auglib.utils import random_seed
 from auglib.transform import Mix, Append, NormalizeByPeak, Clip, ClipByRatio, \
     GainStage, FFTConvolve, LowPass, HighPass, BandPass, WhiteNoiseUniform,\
     WhiteNoiseGaussian, PinkNoise, Tone, ToneShape
-from auglib.utils import to_samples, to_db
+from auglib.utils import to_samples, to_db, from_db
 
 
 @pytest.mark.parametrize('base_dur,aux_dur,sr,unit',
@@ -166,18 +166,23 @@ def test_clip(n, sr):
         assert np.abs(buf.data).min() >= 1. / 1.5
 
 
-@pytest.mark.parametrize('n,sr,clip',
-                         [(10, 8000, False),
-                          (10, 44100, True)])
-def test_gain_stage(n, sr, clip):
+@pytest.mark.parametrize('n,sr,gain,max_peak,clip',
+                         [(10, 8000, 20.0, None, False),
+                          (10, 44100, 20.0, None, True),
+                          (10, 44100, 20.0, 10.0, False),
+                          (10, 44100, 20.0, 10.0, True)])
+def test_gain_stage(n, sr, gain, max_peak, clip):
 
     x = np.random.uniform(-0.1, 1.0, n)
     with AudioBuffer.from_array(x, sr) as buf:
-        GainStage(20.0, clip=clip)(buf)
+        GainStage(gain, max_peak_db=max_peak, clip=clip)(buf)
         if clip:
             assert np.abs(buf.data).max() <= 1.0
+        elif max_peak is not None:
+            assert np.isclose(np.abs(buf.data).max(), from_db(max_peak))
         else:
-            assert np.isclose(np.abs(buf.data).max(), 10.0 * np.abs(x).max())
+            assert np.isclose(np.abs(buf.data).max(),
+                              from_db(gain) * np.abs(x).max())
 
 
 @pytest.mark.parametrize('n,sr',

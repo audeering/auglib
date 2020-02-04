@@ -194,5 +194,10 @@ extern "C"
     {
         CALL(obj->gainStage(gain_dB, clip))
     }
-        
+
+    void AudioBuffer_gainStageSafe(cAudioBuffer *obj, float gain_dB, float maxPeak_dB = 0.0)
+    {
+        CALL(obj->gainStageSafe(gain_dB, maxPeak_dB))
+    }
+
 }

@@ -96,3 +96,7 @@ lib.AudioBuffer_normalizeByPeak.restype = ctypes.c_void_p
 lib.AudioBuffer_gainStage.argtypes = [ctypes.c_void_p, ctypes.c_float,
                                       ctypes.c_bool]
 lib.AudioBuffer_gainStage.restype = ctypes.c_void_p
+
+lib.AudioBuffer_gainStageSafe.argtypes = [ctypes.c_void_p, ctypes.c_float,
+                                          ctypes.c_float]
+lib.AudioBuffer_gainStageSafe.restype = ctypes.c_void_p

@@ -11,7 +11,7 @@ g++ -c -fPIC cauglib.c -o cauglib.o \
 -I$AUGLIB/FFTConvolver \
 -I$AUGLIB/DSPFilters/include
 
-g++ -shared -Wl,-zdefs -o ../auglib/bin/libcauglib.so cauglib.o \
+g++ -shared -Wl,-zdefs -o ../auglib/core/bin/libcauglib.so cauglib.o \
 -L$AUGLIB/Release \
 -L$AUGLIB/soundtouch/source/SoundTouch/.libs \
 -L$AUGLIB/Release/FFTConvolver \
@@ -62,9 +62,9 @@ function patch_strings_in_file() {
 }
 
 # remove absolute path to soundtouch library
-patch_strings_in_file ../auglib/bin/libcauglib.so "$AUGLIB/soundtouch/source/SoundTouch/\.libs" ""
+patch_strings_in_file ../auglib/core/bin/libcauglib.so "$AUGLIB/soundtouch/source/SoundTouch/\.libs" ""
 
 # add bin folder to r-path
 # https://nixos.org/patchelf.html
 # https://stackoverflow.com/questions/39978762/linux-executable-cant-find-shared-library-in-same-folder
-patchelf --set-rpath '${ORIGIN}' ../auglib/bin/libcauglib.so
+patchelf --set-rpath '${ORIGIN}' ../auglib/core/bin/libcauglib.so
