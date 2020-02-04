@@ -7,6 +7,12 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.3.5 (2020-02-04)
+--------------------------
+
+* Changed: allow random filter order
+
+
 Version 0.3.4 (2020-01-16)
 --------------------------
 
