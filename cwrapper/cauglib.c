@@ -200,4 +200,9 @@ extern "C"
         CALL(obj->gainStageSafe(gain_dB, maxPeak_dB))
     }
 
+    void AudioBuffer_compressDynamicRange(cAudioBuffer *obj, float threshold_dB, float ratio, float tAtt_s = 0.01, float tRel_s = 0.02, float kneeRadius_dB = 4.0, float makeup_dB = 0.0, bool clip = false)
+    {
+        CALL(obj->compressDynamicRange(threshold_dB, ratio, tAtt_s, tRel_s, kneeRadius_dB, makeup_dB, clip))
+    }
+
 }

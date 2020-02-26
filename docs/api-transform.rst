@@ -39,6 +39,12 @@ Compose
 .. autoclass:: Compose
     :members:
 
+CompressDynamicRange
+--------------------
+
+.. autoclass:: CompressDynamicRange
+    :members:
+
 FFTConvolve
 -----------
 

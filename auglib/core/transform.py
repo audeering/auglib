@@ -673,3 +673,71 @@ class Tone(Transform):
         lib.AudioBuffer_addTone(buf.obj, freq, gain_db, self.shape.value,
                                 lfo_rate, lfo_range)
         return buf
+
+
+class CompressDynamicRange(Transform):
+    r"""Compress the dynamic range of the buffer by attenuating any sample
+    whose amplitude exceeds a certain ``threshold_db``.
+    The intensity of the attenuation is determined by the ``ratio`` parameter
+    (the higher the ratio, the stronger the gain reduction). To avoid heavy
+    distortion, the gain reduction is smoothed over time with a contour that is
+    governed by the ``attack_time`` and the ``release_time`` parameters.
+
+    The input-output characteristic also features a non-linear region ("knee")
+    around the threshold. The width of this region is controlled by the
+    ``knee_radius_db`` parameter (expressed in decibels, and in absolute
+    value): the nonlinear region is entered when the input signal exceeds a
+    level given by ``threshold_db - kneeRadius_db``, hence some gain
+    reduction can be also seen before hitting the main threshold, if the
+    knee radius is greater than zero.
+
+    Optionally, the resulting signal can be amplified (linearly) by means of
+    the ``makeup_dB`` gain parameter (expressed in decibels). Sample values can
+    also be clipped to the interval ``[-1.0, 1.0]`` when exceeding this range:
+    this behaviour is achieved by setting the ``clip`` argument.
+
+    Args:
+        threshold_db: threshold in decibels
+        ratio: ratio (the higher the ratio, the stronger the gain reduction)
+        attack_time: attack time in seconds
+        release_time: release time in seconds
+        makeup_db: optional amplification gain
+        clip: clip signal
+        bypass_prob: probability to bypass the transformation
+
+    """
+    def __init__(self,
+                 threshold_db: Union[float, Float],
+                 ratio: Union[float, Float], *,
+                 attack_time: Union[float, Float] = 0.01,
+                 release_time: Union[float, Float] = 0.02,
+                 knee_radius_db: Union[float, Float] = 4.0,
+                 makeup_db: Union[float, Float] = 0.0,
+                 clip: Union[bool, Bool] = False,
+                 bypass_prob: Union[float, Float] = None):
+        super().__init__(bypass_prob)
+        self.threshold_db = threshold_db
+        self.ratio = ratio
+        self.attack_time = attack_time
+        self.release_time = release_time
+        self.knee_radius_db = knee_radius_db
+        self.makeup_db = makeup_db
+        self.clip = clip
+
+    def call(self, buf: AudioBuffer) -> AudioBuffer:
+        threshold_db = observe(self.threshold_db)
+        ratio = observe(self.ratio)
+        attack_time = observe(self.attack_time)
+        release_time = observe(self.release_time)
+        knee_radius_db = observe(self.knee_radius_db)
+        makeup_db = observe(self.makeup_db)
+        clip = observe(self.clip)
+        lib.AudioBuffer_compressDynamicRange(buf.obj,
+                                             threshold_db,
+                                             ratio,
+                                             attack_time,
+                                             release_time,
+                                             knee_radius_db,
+                                             makeup_db,
+                                             clip)
+        return buf

@@ -5,6 +5,7 @@ from auglib.core.transform import (
     Clip,
     ClipByRatio,
     Compose,
+    CompressDynamicRange,
     FFTConvolve,
     FilterDesign,
     GainStage,
