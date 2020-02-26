@@ -7,7 +7,7 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
-Version 0.3.6 (2020-02-26)
+Version 0.3.7 (2020-02-26)
 --------------------------
 
 * Added: transform ``CompressDynamicRange``
