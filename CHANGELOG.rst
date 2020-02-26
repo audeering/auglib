@@ -7,6 +7,14 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.3.6 (2020-02-26)
+--------------------------
+
+* Added: transform ``CompressDynamicRange``
+* Changed: remove support for Python 3.5
+* Changed: publish package in ci-job
+
+
 Version 0.3.5 (2020-02-04)
 --------------------------
 
