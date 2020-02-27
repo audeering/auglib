@@ -7,6 +7,12 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.3.8 (2020-02-27)
+--------------------------
+
+* Fixed: ``FloatNorm`` properly draws from truncated distribution
+
+
 Version 0.3.7 (2020-02-26)
 --------------------------
 
