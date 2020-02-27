@@ -1,19 +1,10 @@
 from typing import Union, Any, Sequence
 import random
-import warnings
 
 import numpy as np
+import scipy.stats
 
 from .common import Object
-
-
-def _fit_value(value: Union[int, float], minimum: Union[int, float],
-               maximum: Union[int, float]) -> Union[int, float]:
-    if minimum is not None:
-        value = max(minimum, value)
-    if maximum is not None:
-        value = min(maximum, value)
-    return value
 
 
 class Observable(Object):
@@ -174,21 +165,21 @@ class FloatNorm(Float):
     Args:
         mean: mean (center) of the distribution
         std: standard deviation (spread) of the distribution
-        minimum: minimum value
-        maximum: maximum value
+        minimum: lower bound
+        maximum: upper bound
 
     """
     def __init__(self, mean: float, std: float, *,
-                 minimum: float = None,
-                 maximum: float = None):
-        self.mean = mean
-        self.std = std
-        self.minimum = minimum
-        self.maximum = maximum
+                 minimum: float = None, maximum: float = None):
+        minimum = minimum if minimum is not None else -np.inf
+        maximum = maximum if maximum is not None else np.inf
+        self._gen = scipy.stats.truncnorm((minimum - mean) / std,
+                                          (maximum - mean) / std,
+                                          loc=mean,
+                                          scale=std)
 
     def __call__(self) -> float:
-        value = _fit_value(np.random.normal(self.mean, self.std),
-                           minimum=self.minimum, maximum=self.maximum)
+        value = self._gen.rvs()
         return value
 
 
