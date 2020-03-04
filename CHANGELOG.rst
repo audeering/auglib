@@ -6,6 +6,11 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
+Version 0.4.0 (2020-03-04)
+--------------------------
+
+* Added: transform ``BandStop``
+
 
 Version 0.3.8 (2020-02-27)
 --------------------------
