@@ -175,6 +175,11 @@ extern "C"
         CALL(obj->butterworthBandPassFilter(centerFreq, bandwidth, order))
     }
 
+    void AudioBuffer_butterworthBandStopFilter(cAudioBuffer *obj, float centerFreq, float bandwidth, int order = 1)
+    {
+        CALL(obj->butterworthBandStopFilter(centerFreq, bandwidth, order))
+    }
+
     void AudioBuffer_clip(cAudioBuffer *obj, float threshold = 0.0, bool soft = false, bool normalize = false)
     {
         CALL(obj->clip(threshold, soft, normalize))

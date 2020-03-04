@@ -563,6 +563,40 @@ class BandPass(Transform):
         return buf
 
 
+class BandStop(Transform):
+    r"""Run audio buffer through a band-stop filter.
+
+    Args:
+        center: center frequency in Hz
+        bandwidth: bandwidth frequency in Hz
+        order: filter order
+        design: filter design (see :class:`FilterDesign`)
+        bypass_prob: probability to bypass the transformation
+
+    """
+    def __init__(self, center: Union[float, Float],
+                 bandwidth: Union[float, Float], *,
+                 order: Union[int, Int] = 1,
+                 design: str = FilterDesign.BUTTERWORTH.value,
+                 bypass_prob: Union[float, Float] = None):
+        super().__init__(bypass_prob)
+        self.center = center
+        self.bandwidth = bandwidth
+        self.order = order
+        self.design = design
+
+    def call(self, buf: AudioBuffer) -> AudioBuffer:
+        center = observe(self.center)
+        bandwidth = observe(self.bandwidth)
+        order = observe(self.order)
+        if self.design == FilterDesign.BUTTERWORTH.value:
+            lib.AudioBuffer_butterworthBandStopFilter(buf.obj, center,
+                                                      bandwidth, order)
+        else:
+            assert False, 'unknown filter design {}'.format(self.design)
+        return buf
+
+
 class WhiteNoiseUniform(Transform):
     r"""Adds uniform white noise.
 

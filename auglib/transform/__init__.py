@@ -2,6 +2,7 @@ from auglib.core.transform import (
     Append,
     AppendValue,
     BandPass,
+    BandStop,
     Clip,
     ClipByRatio,
     Compose,
@@ -18,5 +19,5 @@ from auglib.core.transform import (
     Tone,
     ToneShape,
     WhiteNoiseGaussian,
-    WhiteNoiseUniform,
+    WhiteNoiseUniform
 )

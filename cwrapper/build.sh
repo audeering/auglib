@@ -1,7 +1,3 @@
-# set $AUGLIB to the installation path of auglib
-# https://gitlab.audeering.com/tools/auglib
-# and build in Release before running the script
-
 rm ./cauglib.o
 rm ../auglib/bin/*.so
 

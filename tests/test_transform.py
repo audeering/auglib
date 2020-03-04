@@ -6,8 +6,8 @@ from auglib import AudioBuffer
 from auglib.core.buffer import lib
 from auglib.utils import random_seed
 from auglib.transform import Mix, Append, NormalizeByPeak, Clip, ClipByRatio, \
-    GainStage, FFTConvolve, LowPass, HighPass, BandPass, WhiteNoiseUniform,\
-    WhiteNoiseGaussian, PinkNoise, Tone, ToneShape
+    GainStage, FFTConvolve, LowPass, HighPass, BandPass, BandStop, \
+    WhiteNoiseUniform, WhiteNoiseGaussian, PinkNoise, Tone, ToneShape
 from auglib.utils import to_samples, to_db, from_db
 
 
@@ -201,27 +201,37 @@ def test_fft_convolve(n, sr):
                          [(10, 8000),
                           (10, 44100)])
 def test_filter(n, sr):
-    sig_in = np.ones(n * sr, dtype='float32')
+    # generate a boxcar signal (step up...step down)
+    sig_in = np.zeros(n * sr, dtype='float32')
+    sig_in[int(n * sr / 4):int(n * sr * 3 / 4)] = 1.0
 
-    b, a = signal.butter(1, 2.0 / 4, 'lowpass')
+    b, a = signal.butter(1, 0.5, 'lowpass')
     sig_out = signal.lfilter(b, a, sig_in)
 
-    with AudioBuffer(n, sr, value=1.0) as buf:
-        LowPass(sr / 4)(buf)
+    with AudioBuffer.from_array(sig_in, sampling_rate=sr) as buf:
+        LowPass(0.5 * sr / 2)(buf)
         np.testing.assert_almost_equal(buf.data, sig_out)
 
-    b, a = signal.butter(1, 2.0 / 4, 'highpass')
+    b, a = signal.butter(1, 0.5, 'highpass')
     sig_out = signal.lfilter(b, a, sig_in)
 
-    with AudioBuffer(n, sr, value=1.0) as buf:
-        HighPass(sr / 4)(buf)
+    with AudioBuffer.from_array(sig_in, sampling_rate=sr) as buf:
+        HighPass(0.5 * sr / 2)(buf)
         np.testing.assert_almost_equal(buf.data, sig_out)
 
-    b, a = signal.butter(1, (2.0 / 8) * np.array([1, 3]), 'bandpass')
+    b, a = signal.butter(1, np.array([0.5 - 0.25, 0.5 + 0.25]), 'bandpass')
     sig_out = signal.lfilter(b, a, sig_in)
 
-    with AudioBuffer(n, sr, value=1.0) as buf:
-        BandPass(sr // 4, sr // 4)(buf)
+    with AudioBuffer.from_array(sig_in, sampling_rate=sr) as buf:
+        BandPass(0.5 * sr / 2, 0.5 * sr / 2)(buf)
+        np.testing.assert_almost_equal(buf.data, sig_out)
+
+    b, a = signal.butter(1, (2.0 / sr) * np.array([1000 - 5, 1000 + 5]),
+                         'bandstop')
+    sig_out = signal.lfilter(b, a, sig_in)
+
+    with AudioBuffer.from_array(sig_in, sampling_rate=sr) as buf:
+        BandStop(1000, 10)(buf)
         np.testing.assert_almost_equal(buf.data, sig_out)
 
 

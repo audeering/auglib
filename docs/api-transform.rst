@@ -21,6 +21,12 @@ BandPass
 .. autoclass:: BandPass
     :members:
 
+BandStop
+--------
+
+.. autoclass:: BandStop
+    :members:
+
 Clip
 ----
 

@@ -81,6 +81,12 @@ lib.AudioBuffer_butterworthBandPassFilter.argtypes = [ctypes.c_void_p,
                                                       ctypes.c_int]
 lib.AudioBuffer_butterworthBandPassFilter.restype = ctypes.c_void_p
 
+lib.AudioBuffer_butterworthBandStopFilter.argtypes = [ctypes.c_void_p,
+                                                      ctypes.c_float,
+                                                      ctypes.c_float,
+                                                      ctypes.c_int]
+lib.AudioBuffer_butterworthBandStopFilter.restype = ctypes.c_void_p
+
 lib.AudioBuffer_clip.argtypes = [ctypes.c_void_p, ctypes.c_float,
                                  ctypes.c_bool, ctypes.c_bool]
 lib.AudioBuffer_clip.restype = ctypes.c_void_p
