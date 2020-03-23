@@ -2,12 +2,12 @@ import os
 import glob
 import warnings
 from typing import Union, Sequence
-import tqdm
 from multiprocessing import Pool, cpu_count
 
 import numpy as np
 import pandas as pd
 from audata import Database
+import audeer
 
 from .buffer import AudioBuffer, Transform
 
@@ -163,9 +163,10 @@ class AudioModifier(object):
         num_jobs = num_jobs or cpu_count()
 
         with Pool(num_jobs) as pool:
-            for _, result in tqdm.tqdm(
+            desc = audeer.format_display_message('Augment', pbar=True)
+            for _, result in audeer.progress_bar(
                     enumerate(pool.imap(self._apply_on_file_job, args)),
-                    desc='Modify', total=n, disable=not verbose):
+                    desc=desc, total=n, disable=not verbose):
                 pass
 
     def apply_on_folder(self, input_folder: str, output_folder: str, *,
