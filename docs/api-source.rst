@@ -1,5 +1,5 @@
-source
-======
+auglib.source
+=============
 
 .. automodule:: auglib.source
 

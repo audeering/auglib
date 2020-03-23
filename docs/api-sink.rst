@@ -1,5 +1,5 @@
-sink
-====
+auglib.sink
+===========
 
 .. automodule:: auglib.sink
 

@@ -1,5 +1,5 @@
-transform
-=========
+auglib.transform
+================
 
 .. automodule:: auglib.transform
 

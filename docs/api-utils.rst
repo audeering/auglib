@@ -1,5 +1,5 @@
-utils
-=====
+auglib.utils
+============
 
 .. autofunction::  auglib.utils.random_seed
 .. autofunction::  auglib.utils.to_db
