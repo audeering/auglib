@@ -57,45 +57,45 @@ class Float(Number):
         raise(NotImplementedError())
 
 
-class StrList(Str):
-    r"""Iterates over a list of strings.
+class ObservableList(Observable):
+    r"""Iterates over a list of observable objects.
 
     .. note:: You can either ``shuffle`` or ``draw``.
 
     Args:
-        strings: list of strings
-        shuffle: return strings in random order
-        draw: randomly draw the next string
+        elements: list of observables
+        shuffle: return elements in random order
+        draw: randomly draw the next element
 
     """
-    def __init__(self, strings: Sequence[str], *, shuffle: bool = False,
-                 draw: bool = False):
+    def __init__(self, elements: Sequence[Union[int, float, str]], *,
+                 shuffle: bool = False, draw: bool = False):
         assert not (draw and shuffle), 'you can not draw and shuffle at the ' \
                                        'same time'
 
-        self.strings = strings
+        self.elements = elements
         self.shuffle = shuffle
         self.draw = draw
         self._counter = 0
         self._iter = False
 
     def __len__(self):
-        return len(self.strings)
+        return len(self.elements)
 
-    def _draw(self) -> str:
-        return self.strings[random.randint(0, len(self) - 1)]
+    def _draw(self) -> Union[int, float, str]:
+        return self.elements[random.randint(0, len(self) - 1)]
 
-    def _next(self) -> str:
+    def _next(self) -> Union[int, float, str]:
         if self.shuffle and self._counter == 0:
-            random.shuffle(self.strings)
-        file = self.strings[self._counter]
+            random.shuffle(self.elements)
+        element = self.elements[self._counter]
         self._counter += 1
         if self._counter >= len(self):
             self._counter %= len(self)
             self._iter = False
-        return file
+        return element
 
-    def __call__(self) -> str:
+    def __call__(self) -> Union[int, float, str]:
         if self.draw:
             return self._draw()
         else:
@@ -110,6 +110,51 @@ class StrList(Str):
         if not self._iter:
             raise StopIteration()
         return self()
+
+
+class StrList(ObservableList, Str):
+    r"""Iterates over a list of strings.
+
+    .. note:: You can either ``shuffle`` or ``draw``.
+
+    Args:
+        elements: list of strings
+        shuffle: return elements in random order
+        draw: randomly draw the next element
+    """
+    def __init__(self, elements: Sequence[str], *, shuffle: bool = False,
+                 draw: bool = False):
+        super().__init__(elements, shuffle=shuffle, draw=draw)
+
+
+class IntList(ObservableList, Int):
+    r"""Iterates over a list of integers.
+
+    .. note:: You can either ``shuffle`` or ``draw``.
+
+    Args:
+        elements: list of integers
+        shuffle: return elements in random order
+        draw: randomly draw the next element
+    """
+    def __init__(self, elements: Sequence[int], *, shuffle: bool = False,
+                 draw: bool = False):
+        super().__init__(elements, shuffle=shuffle, draw=draw)
+
+
+class FloatList(ObservableList, Float):
+    r"""Iterates over a list of floats.
+
+    .. note:: You can either ``shuffle`` or ``draw``.
+
+    Args:
+        elements: list of floats
+        shuffle: return elements in random order
+        draw: randomly draw the next element
+    """
+    def __init__(self, elements: Sequence[float], *, shuffle: bool = False,
+                 draw: bool = False):
+        super().__init__(elements, shuffle=shuffle, draw=draw)
 
 
 class BoolRand(Bool):

@@ -23,6 +23,8 @@ from auglib.core.observe import (
     FloatUni,
     IntUni,
     StrList,
+    IntList,
+    FloatList
 )
 
 __all__ = []

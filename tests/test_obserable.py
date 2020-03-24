@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from auglib import StrList, FloatNorm, FloatUni, IntUni
+from auglib import StrList, IntList, FloatList, FloatNorm, FloatUni, IntUni
 from auglib.core.observe import observe, Observable, BoolRand
 from auglib.utils import random_seed
 
@@ -71,3 +71,29 @@ def test_StrList(n, strings):
     x = StrList(strings, draw=True)
     for _ in range(n):
         assert x() in strings
+
+
+@pytest.mark.parametrize('n,observables',
+                         ([100, [1, 2, 3]], ))
+def test_IntList(n, observables):
+    x = IntList(observables)
+    for o in observables:
+        assert x() == o
+    x = IntList(observables.copy(), shuffle=True)
+    assert observables == sorted([o for o in x])
+    x = IntList(observables, draw=True)
+    for _ in range(n):
+        assert x() in observables
+
+
+@pytest.mark.parametrize('n,observables',
+                         ([100, [1.0, 2.0, 3.0]], ))
+def test_FloatList(n, observables):
+    x = FloatList(observables)
+    for o in observables:
+        assert x() == o
+    x = FloatList(observables.copy(), shuffle=True)
+    assert observables == sorted([o for o in x])
+    x = FloatList(observables, draw=True)
+    for _ in range(n):
+        assert x() in observables

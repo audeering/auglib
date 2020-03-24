@@ -21,6 +21,12 @@ ExceptionHandling
 .. autoclass:: ExceptionHandling
     :members:
 
+FloatList
+---------
+
+.. autoclass:: FloatList
+    :members:
+
 FloatNorm
 ---------
 
@@ -31,6 +37,12 @@ FloatUni
 --------
 
 .. autoclass:: FloatUni
+    :members:
+
+IntList
+---------
+
+.. autoclass:: IntList
     :members:
 
 IntUni
