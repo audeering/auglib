@@ -1,7 +1,6 @@
 import numpy as np
 from typing import Union, Sequence
 import audiofile as af
-import sounddevice as sd
 
 from .api import lib
 from .common import Object
@@ -168,6 +167,7 @@ class AudioBuffer(object):
             wait: pause until file has been played back
 
         """
+        import sounddevice as sd
         sd.play(self.data, self.sampling_rate)
         if wait:
             sd.wait()
