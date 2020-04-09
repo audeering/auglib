@@ -1,11 +1,15 @@
-import numpy as np
+import os
 from typing import Union, Sequence
+
 import audiofile as af
+import numpy as np
+
+import audeer
 
 from .api import lib
 from .common import Object
 from .observe import observe, Number, Float, Str
-from .utils import to_samples, safe_path, mk_dirs
+from .utils import to_samples, safe_path
 from .exception import _check_exception_decorator
 
 
@@ -147,7 +151,7 @@ class AudioBuffer(object):
 
         """
         path = safe_path(path, root=root)
-        mk_dirs(path)
+        audeer.mkdir(os.path.dirname(path))
         af.write(path, self.data, self.sampling_rate, precision=precision,
                  normalize=normalize)
 

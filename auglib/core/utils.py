@@ -153,15 +153,3 @@ def safe_path(path: Union[str, Str], *, root: str = None) -> str:
         path = os.path.join(root, path)
     path = os.path.abspath(os.path.expanduser(path))
     return path
-
-
-def mk_dirs(path: str):
-    r"""Create directory tree if it does not exist.
-
-    Args:
-        path: directory or file path
-
-    """
-    path = os.path.dirname(path)
-    if path and not os.path.exists(path):
-        os.makedirs(path)
