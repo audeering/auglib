@@ -71,12 +71,8 @@ New releases are made using the following steps:
 #. Update ``CHANGELOG.rst``
 #. Commit those changes as "Release X.Y.Z"
 #. Create an (annotated) tag with ``git tag -a vX.Y.Z``
-#. Clear the directories ``audata.egg-info/``, ``build/``, and ``dist/``
-#. Create a distribution package with ``python setup.py sdist bdist_wheel``
-#. Check that both files have the correct content
-#. Upload them to PyPI_ with twine_:
-   ``python -m twine upload --repository local dist/*``
+#. Make sure you have an `artifactory-tokenizer`_ project
 #. Push the commit and the tag to Gitlab
 
-.. _PyPI: https://artifactory.audeering.com/artifactory/api/pypi/pypi-local/simple/
-.. _twine: https://twine.readthedocs.io/
+.. _artifactory-tokenizer:
+    https://gitlab.audeering.com/devops/artifactory/tree/master/token
