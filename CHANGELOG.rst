@@ -9,7 +9,12 @@ and this project adheres to `Semantic Versioning`_.
 Unreleased
 ----------
 
+
+Version 0.4.1 (2020-04-09)
+--------------------------
+
 * Added: ``IntList`` and ``FloatList`` as companions to ``StrList``.
+* Fixed: ``FloatNorm`` now provided with class members.
 
 Version 0.4.0 (2020-03-04)
 --------------------------
