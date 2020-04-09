@@ -218,6 +218,10 @@ class FloatNorm(Float):
                  minimum: float = None, maximum: float = None):
         minimum = minimum if minimum is not None else -np.inf
         maximum = maximum if maximum is not None else np.inf
+        self.mean = mean
+        self.std = std
+        self.minimum = minimum
+        self.maximum = maximum
         self._gen = scipy.stats.truncnorm((minimum - mean) / std,
                                           (maximum - mean) / std,
                                           loc=mean,
