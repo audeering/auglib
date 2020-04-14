@@ -12,8 +12,8 @@ Unreleased
 
 Version 0.4.2 (2020-04-14)
 --------------------------
-* Fixed: Replace ``utils.mk_dirs`` with ``audeer.mkdir`` (improves thread
-safety)
+
+* Fixed: Replace ``utils.mk_dirs`` with ``audeer.mkdir`` (improve thread-safety)
 
 
 Version 0.4.1 (2020-04-09)
@@ -21,6 +21,7 @@ Version 0.4.1 (2020-04-09)
 
 * Added: ``IntList`` and ``FloatList`` as companions to ``StrList``.
 * Fixed: ``FloatNorm`` now provided with class members.
+
 
 Version 0.4.0 (2020-03-04)
 --------------------------
