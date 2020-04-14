@@ -10,7 +10,7 @@ Unreleased
 ----------
 
 
-Version 0.4.2 (2020-04-14)
+Version 0.4.3 (2020-04-14)
 --------------------------
 
 * Fixed: Replace ``utils.mk_dirs`` with ``audeer.mkdir`` (improve thread-safety)
