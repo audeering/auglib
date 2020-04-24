@@ -210,4 +210,13 @@ extern "C"
         CALL(obj->compressDynamicRange(threshold_dB, ratio, tAtt_s, tRel_s, kneeRadius_dB, makeup_dB, clip))
     }
 
+    float AudioBuffer_getPeak(cAudioBuffer *obj)
+    {
+        return obj->getPeak();
+    }
+
+    float AudioBuffer_getPeakDecibels(cAudioBuffer *obj)
+    {
+        return obj->getPeakDecibels();
+    }
 }

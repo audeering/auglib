@@ -9,6 +9,8 @@ and this project adheres to `Semantic Versioning`_.
 Unreleased
 ----------
 
+* Added: ``compressDynamicRange``: option to restore original peak.
+
 
 Version 0.4.3 (2020-04-14)
 --------------------------

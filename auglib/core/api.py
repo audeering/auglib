@@ -116,3 +116,9 @@ lib.AudioBuffer_compressDynamicRange.argtypes = [ctypes.c_void_p,
                                                  ctypes.c_float,
                                                  ctypes.c_bool]
 lib.AudioBuffer_compressDynamicRange.restype = ctypes.c_void_p
+
+lib.AudioBuffer_getPeak.argtypes = [ctypes.c_void_p]
+lib.AudioBuffer_getPeak.restype = ctypes.c_float
+
+lib.AudioBuffer_getPeakDecibels.argtypes = [ctypes.c_void_p]
+lib.AudioBuffer_getPeakDecibels.restype = ctypes.c_float

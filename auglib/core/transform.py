@@ -730,6 +730,11 @@ class CompressDynamicRange(Transform):
     also be clipped to the interval ``[-1.0, 1.0]`` when exceeding this range:
     this behaviour is achieved by setting the ``clip`` argument.
 
+    .. note:: Setting makeup_dB to None triggers a special behaviour,
+        for which the makeup gain is computed automatically in a way that
+        the peak level of the processed signal is equal to the original peak
+        level (before compression).
+
     Args:
         threshold_db: threshold in decibels
         ratio: ratio (the higher the ratio, the stronger the gain reduction)
@@ -746,7 +751,7 @@ class CompressDynamicRange(Transform):
                  attack_time: Union[float, Float] = 0.01,
                  release_time: Union[float, Float] = 0.02,
                  knee_radius_db: Union[float, Float] = 4.0,
-                 makeup_db: Union[float, Float] = 0.0,
+                 makeup_db: Union[None, float, Float] = 0.0,
                  clip: Union[bool, Bool] = False,
                  bypass_prob: Union[float, Float] = None):
         super().__init__(bypass_prob)
@@ -764,7 +769,10 @@ class CompressDynamicRange(Transform):
         attack_time = observe(self.attack_time)
         release_time = observe(self.release_time)
         knee_radius_db = observe(self.knee_radius_db)
-        makeup_db = observe(self.makeup_db)
+        if self.makeup_db is None:
+            makeup_db = np.nan
+        else:
+            makeup_db = observe(self.makeup_db)
         clip = observe(self.clip)
         lib.AudioBuffer_compressDynamicRange(buf.obj,
                                              threshold_db,

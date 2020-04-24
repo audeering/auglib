@@ -7,7 +7,8 @@ from auglib.core.buffer import lib
 from auglib.utils import random_seed
 from auglib.transform import Mix, Append, NormalizeByPeak, Clip, ClipByRatio, \
     GainStage, FFTConvolve, LowPass, HighPass, BandPass, BandStop, \
-    WhiteNoiseUniform, WhiteNoiseGaussian, PinkNoise, Tone, ToneShape
+    WhiteNoiseUniform, WhiteNoiseGaussian, PinkNoise, Tone, ToneShape, \
+    CompressDynamicRange
 from auglib.utils import to_samples, to_db, from_db
 
 
@@ -289,3 +290,25 @@ def test_sine(freq):
             as tone:
         sine = np.sin((np.arange(n, dtype=np.float) / sr) * 2 * np.pi * freq)
         np.testing.assert_almost_equal(tone.data, sine, decimal=3)
+
+
+@pytest.mark.parametrize(
+    'dur,sr',
+    [
+        (1.0, 8000,)
+    ]
+)
+def test_compression(dur, sr):
+    with Tone(220.0, shape=ToneShape.SQUARE)(AudioBuffer(dur, sr)) as tone:
+        NormalizeByPeak(peak_db=-3.0)(tone)
+        CompressDynamicRange(-12.0, 20.0, attack_time=0.0, release_time=0.1,
+                             knee_radius_db=6.0, makeup_db=None)(tone)
+        peak1 = tone.peak_db
+    with Tone(220.0, shape=ToneShape.SQUARE)(AudioBuffer(dur, sr)) as tone:
+        NormalizeByPeak(peak_db=-3.0)(tone)
+        CompressDynamicRange(-12.0, 20.0, attack_time=0.0, release_time=0.1,
+                             knee_radius_db=6.0, makeup_db=0.0)(tone)
+        peak2 = tone.peak_db
+
+    assert peak1 > peak2
+    assert np.isclose(peak1, -3.0)

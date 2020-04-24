@@ -88,6 +88,18 @@ class AudioBuffer(object):
         r"""Dump audio buffer to stdout."""
         lib.AudioBuffer_dump(self.obj)
 
+    @property
+    def peak(self) -> float:
+        r"""Return buffer peak."""
+        if self.obj:
+            return lib.AudioBuffer_getPeak(self.obj)
+
+    @property
+    def peak_db(self) -> float:
+        r"""Return buffer peak in decibels."""
+        if self.obj:
+            return lib.AudioBuffer_getPeakDecibels(self.obj)
+
     @staticmethod
     def from_array(x: Union[np.ndarray, Sequence[float]],
                    sampling_rate: int) -> 'AudioBuffer':
