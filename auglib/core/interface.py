@@ -253,9 +253,9 @@ class AudioModifier(object):
             old_transform = Transform.load(transform_file)
             if not old_mapping.index.equals(index) \
                     or old_transform != self.transform:
-                warnings.warn(UserWarning('index or transform has '
-                                          'changed, force overwrite'))
-                force_overwrite = True
+                warnings.warn(UserWarning((
+                    'index or transform has changed, '
+                    'consider setting force_overwrite=True')))
             if not force_overwrite:
                 return old_mapping
             else:
