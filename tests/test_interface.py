@@ -114,7 +114,10 @@ def test_audiomodifier_apply_on_folder(duration):
 
 @pytest.mark.parametrize('duration', [(5)])
 def test_audiomodifier_apply_on_file(duration):
-    os.system('sox -n -r 16000 -c 1 test.wav trim 0.0 1.0')
+    initial_dur = 1  # in seconds
+    sr = 16000
+    dummy_audio = np.zeros(initial_dur * sr)
+    af.write('test.wav', dummy_audio, sr)
     transform = AppendValue(duration)
     t = AudioModifier(transform)
     t.apply_on_file('test.wav', 'augmented.wav')

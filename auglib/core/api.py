@@ -122,3 +122,6 @@ lib.AudioBuffer_getPeak.restype = ctypes.c_float
 
 lib.AudioBuffer_getPeakDecibels.argtypes = [ctypes.c_void_p]
 lib.AudioBuffer_getPeakDecibels.restype = ctypes.c_float
+
+lib.AudioBuffer_AMRNB.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int]
+lib.AudioBuffer_AMRNB.restype = ctypes.c_void_p

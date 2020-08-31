@@ -12,7 +12,7 @@ g++ -shared -Wl,-zdefs -o ../auglib/core/bin/libcauglib.so cauglib.o \
 -L$AUGLIB/soundtouch/source/SoundTouch/.libs \
 -L$AUGLIB/Release/FFTConvolver \
 -L$AUGLIB/Release/DSPFilters \
--laugdeering -lFFTConvolver -lSoundTouch -lDSPFilters \
+-laugdeering -lopencore-amrnb -lFFTConvolver -lSoundTouch -lDSPFilters \
 -Wl,-rpath=$AUGLIB/soundtouch/source/SoundTouch/.libs
 
 function patch_strings_in_file() {

@@ -783,3 +783,32 @@ class CompressDynamicRange(Transform):
                                              makeup_db,
                                              clip)
         return buf
+
+
+class AMRNB(Transform):
+    r"""Encode-decode the buffer using Adaptive Multi-Rate (AMR) lossy codec
+    (Narrow Band version).
+
+    .. note:: The input signal must be narrow-band (it must be sampled at
+        8kHz).
+
+    Args:
+        bit_rate: target bit rate of the encoded stream (in bits per second)
+        dtx: enable discontinuous transmission (DTX)
+        bypass_prob: probability to bypass the transformation
+
+    """
+    def __init__(self,
+                 bit_rate: Union[int, Int],
+                 *,
+                 dtx: Union[bool, Bool] = False,
+                 bypass_prob: Union[float, Float] = None):
+        super().__init__(bypass_prob)
+        self.bit_rate = bit_rate
+        self.dtx = dtx
+
+    def call(self, buf: AudioBuffer) -> AudioBuffer:
+        bit_rate = observe(self.bit_rate)
+        dtx = observe(self.dtx)
+        lib.AudioBuffer_AMRNB(buf.obj, bit_rate, 1 if dtx else 0)
+        return buf

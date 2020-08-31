@@ -8,7 +8,7 @@ from auglib.utils import random_seed
 from auglib.transform import Mix, Append, NormalizeByPeak, Clip, ClipByRatio, \
     GainStage, FFTConvolve, LowPass, HighPass, BandPass, BandStop, \
     WhiteNoiseUniform, WhiteNoiseGaussian, PinkNoise, Tone, ToneShape, \
-    CompressDynamicRange
+    CompressDynamicRange, AMRNB
 from auglib.utils import to_samples, to_db, from_db
 
 
@@ -312,3 +312,23 @@ def test_compression(dur, sr):
 
     assert peak1 > peak2
     assert np.isclose(peak1, -3.0)
+
+
+@pytest.mark.parametrize(
+    'bit_rate', [4750, 5150, 5900, 6700, 7400, 7950, 10200, 12200]
+)
+def test_AMRNB(bit_rate):
+
+    original_wav = 'tests/test-assets/opensmile.wav'
+    target_wav = f'tests/test-assets/opensmile_amrnb_rate{bit_rate}_ffmpeg.wav'
+
+    transform = AMRNB(bit_rate)
+    with AudioBuffer.read(original_wav) as buf:
+        transform(buf)
+        result = buf.data
+        with AudioBuffer.read(target_wav) as target_buf:
+            target = target_buf.data
+            length = min(result.size, target.size)
+            np.testing.assert_allclose(
+                result[:length], target[:length], rtol=0.0, atol=0.065
+            )

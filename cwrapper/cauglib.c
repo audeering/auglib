@@ -219,4 +219,9 @@ extern "C"
     {
         return obj->getPeakDecibels();
     }
+
+    void AudioBuffer_AMRNB(cAudioBuffer *obj, int bitRate, int dtx = 0)
+    {
+        CALL(obj->AMRNB(bitRate, dtx))
+    }
 }
