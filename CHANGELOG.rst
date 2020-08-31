@@ -7,8 +7,15 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.5.2 (2020-08-31)
+--------------------------
+
+* Added: :class:`auglib.transform.AMRNB`
+
+
 Version 0.5.1 (2020-07-16)
 --------------------------
+
 * Changed: Avoid automatically enabling the ``force_overwrite`` option in
   ``AudioModifier.apply_on_index``. The user is now required to set this
   manually.
