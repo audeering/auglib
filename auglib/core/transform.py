@@ -792,6 +792,10 @@ class AMRNB(Transform):
     .. note:: The input signal must be narrow-band (it must be sampled at
         8kHz).
 
+    .. note:: Supported bit rates: 4750, 5150, 5900, 6700, 7400, 7950, 10200,
+        12200. Any positive bit rate is allowed, but it wil be internally
+        converted to the closest among those listed above.
+
     Args:
         bit_rate: target bit rate of the encoded stream (in bits per second)
         dtx: enable discontinuous transmission (DTX)
