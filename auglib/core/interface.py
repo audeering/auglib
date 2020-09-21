@@ -12,22 +12,10 @@ import audeer
 from .buffer import AudioBuffer, Transform
 
 
-# TODO: replace with functions from audeer
-
-def _safe_path(path: str) -> str:
-    return os.path.abspath(os.path.expanduser(path))
-
-
 def _remove(path: str):
-    path = _safe_path(path)
+    path = audeer.safe_path(path)
     if os.path.exists(path):
         os.remove(path)
-
-
-def _make_dirs(path: str):
-    path = _safe_path(path)
-    if not os.path.exists(path):
-        os.makedirs(path)
 
 
 def _make_tree(files: Sequence[str]):
@@ -35,7 +23,7 @@ def _make_tree(files: Sequence[str]):
     for f in files:
         dirs.add(os.path.dirname(f))
     for d in list(dirs):
-        _make_dirs(d)
+        audeer.mkdir(d)
 
 
 class NumpyTransform(object):
@@ -102,8 +90,8 @@ class AudioModifier(object):
             end: end position
 
         """
-        input_file = _safe_path(input_file)
-        output_file = _safe_path(output_file)
+        input_file = audeer.safe_path(input_file)
+        output_file = audeer.safe_path(output_file)
         start = start or pd.NaT
         end = end or pd.NaT
 
@@ -184,8 +172,8 @@ class AudioModifier(object):
             verbose: show debug messages
 
         """
-        input_folder = _safe_path(input_folder)
-        output_folder = _safe_path(output_folder)
+        input_folder = audeer.safe_path(input_folder)
+        output_folder = audeer.safe_path(output_folder)
 
         supported_formats = ['wav', 'ogg', 'flac']
         input_files = []
@@ -194,7 +182,7 @@ class AudioModifier(object):
         output_files = [os.path.join(output_folder, os.path.basename(f))
                         for f in input_files]
 
-        _make_dirs(output_folder)
+        audeer.mkdir(output_folder)
 
         self.apply_on_files(input_files, output_files, num_jobs=num_jobs,
                             verbose=verbose)
@@ -243,7 +231,7 @@ class AudioModifier(object):
             raise ValueError('Please provide a valid string as the '
                              'output folder.')
 
-        output_folder = _safe_path(output_folder)
+        output_folder = audeer.safe_path(output_folder)
         mapping_file = os.path.join(output_folder, 'augmented.pkl')
         mapping_file_csv = mapping_file[:-4] + '.csv'
         transform_file = os.path.join(output_folder, 'augmented.yaml')
@@ -262,7 +250,7 @@ class AudioModifier(object):
                 for file in old_mapping:
                     _remove(file)
 
-        _make_dirs(output_folder)
+        audeer.mkdir(output_folder)
 
         if isinstance(index, pd.DataFrame):
             index = index.index
@@ -317,12 +305,12 @@ class AudioModifier(object):
             .html
 
         """
-        input_folder = _safe_path(input_folder)
-        output_folder = _safe_path(output_folder)
+        input_folder = audeer.safe_path(input_folder)
+        output_folder = audeer.safe_path(output_folder)
 
         db = Database.load(input_folder)
 
-        _make_dirs(output_folder)
+        audeer.mkdir(output_folder)
         if os.listdir(output_folder):
             raise ValueError('output folder is not empty')
 
