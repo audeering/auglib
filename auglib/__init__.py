@@ -16,6 +16,7 @@ from auglib.core.exception import (
 )
 from auglib.core.interface import (
     AudioModifier,
+    Augment,
     NumpyTransform,
 )
 from auglib.core.observe import (

@@ -1,15 +1,18 @@
 import os
 import glob
-import warnings
-from typing import Union, Sequence
 from multiprocessing import Pool, cpu_count
+import typing
+import warnings
 
 import numpy as np
 import pandas as pd
-from audata import Database
-import audeer
 
-from .buffer import AudioBuffer, Transform
+import audata
+import audeer
+import audinterface
+import audiofile
+
+from auglib.core.buffer import AudioBuffer, Transform
 
 
 def _remove(path: str):
@@ -18,7 +21,7 @@ def _remove(path: str):
         os.remove(path)
 
 
-def _make_tree(files: Sequence[str]):
+def _make_tree(files: typing.Sequence[str]):
     dirs = set()
     for f in files:
         dirs.add(os.path.dirname(f))
@@ -108,10 +111,10 @@ class AudioModifier(object):
         idx, file_input, file_output, start, end = arg
         self.apply_on_file(file_input, file_output, start=start, end=end)
 
-    def apply_on_files(self, input_files: Sequence[str],
-                       output_files: Sequence[str], *,
-                       starts: Sequence[pd.Timedelta] = None,
-                       ends: Sequence[pd.Timedelta] = None,
+    def apply_on_files(self, input_files: typing.Sequence[str],
+                       output_files: typing.Sequence[str], *,
+                       starts: typing.Sequence[pd.Timedelta] = None,
+                       ends: typing.Sequence[pd.Timedelta] = None,
                        num_jobs: int = None,
                        verbose: bool = True):
         r"""Applies transform on a list of input files.
@@ -187,7 +190,7 @@ class AudioModifier(object):
         self.apply_on_files(input_files, output_files, num_jobs=num_jobs,
                             verbose=verbose)
 
-    def apply_on_index(self, index: Union[pd.Index, pd.DataFrame],
+    def apply_on_index(self, index: typing.Union[pd.Index, pd.DataFrame],
                        output_folder: str, *,
                        window_size: pd.Timedelta = None,
                        force_overwrite: bool = False,
@@ -308,7 +311,7 @@ class AudioModifier(object):
         input_folder = audeer.safe_path(input_folder)
         output_folder = audeer.safe_path(output_folder)
 
-        db = Database.load(input_folder)
+        db = audata.Database.load(input_folder)
 
         audeer.mkdir(output_folder)
         if os.listdir(output_folder):
@@ -324,3 +327,285 @@ class AudioModifier(object):
         db.save(output_folder)
         self.apply_on_files(input_files, output_files, num_jobs=num_jobs,
                             verbose=verbose)
+
+
+class Augment(audinterface.Process):
+
+    def __init__(
+            self,
+            transform: Transform,
+            *,
+            sampling_rate: int = None,
+            resample: bool = False,
+            segment: audinterface.Segment = None,
+            keep_nat: bool = False,
+            num_workers: typing.Optional[int] = 1,
+            multiprocessing: bool = False,
+            verbose: bool = False,
+    ):
+        r"""Augmentation interface.
+
+        Args:
+            transform: transformation object
+            sampling_rate: sampling rate in Hz.
+                If ``None`` it will call ``process_func`` with the actual
+                sampling rate of the signal.
+            resample: if ``True`` enforces given sampling rate by resampling
+            segment: when a :class:`audinterface.Segment` object is provided,
+                it will be used to find a segmentation of the input signal.
+                Afterwards processing is applied to each segment
+            keep_nat: if the end of segment is set to ``NaT`` do not replace
+                with file duration in the result
+            num_workers: number of parallel jobs or 1 for sequential
+                processing. If ``None`` will be set to the number of
+                processors on the machine multiplied by 5 in case of
+                multithreading and number of processors in case of
+                multiprocessing
+            multiprocessing: use multiprocessing instead of multithreading
+            verbose: show debug messages
+
+        Raises:
+            ValueError: if ``resample = True``, but ``sampling_rate = None``
+
+        """
+        self.transform = transform
+        super().__init__(
+            process_func=Augment._process_func,
+            transform=transform,
+            sampling_rate=sampling_rate,
+            resample=resample,
+            segment=segment,
+            keep_nat=keep_nat,
+            num_workers=num_workers,
+            multiprocessing=multiprocessing,
+            verbose=verbose,
+        )
+
+    def augment(
+            self,
+            column_or_table: typing.Union[pd.Series, pd.DataFrame],
+            cache_root: str,
+            *,
+            channel: int = None,
+            modified_only: bool = True,
+            num_variants: int = 1,
+            force: bool = False,
+    ) -> typing.Union[pd.Series, pd.DataFrame]:
+        r"""Apply data augmentation to a column or table in `Unified Format`_.
+
+        Creates ``num_variants`` copies of the files referenced files
+        in the index and augments the segments.
+        Parts of the signals that are not covered by at least one segment
+        are not augmented.
+        The result is a column / table with a new index that
+        references the augmented files, but the same column / table data.
+        If ``num_variants > 1`` the data is duplicated accordingly.
+        If ``modified_only`` is set to ``False`` the original
+        index will also be appended.
+
+        Args:
+            column_or_table: table
+            cache_root: root directory under which augmented files are stored
+            channel: channel number
+            modified_only: return only modified segments, otherwise
+                combine original and modified segments
+            num_variants: number of variations that are created for every
+                segment
+            force: overwrite existing files
+
+        Returns:
+            column or table with new index
+
+        .. _`Unified Format`: http://tools.pp.audeering.com/audata/
+            data-tables.html
+
+        """
+        column_or_table = audata.utils.to_segmented_frame(column_or_table)
+        modified = []
+
+        for idx in range(num_variants):
+
+            cache_root_idx = self._safe_cache(cache_root, idx)
+            series = self._augment_index(
+                column_or_table.index,
+                cache_root_idx,
+                channel,
+                force,
+            )
+
+            if not modified_only and idx == 0:
+                new_column_or_table = column_or_table.copy()
+                new_column_or_table.index = series.index
+                modified.append(new_column_or_table)
+
+            new_level = [
+                series[level][0] for level in series.index.levels[0]
+            ]
+            new_index = series.index.set_levels(new_level, level=0)
+            new_column_or_table = column_or_table.copy()
+            new_column_or_table.index = new_index
+            modified.append(new_column_or_table)
+
+        return pd.concat(modified, axis=0)
+
+    def _augment_index(
+            self,
+            index: pd.MultiIndex,
+            cache_root: str,
+            channel: int,
+            force: bool,
+    ) -> pd.Series:
+        r"""Augment from a segmented index and store augmented files to disk.
+        Returns a series that points to the augmented files."""
+
+        files = index.levels[0]
+        out_files = Augment._out_files(files, cache_root)
+        params = [
+            (
+                (
+                    file,
+                    out_file,
+                    index[
+                        index.get_level_values(0) == file
+                    ].droplevel(0),
+                    channel,
+                    force),
+                {},
+            )
+            for file, out_file in zip(files, out_files)
+        ]
+        segments = audeer.run_tasks(
+            self._augment_file_to_cache,
+            params,
+            num_workers=self.num_workers,
+            multiprocessing=self.multiprocessing,
+            progress_bar=self.verbose,
+            task_description=f'Process {len(index)} segments',
+        )
+        return pd.concat(segments)
+
+    def _augment_file(
+            self,
+            file: str,
+            index: pd.MultiIndex,
+            channel: int,
+    ) -> typing.Tuple[np.ndarray, int, pd.Series]:
+        r"""Augment file at every segment in index.
+        Returns the augmented signal, sampling rate and
+        a series with the augmented segments."""
+
+        signal, sampling_rate = self.read_audio(file, channel=channel)
+        return self._augment_signal(signal, sampling_rate, index)
+
+    def _augment_file_to_cache(
+            self,
+            file: str,
+            out_file: str,
+            index: pd.MultiIndex,
+            channel: int,
+            force: bool,
+    ) -> pd.Series:
+        r"""Augment 'file' and store result to 'out_file'.
+        Return a series where every segment points to 'out_file'"""
+
+        if force or not os.path.exists(out_file):
+            signal, sampling_rate, segments = self._augment_file(
+                file, index, channel,
+            )
+            index = segments.index
+            audeer.mkdir(os.path.dirname(out_file))
+            audiofile.write(out_file, signal, sampling_rate)
+        else:
+            index = self._correct_index(out_file, index)
+
+        return pd.Series(
+            out_file,
+            index=pd.MultiIndex(
+                levels=[[file], index.levels[0], index.levels[1]],
+                codes=[[0] * len(index), index.codes[0], index.codes[1]],
+            )
+        )
+
+    def _augment_signal(
+            self,
+            signal: np.ndarray,
+            sampling_rate: int,
+            index: pd.MultiIndex,
+    ) -> typing.Tuple[np.ndarray, int, pd.Series]:
+        r"""Augment signal at every segment in index.
+        Returns the augmented signal, sampling rate and
+        a series with the augmented segments."""
+
+        signal, sampling_rate = self._resample(signal, sampling_rate)
+        new_index = super().process_signal_from_index(
+            signal, sampling_rate, index,
+        )
+        for (start, end), segment in new_index.items():
+            start_i = int(start.total_seconds() * sampling_rate)
+            end_i = start_i + segment.shape[1]
+            signal[:, start_i:end_i] = segment
+        return signal, sampling_rate, new_index
+
+    def _correct_index(
+            self,
+            file: str,
+            index: pd.MultiIndex,
+    ):
+        r"""Replaces NaT in index."""
+
+        # check if index contains NaT
+        if -1 in index.codes[0] or -1 in index.codes[1]:
+
+            # replace NaT in start with 0
+            new_starts = index.get_level_values(0).map(
+                lambda x: pd.to_timedelta(0) if pd.isna(x) else x
+            )
+            # if not keep_nat replace NaT in end with file duration
+            if not self.keep_nat:
+                dur = pd.to_timedelta(audiofile.duration(file), unit='s')
+                new_ends = index.get_level_values(1).map(
+                    lambda x: dur if pd.isna(x) else x
+                )
+            else:
+                new_ends = index.get_level_values(1)
+
+            index = pd.MultiIndex.from_arrays(
+                [new_starts, new_ends], names=['start', 'end']
+            )
+
+        return index
+
+    def _safe_cache(
+            self,
+            cache_root,
+            idx: int,
+    ) -> typing.Optional[str]:
+        if cache_root is not None:
+            cache_root = audeer.safe_path(cache_root)
+            uid = audeer.uid(from_string=str(self.transform))
+            cache_root = os.path.join(cache_root, uid, str(idx))
+        return cache_root
+
+    @staticmethod
+    def _out_files(
+            files: typing.Sequence[str],
+            cache_root: str,
+    ) -> typing.Sequence[str]:
+        r"""Return cache file names by replacing the common directory path
+        all files have in common with the cache directory."""
+        if not cache_root:
+            cache_root = '.'
+        files = [audeer.safe_path(file) for file in files]
+        dirs = [os.path.dirname(file) for file in files]
+        common_dir = audeer.common_directory(dirs)
+        cache_root = audeer.safe_path(cache_root)
+        out_files = [file.replace(common_dir, cache_root) for file in files]
+        return out_files
+
+    @staticmethod
+    def _process_func(x, sr, transform):
+        r"""Internal processing function: creates audio buffer
+        and runs it through the transformation object."""
+        with AudioBuffer.from_array(x.copy(), sr) as buf:
+            transform(buf)
+            return np.atleast_2d(buf.data.copy())
