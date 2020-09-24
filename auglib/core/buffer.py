@@ -35,10 +35,10 @@ class AudioBuffer(object):
             (see :meth:`auglib.utils.to_samples`)
 
     Example:
-        >>> from auglib import AudioBuffer
+
         >>> with AudioBuffer(5, 8000, 1.0, unit='samples') as buf:
-        >>>     buf
-        [1. 1. 1. 1. 1.]
+        ...     buf
+        array([1., 1., 1., 1., 1.], dtype=float32)
 
     """
     def __init__(self, duration: Union[int, float, Number],
@@ -112,11 +112,9 @@ class AudioBuffer(object):
             sampling_rate: sampling rate in Hz
 
         Example:
-            >>> from auglib import AudioBuffer
-            >>> import numpy as np
             >>> with AudioBuffer.from_array([1] * 5, 8000) as buf:
-            >>>     buf
-            [1. 1. 1. 1. 1.]
+            ...     buf
+            array([1., 1., 1., 1., 1.], dtype=float32)
 
         """
         if not isinstance(x, np.ndarray):

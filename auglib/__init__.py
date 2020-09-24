@@ -35,7 +35,7 @@ __all__ = []
 try:
     import pkg_resources
     __version__ = pkg_resources.get_distribution(__name__).version
-except Exception:
-    pkg_resources = None
+except Exception:  # pragma: no cover
+    pkg_resources = None  # pragma: no cover
 finally:
     del pkg_resources

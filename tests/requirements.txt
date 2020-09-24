@@ -1,5 +1,5 @@
+audb
 pytest
+pytest-cov
+pytest-doctestplus
 pytest-flake8
-numpy
-scipy
-audiofile

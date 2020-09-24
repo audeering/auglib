@@ -4,9 +4,13 @@ import ctypes
 
 lib_root = os.path.dirname(os.path.realpath(__file__))
 if os.name == 'nt':
-    lib_path = os.path.join(lib_root, 'bin', 'cauglib.dll')
+    lib_path = os.path.join(
+        lib_root, 'bin', 'cauglib.dll',
+    )  # pragma: no cover
 else:
-    lib_path = os.path.join(lib_root, 'bin', 'libcauglib.so')
+    lib_path = os.path.join(
+        lib_root, 'bin', 'libcauglib.so',
+    )  # pragma: no cover
 lib = ctypes.cdll.LoadLibrary(lib_path)
 
 lib.AudioBuffer_new.argtypes = [ctypes.c_uint, ctypes.c_size_t]

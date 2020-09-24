@@ -15,13 +15,13 @@ import audiofile
 from auglib.core.buffer import AudioBuffer, Transform
 
 
-def _remove(path: str):
+def _remove(path: str):  # pragma: no cover
     path = audeer.safe_path(path)
     if os.path.exists(path):
         os.remove(path)
 
 
-def _make_tree(files: typing.Sequence[str]):
+def _make_tree(files: typing.Sequence[str]):  # pragma: no cover
     dirs = set()
     for f in files:
         dirs.add(os.path.dirname(f))
@@ -52,7 +52,7 @@ class NumpyTransform(object):
         return transformed
 
 
-class AudioModifier(object):
+class AudioModifier(object):  # pragma: no cover
     r"""Interface for modifying audio offline.
 
     Provides utility functions for :class:`auglib.Transform`. Enables
@@ -215,17 +215,6 @@ class AudioModifier(object):
                 of available CPUs
             verbose: show debug messages
 
-        Example:
-            >>> import audata, auglib, audata.testing
-            >>> db = audata.testing.create_db(minimal=True)
-            >>> db.schemes['anger'] = audata.Scheme('int', minimum=1, maximum=5)
-            >>> audata.testing.add_table(db, table_id='anger', table_type=audata.define.TableType.SEGMENTED, scheme_ids='anger')
-            >>> audata.testing.create_audio_files(db, root='audio')
-            >>> df = db['anger'].df
-            >>> transform = auglib.transform.AppendValue(5.0)
-            >>> t = AudioModifier(transform)
-            >>> df_augmented = t.apply_on_index(df.index, './augmented')
-
         .. _Unified Format: http://tools.pp.audeering.com/audata/data-format
             .html
 
@@ -330,51 +319,47 @@ class AudioModifier(object):
 
 
 class Augment(audinterface.Process):
+    r"""Augmentation interface.
 
+    Args:
+        transform: transformation object
+        sampling_rate: sampling rate in Hz.
+            If ``None`` it will call ``process_func`` with the actual
+            sampling rate of the signal.
+        resample: if ``True`` enforces given sampling rate by resampling
+        keep_nat: if the end of segment is set to ``NaT`` do not replace
+            with file duration in the result
+        num_workers: number of parallel jobs or 1 for sequential
+            processing. If ``None`` will be set to the number of
+            processors on the machine multiplied by 5 in case of
+            multithreading and number of processors in case of
+            multiprocessing
+        multiprocessing: use multiprocessing instead of multithreading
+        verbose: show debug messages
+
+    Raises:
+        ValueError: if ``resample = True``, but ``sampling_rate = None``
+
+    """
     def __init__(
             self,
             transform: Transform,
             *,
             sampling_rate: int = None,
             resample: bool = False,
-            segment: audinterface.Segment = None,
             keep_nat: bool = False,
             num_workers: typing.Optional[int] = 1,
             multiprocessing: bool = False,
             verbose: bool = False,
     ):
-        r"""Augmentation interface.
-
-        Args:
-            transform: transformation object
-            sampling_rate: sampling rate in Hz.
-                If ``None`` it will call ``process_func`` with the actual
-                sampling rate of the signal.
-            resample: if ``True`` enforces given sampling rate by resampling
-            segment: when a :class:`audinterface.Segment` object is provided,
-                it will be used to find a segmentation of the input signal.
-                Afterwards processing is applied to each segment
-            keep_nat: if the end of segment is set to ``NaT`` do not replace
-                with file duration in the result
-            num_workers: number of parallel jobs or 1 for sequential
-                processing. If ``None`` will be set to the number of
-                processors on the machine multiplied by 5 in case of
-                multithreading and number of processors in case of
-                multiprocessing
-            multiprocessing: use multiprocessing instead of multithreading
-            verbose: show debug messages
-
-        Raises:
-            ValueError: if ``resample = True``, but ``sampling_rate = None``
-
-        """
         self.transform = transform
+        r"""The transformation object."""
+
         super().__init__(
             process_func=Augment._process_func,
             transform=transform,
             sampling_rate=sampling_rate,
             resample=resample,
-            segment=segment,
             keep_nat=keep_nat,
             num_workers=num_workers,
             multiprocessing=multiprocessing,
@@ -391,17 +376,21 @@ class Augment(audinterface.Process):
             num_variants: int = 1,
             force: bool = False,
     ) -> typing.Union[pd.Series, pd.DataFrame]:
-        r"""Apply data augmentation to a column or table in `Unified Format`_.
+        r"""Apply data augmentation to a column or table in Unified Format.
 
-        Creates ``num_variants`` copies of the files referenced files
-        in the index and augments the segments.
+        Creates ``num_variants`` copies of the files referenced in the index
+        and augments every segment individually.
+        Augmented files are stored as
+        ``<cache_root>/<uid>/<variant>/<subdir>/<filename>``,
+        where ``subdir`` is the directory tree that remains after removing
+        the common directory shared by all files.
         Parts of the signals that are not covered by at least one segment
         are not augmented.
         The result is a column / table with a new index that
         references the augmented files, but the same column / table data.
         If ``num_variants > 1`` the data is duplicated accordingly.
-        If ``modified_only`` is set to ``False`` the original
-        index will also be appended.
+        If ``modified_only`` is set to ``False`` includes the original
+        index.
 
         Args:
             column_or_table: table
@@ -416,12 +405,16 @@ class Augment(audinterface.Process):
         Returns:
             column or table with new index
 
-        .. _`Unified Format`: http://tools.pp.audeering.com/audata/
-            data-tables.html
+        Raises:
+            RuntimeError: if sampling rates of file and transformation do not
+                match
 
         """
         column_or_table = audata.utils.to_segmented_frame(column_or_table)
         modified = []
+
+        if column_or_table.empty:
+            return column_or_table
 
         for idx in range(num_variants):
 
@@ -439,7 +432,7 @@ class Augment(audinterface.Process):
                 modified.append(new_column_or_table)
 
             new_level = [
-                series[level][0] for level in series.index.levels[0]
+                series[level].values[0] for level in series.index.levels[0]
             ]
             new_index = series.index.set_levels(new_level, level=0)
             new_column_or_table = column_or_table.copy()
@@ -523,6 +516,7 @@ class Augment(audinterface.Process):
             index=pd.MultiIndex(
                 levels=[[file], index.levels[0], index.levels[1]],
                 codes=[[0] * len(index), index.codes[0], index.codes[1]],
+                names=['file', 'start', 'end'],
             )
         )
 
@@ -593,8 +587,6 @@ class Augment(audinterface.Process):
     ) -> typing.Sequence[str]:
         r"""Return cache file names by replacing the common directory path
         all files have in common with the cache directory."""
-        if not cache_root:
-            cache_root = '.'
         files = [audeer.safe_path(file) for file in files]
         dirs = [os.path.dirname(file) for file in files]
         common_dir = audeer.common_directory(dirs)

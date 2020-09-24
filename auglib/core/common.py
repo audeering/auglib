@@ -17,14 +17,14 @@ class Object:
     Example:
 
         >>> class Foo(Object):
-        >>>    def __init__(self, foo: str, bar: int):
-        >>>        self.foo = foo
-        >>>        self.bar = bar
-        >>>        self._private = 'hidden'
-        >>> Foo('foo', 1234)
-        Foo:
-            foo: foo
-            bar: 1234
+        ...    def __init__(self, foo: str, bar: int):
+        ...        self.foo = foo
+        ...        self.bar = bar
+        ...        self._private = 'hidden'
+        >>> print(Foo('foo', 1234))
+        auglib.core.common.Foo:
+          foo: foo
+          bar: 1234
 
     """
     @staticmethod

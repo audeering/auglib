@@ -1,10 +1,8 @@
-from enum import IntEnum
 from typing import Union, Sequence
 
 import numpy as np
 
-from .api import lib
-from .observe import observe, Number, Float, Str
+from .observe import Float, Str
 from .buffer import AudioBuffer, Source, Transform
 
 
@@ -18,11 +16,9 @@ class FromArray(Source):
         sampling_rate: sampling rate in Hz
 
     Example:
-        >>> from auglib import AudioBuffer
-        >>> import numpy as np
         >>> with FromArray([1] * 5, 8000)() as buf:
-        >>>     buf
-        [1. 1. 1. 1. 1.]
+        ...     buf
+        array([1., 1., 1., 1., 1.], dtype=float32)
 
     """
     def __init__(self, x: Union[np.ndarray, Sequence[float]],

@@ -1,13 +1,18 @@
-import numpy as np
-import pytest
-import os
 import glob
-import audata
+import os
 import shutil
+
+import numpy as np
+import pandas as pd
+import pytest
+
+import audata
 import audata.testing
 import audiofile as af
-from auglib.transform import NormalizeByPeak, AppendValue
+
+import auglib
 from auglib import NumpyTransform, AudioModifier
+from auglib.transform import NormalizeByPeak, AppendValue
 
 
 @pytest.mark.parametrize('n,sr',
@@ -124,3 +129,158 @@ def test_audiomodifier_apply_on_file(duration):
     assert af.duration('augmented.wav') == af.duration('test.wav') + duration
     os.remove('test.wav')
     os.remove('augmented.wav')
+
+
+@pytest.mark.parametrize(
+    'sampling_rate, resample',
+    [
+        (
+            None, False,
+        ),
+        (
+            8000, True,
+        ),
+        pytest.param(
+            8000, False,
+            marks=pytest.mark.xfail(raises=RuntimeError)
+        ),
+    ]
+)
+@pytest.mark.parametrize(
+    'keep_nat',
+    [
+        True, False,
+    ]
+)
+@pytest.mark.parametrize(
+    'num_workers',
+    [
+        1, 5,
+    ]
+)
+@pytest.mark.parametrize(
+    'data, modified_only, num_variants',
+    [
+        (
+            pytest.DATA_FILES,
+            True,
+            1,
+        ),
+        (
+            pytest.DATA_COLUMN,
+            False,
+            1,
+        ),
+        (
+            pytest.DATA_TABLE,
+            True,
+            3,
+        ),
+    ]
+)
+def test_augment(tmpdir, sampling_rate, resample, keep_nat,
+                 num_workers, data, modified_only, num_variants):
+
+    # create a transformation that sets buffer to 1
+    transform = pytest.TRANSFORM_ONES
+    process = auglib.Augment(
+        transform=transform,
+        sampling_rate=sampling_rate,
+        resample=resample,
+        keep_nat=keep_nat,
+        num_workers=num_workers,
+    )
+
+    for force in [False, True, False]:
+
+        result = process.augment(
+            data,
+            tmpdir,
+            modified_only=modified_only,
+            num_variants=num_variants,
+            force=force,
+        )
+
+        expected = []
+
+        for idx in range(num_variants):
+
+            cache_root_idx = process._safe_cache(tmpdir, idx)
+            segmented = audata.utils.to_segmented_frame(data)
+
+            if not modified_only and idx == 0:
+                if not keep_nat:
+                    files = segmented.index.get_level_values('file')
+                    starts = segmented.index.get_level_values('start')
+                    ends = segmented.index.get_level_values('end')
+                    ends = [
+                        pd.to_timedelta(af.duration(file), 's')
+                        if pd.isna(end) else end
+                        for file, end in zip(files, ends)
+                    ]
+                    index = pd.MultiIndex.from_arrays(
+                        [files, starts, ends],
+                        names=['file', 'start', 'end'],
+                    )
+                    new_data = segmented.copy()
+                    new_data.index = index
+                    expected.append(new_data)
+                else:
+                    expected.append(segmented)
+
+            files = auglib.Augment._out_files(
+                segmented.index.get_level_values('file'),
+                cache_root_idx,
+            )
+            starts = segmented.index.get_level_values('start')
+            ends = segmented.index.get_level_values('end')
+            if not keep_nat:
+                ends = [
+                    pd.to_timedelta(af.duration(file), 's')
+                    if pd.isna(end) else end
+                    for file, end in zip(files, ends)
+                ]
+            index = pd.MultiIndex.from_arrays(
+                [files, starts, ends],
+                names=['file', 'start', 'end'],
+            )
+            new_data = segmented.copy()
+            new_data.index = index
+            expected.append(new_data)
+
+        expected = pd.concat(expected, axis='index')
+        if isinstance(result, pd.Series):
+            pd.testing.assert_series_equal(expected, result)
+        else:
+            pd.testing.assert_frame_equal(expected, result)
+
+        # load augmented file and test if segments are set to 1
+        augmented_file = result.index[-1][0]
+        augmented_signal, augmented_signal_sr = af.read(augmented_file)
+        for start, end in result.loc[augmented_file].index:
+            if pd.isna(end):
+                end = pd.to_timedelta(af.duration(augmented_file), 's')
+            start_i = int(start.total_seconds() * augmented_signal_sr)
+            end_i = int(end.total_seconds() * augmented_signal_sr) - 1
+            np.testing.assert_almost_equal(
+                augmented_signal[start_i:end_i],
+                np.ones(end_i - start_i, dtype=np.float32),
+                decimal=4,
+            )
+
+
+def test_augment_empty(tmpdir):
+
+    data = pd.Series(
+        None,
+        index=pd.MultiIndex.from_arrays(
+            [[], [], []],
+            names=['file', 'start', 'end'],
+        )
+    )
+    transform = pytest.TRANSFORM_ONES
+    process = auglib.Augment(
+        transform=transform,
+    )
+    result = process.augment(data, tmpdir)
+    assert result.empty

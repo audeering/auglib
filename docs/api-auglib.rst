@@ -9,11 +9,12 @@ AudioBuffer
 .. autoclass:: AudioBuffer
     :members:
 
-AudioModifier
--------------
+Augment
+-------
 
-.. autoclass:: AudioModifier
+.. autoclass:: Augment
     :members:
+    :inherited-members:
 
 ExceptionHandling
 -----------------

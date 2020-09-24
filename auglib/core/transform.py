@@ -38,10 +38,11 @@ class Compose(Transform):
         bypass_prob: probability to bypass the transformation
 
     Example:
+
         >>> t = Compose([GainStage(12.0), Clip()])
         >>> with AudioBuffer(5, 16000, value=0.5, unit='samples') as buf:
-        >>>     t(buf)
-        [1. 1. 1. 1. 1.]
+        ...     t(buf)
+        array([1., 1., 1., 1., 1.], dtype=float32)
 
     """
     def __init__(self, transforms: Sequence[Transform], *,
@@ -119,10 +120,11 @@ class Mix(Transform):
         bypass_prob: probability to bypass the transformation
 
     Example:
+
         >>> with AudioBuffer(1.0, 8000) as base:
-        >>>     with AudioBuffer(1.0, 8000, value=1.0) as aux:
-        >>>         Mix(aux)(base)
-        [1. 1. 1. ... 1. 1. 1.]
+        ...     with AudioBuffer(1.0, 8000, value=1.0) as aux:
+        ...         Mix(aux)(base)
+        array([1., 1., 1., ..., 1., 1., 1.], dtype=float32)
 
     """
     def __init__(self, aux: Union[str, Str, Source, AudioBuffer],
@@ -205,10 +207,12 @@ class Append(Transform):
         transform: transformation applied to the auxiliary buffer
         bypass_prob: probability to bypass the transformation
 
-    >>> with AudioBuffer(1.0, 8000) as base:
-    >>>     with AudioBuffer(1.0, 8000, value=1.0) as aux:
-    >>>         Append(aux)(base)
-    [0. 0. 0. ... 1. 1. 1.]
+    Example:
+
+        >>> with AudioBuffer(1.0, 8000) as base:
+        ...     with AudioBuffer(1.0, 8000, value=1.0) as aux:
+        ...         Append(aux)(base)
+        array([0., 0., 0., ..., 1., 1., 1.], dtype=float32)
 
     """
     def __init__(self, aux: Union[str, Str, Source, AudioBuffer], *,
@@ -260,9 +264,11 @@ class AppendValue(Transform):
             ``read_dur_aux`` (see :meth:`auglib.utils.to_samples`)
         bypass_prob: probability to bypass the transformation
 
-    >>> with AudioBuffer(1.0, 8000) as base:
-    >>>     AppendValue(1.0, value=1.0)(base)
-    [0. 0. 0. ... 1. 1. 1.]
+    Example:
+
+        >>> with AudioBuffer(1.0, 8000) as base:
+        ...     AppendValue(1.0, value=1.0)(base)
+        array([0., 0., 0., ..., 1., 1., 1.], dtype=float32)
 
     """
     def __init__(self, duration: Union[int, float, Number],

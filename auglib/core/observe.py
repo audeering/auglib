@@ -13,14 +13,13 @@ class Observable(Object):
     An observable object only reveals its value when it is called.
 
     Example:
-        >>> from auglib import StrList
-        >>> s = StrList(['a', 'b', 'c'], shuffle=True)
+        >>> s = StrList(['a', 'b', 'c'])
         >>> s()
-        b
+        'a'
         >>> s()
-        a
+        'b'
         >>> s()
-        c
+        'c'
 
     """
     def __call__(self) -> Any:
