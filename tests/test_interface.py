@@ -1,7 +1,3 @@
-import glob
-import os
-import shutil
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -11,8 +7,6 @@ import audata.testing
 import audiofile as af
 
 import auglib
-from auglib import NumpyTransform, AudioModifier
-from auglib.transform import NormalizeByPeak, AppendValue
 
 
 @pytest.mark.parametrize('n,sr',
@@ -21,114 +15,8 @@ from auglib.transform import NormalizeByPeak, AppendValue
 def test_numpytransform(n, sr):
 
     x = np.linspace(-0.5, 0.5, num=n)
-    t = NumpyTransform(NormalizeByPeak(), sr)
+    t = auglib.NumpyTransform(auglib.transform.NormalizeByPeak(), sr)
     assert np.abs(t(x)).max() == 1.0
-
-
-@pytest.mark.parametrize('duration', [(5)])
-def test_audiomodifier_apply_on_index(duration):
-    db = audata.testing.create_db(minimal=True)
-    db.schemes['anger'] = audata.Scheme('int', minimum=1, maximum=5)
-    audata.testing.add_table(
-        db,
-        table_id='anger',
-        table_type=audata.define.TableType.FILEWISE,
-        columns='anger'
-    )
-    audata.testing.create_audio_files(db, root='./')
-    df = db['anger'].df
-
-    transform = AppendValue(duration)
-    t = AudioModifier(transform)
-    df_augmented = t.apply_on_index(df.index, 'augmented')
-    assert len(df_augmented) == len(df)
-
-    for index, row in df_augmented.to_frame().reset_index().iterrows():
-        assert af.duration(row['augmented_file']) == af.duration(
-            row['file']) + duration
-
-    shutil.rmtree('audio')
-    shutil.rmtree('augmented')
-
-
-@pytest.mark.parametrize('duration', [(5)])
-def test_audiomodifier_apply_on_database(duration):
-    db = audata.testing.create_db(minimal=True)
-    db.schemes['anger'] = audata.Scheme('int', minimum=1, maximum=5)
-    audata.testing.add_table(
-        db,
-        table_id='anger',
-        table_type=audata.define.TableType.FILEWISE,
-        columns='anger'
-    )
-    audata.testing.create_audio_files(db, root='db')
-    db.save('db')
-
-    transform = AppendValue(duration)
-    t = AudioModifier(transform)
-    t.apply_on_database('db', 'augmented')
-
-    db = audata.Database.load('db')
-    db.map_files(lambda x: os.path.abspath(os.path.join('db', x)))
-    augmented = audata.Database.load('augmented')
-    augmented.map_files(os.path.abspath)
-
-    df = db['anger'].df
-    augmented_df = augmented['anger'].df
-
-    assert len(df) == len(augmented_df)
-
-    for index, row in augmented_df.reset_index().iterrows():
-        original_duration = af.duration(
-            df.index.get_level_values('file')[index])
-        augmented_duration = af.duration(row['file'])
-        assert augmented_duration == original_duration + duration
-
-    shutil.rmtree('db')
-    shutil.rmtree('augmented')
-
-
-@pytest.mark.parametrize('duration', [(5)])
-def test_audiomodifier_apply_on_folder(duration):
-    db = audata.testing.create_db(minimal=True)
-    db.schemes['anger'] = audata.Scheme('int', minimum=1, maximum=5)
-    audata.testing.add_table(
-        db,
-        table_id='anger',
-        table_type=audata.define.TableType.FILEWISE,
-        columns='anger'
-    )
-    audata.testing.create_audio_files(db, root='./')
-
-    transform = AppendValue(duration)
-    t = AudioModifier(transform)
-    t.apply_on_folder('audio', 'augmented')
-
-    clean_files = glob.glob('audio' + '/*.wav')
-    augmented_files = glob.glob('augmented' + '/*.wav')
-
-    assert len(clean_files) == len(augmented_files)
-
-    for augmented_file in augmented_files:
-        assert af.duration(augmented_file) == af.duration(
-            os.path.join('audio', os.path.basename(augmented_file))) + duration
-
-    shutil.rmtree('audio')
-    shutil.rmtree('augmented')
-
-
-@pytest.mark.parametrize('duration', [(5)])
-def test_audiomodifier_apply_on_file(duration):
-    initial_dur = 1  # in seconds
-    sr = 16000
-    dummy_audio = np.zeros(initial_dur * sr)
-    af.write('test.wav', dummy_audio, sr)
-    transform = AppendValue(duration)
-    t = AudioModifier(transform)
-    t.apply_on_file('test.wav', 'augmented.wav')
-    assert af.duration('augmented.wav') == af.duration('test.wav') + duration
-    os.remove('test.wav')
-    os.remove('augmented.wav')
 
 
 @pytest.mark.parametrize(
@@ -203,58 +91,66 @@ def test_augment(tmpdir, sampling_rate, resample, keep_nat,
 
         expected = []
 
+        if isinstance(data, pd.Index):
+            data = data.to_series()
+
         for idx in range(num_variants):
 
             cache_root_idx = process._safe_cache(tmpdir, idx)
             segmented = audata.utils.to_segmented_frame(data)
+            index = segmented.index
 
             if not modified_only and idx == 0:
                 if not keep_nat:
-                    files = segmented.index.get_level_values('file')
-                    starts = segmented.index.get_level_values('start')
-                    ends = segmented.index.get_level_values('end')
+                    files = index.get_level_values('file')
+                    starts = index.get_level_values('start')
+                    ends = index.get_level_values('end')
                     ends = [
                         pd.to_timedelta(af.duration(file), 's')
                         if pd.isna(end) else end
                         for file, end in zip(files, ends)
                     ]
-                    index = pd.MultiIndex.from_arrays(
+                    new_index = pd.MultiIndex.from_arrays(
                         [files, starts, ends],
                         names=['file', 'start', 'end'],
                     )
                     new_data = segmented.copy()
-                    new_data.index = index
+                    new_data.index = new_index
                     expected.append(new_data)
                 else:
                     expected.append(segmented)
 
             files = auglib.Augment._out_files(
-                segmented.index.get_level_values('file'),
+                index.get_level_values('file'),
                 cache_root_idx,
             )
-            starts = segmented.index.get_level_values('start')
-            ends = segmented.index.get_level_values('end')
+            starts = index.get_level_values('start')
+            ends = index.get_level_values('end')
             if not keep_nat:
                 ends = [
                     pd.to_timedelta(af.duration(file), 's')
                     if pd.isna(end) else end
                     for file, end in zip(files, ends)
                 ]
-            index = pd.MultiIndex.from_arrays(
+            new_index = pd.MultiIndex.from_arrays(
                 [files, starts, ends],
                 names=['file', 'start', 'end'],
             )
             new_data = segmented.copy()
-            new_data.index = index
+            new_data.index = new_index
             expected.append(new_data)
 
         expected = pd.concat(expected, axis='index')
         if isinstance(result, pd.Series):
             pd.testing.assert_series_equal(expected, result)
-        else:
+        elif isinstance(result, pd.DataFrame):
             pd.testing.assert_frame_equal(expected, result)
+        else:
+            pd.testing.assert_index_equal(expected.index, result)
 
         # load augmented file and test if segments are set to 1
+        if isinstance(result, pd.Index):
+            result = result.to_series()
         augmented_file = result.index[-1][0]
         augmented_signal, augmented_signal_sr = af.read(augmented_file)
         for start, end in result.loc[augmented_file].index:
@@ -284,3 +180,37 @@ def test_augment_empty(tmpdir):
     )
     result = process.augment(data, tmpdir)
     assert result.empty
+
+
+@pytest.mark.parametrize(
+    'remove_root',
+    [
+        None,
+        pytest.AUDB_ROOT,
+        pytest.param(
+            '/invalid/directory', marks=pytest.mark.xfail(raises=RuntimeError)
+        ),
+        pytest.param(
+            pytest.AUDB_ROOT[:len(pytest.AUDB_ROOT) - 1],
+            marks=pytest.mark.xfail(raises=RuntimeError)
+        )
+    ]
+)
+def test_augment_remove_root(tmpdir, remove_root):
+
+    data = pytest.DATA_FILES
+    original_file = data[0]
+    transform = pytest.TRANSFORM_ONES
+    process = auglib.Augment(
+        transform=transform,
+    )
+    result = process.augment(
+        data,
+        tmpdir,
+        remove_root=remove_root,
+    )
+    augmented_file = result.levels[0][0]
+    if remove_root is None:
+        augmented_file.endswith(original_file)
+    else:
+        augmented_file.endswith(original_file.replace(remove_root, ''))

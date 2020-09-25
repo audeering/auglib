@@ -112,9 +112,7 @@ Augment database
 
 In this section we will show how a :class:`auglib.Transform`
 object can be applied to a database in `Unified Format`_.
-
-Therefore, we pass it to an instance of :class:`auglib.Augment`,
-which creates an interface with additional functions.
+Therefore, we pass it to an instance of :class:`auglib.Augment`.
 
 .. jupyter-execute::
 
@@ -126,8 +124,16 @@ which creates an interface with additional functions.
         num_workers=5,       # using 5 threads
     )
 
-To demonstrate the new interface,
+To demonstrate the :class:`auglib.Augment` interface,
 we load a database with some empty files.
+
+.. Pre-load database to cache
+.. jupyter-execute::
+    :stderr:
+    :hide-code:
+    :hide-output:
+
+    db = audb.load('testdata', version='1.5.0')
 
 .. jupyter-execute::
 
@@ -136,8 +142,7 @@ we load a database with some empty files.
 .. jupyter-execute::
     :hide-code:
 
-    files = db.files[:5]
-    signal, sampling_rate = audiofile.read(files[0])
+    signal, sampling_rate = audiofile.read(db.files[0])
     plot(signal, sampling_rate)
 
 In memory
@@ -149,6 +154,7 @@ The result is a column of augmented signals at 8 kHz.
 
 .. jupyter-execute::
 
+    files = db.files[:5]
     result = augment.process_files(
         files=files,
     )
@@ -193,17 +199,16 @@ To disk
 
 Therefore, the interface offers another method
 :meth:`auglib.Augment.augment`, which takes
-as input a column or table in `Unified Format`_,
+as input an index, column or table in `Unified Format`_,
 but instead of returning the augmented signals
 it stores them back to disk.
-The result is column or table with the same content (e.g. labels),
-but a new index pointing to the augmented files.
+The result is an index, column or table pointing to the augmented files.
 
 .. jupyter-execute::
 
-    column = db['happiness.dev.gold']['happiness'].get()[:10]
+    segments = db.segments[:10]
     result = augment.augment(
-        column_or_table=column,
+        data=segments,
         cache_root='cache',
     )
     result
@@ -214,8 +219,20 @@ we can spot the augmented segments.
 .. jupyter-execute::
     :hide-code:
 
-    augmented_signal, _ = audiofile.read(result.index[0][0])
+    augmented_signal, _ = audiofile.read(result[0][0])
     plot(augmented_signal, augment.sampling_rate)
+
+Instead of an index, we also pass a column and
+the column data will be kept:
+
+.. jupyter-execute::
+
+    column = db['happiness.dev.gold']['happiness'].get()[:10]
+    result = augment.augment(
+        data=column,
+        cache_root='cache',
+    )
+    result
 
 Finally, we the repeat last command on a table,
 this time keeping the original files
@@ -225,7 +242,7 @@ and augmenting every file twice.
 
     table = db['happiness.dev.gold'].get()[:10]
     result = augment.augment(
-        column_or_table=table,
+        data=table,
         cache_root='cache',
         modified_only=False,
         num_variants=2,

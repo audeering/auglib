@@ -29,7 +29,7 @@ def _make_tree(files: typing.Sequence[str]):  # pragma: no cover
         audeer.mkdir(d)
 
 
-class NumpyTransform(object):
+class NumpyTransform:
     r"""Interface for data augmentation on numpy arrays.
 
     Wraps a :class:`auglib.Transform` under a ``Callable``
@@ -52,7 +52,11 @@ class NumpyTransform(object):
         return transformed
 
 
-class AudioModifier(object):  # pragma: no cover
+@audeer.deprecated(
+    removal_version='0.7.0',
+    alternative='Augment',
+)
+class AudioModifier:  # pragma: no cover
     r"""Interface for modifying audio offline.
 
     Provides utility functions for :class:`auglib.Transform`. Enables
@@ -74,7 +78,6 @@ class AudioModifier(object):  # pragma: no cover
         .html
 
     """
-
     def __init__(self, transform: Transform,
                  precision: str = '16bit',
                  normalize: bool = False):
@@ -325,7 +328,7 @@ class Augment(audinterface.Process):
     and turns it into an object that can be applied on a list of files
     and data in the Unified Format.
 
-    Note that all ``process_*`` methods return a column
+    Note that all :meth:`auglib.Augment.process_*` methods return a column
     holding the augmented signals or segments,
     whereas :meth:`auglib.Augment.augment`
     stores the augmented signals back to disk
@@ -350,7 +353,30 @@ class Augment(audinterface.Process):
     Raises:
         ValueError: if ``resample = True``, but ``sampling_rate = None``
 
-    """
+    Example:
+        >>> import audb
+        >>> import audeer
+        >>> import auglib
+        >>> db = audb.load(
+        ...     'testdata',
+        ...     version='1.5.0',
+        ...     verbose=False,
+        ... )
+        >>> transform = auglib.transform.WhiteNoiseUniform()
+        >>> augmentation = auglib.Augment(transform)
+        >>> column = db['emotion.test.gold']['emotion'].get()
+        >>> augmented_column = augmentation.augment(
+        ...     column,
+        ...     'cache',
+        ...     remove_root=db.meta['audb']['root'],
+        ... )
+        >>> label = augmented_column[0]  # file of first segment
+        >>> file = augmented_column.index[0][0]  # label of first segment
+        >>> file = file.replace(audeer.safe_path('.'), '.')  # remove absolute path
+        >>> file, label
+        ('./cache/6bbe88f5-8e8b-6240-a82b-402533d9504e/0/audio/006.wav', 'unhappy')
+
+    """  # noqa: E501
     def __init__(
             self,
             transform: Transform,
@@ -378,33 +404,40 @@ class Augment(audinterface.Process):
 
     def augment(
             self,
-            column_or_table: typing.Union[pd.Series, pd.DataFrame],
+            data: typing.Union[pd.Index, pd.Series, pd.DataFrame],
             cache_root: str,
             *,
+            remove_root: str = None,
             channel: int = None,
             modified_only: bool = True,
             num_variants: int = 1,
             force: bool = False,
-    ) -> typing.Union[pd.Series, pd.DataFrame]:
-        r"""Apply data augmentation to a column or table in Unified Format.
+    ) -> typing.Union[pd.Index, pd.Series, pd.DataFrame]:
+        r"""Augment an Unified Format index, column, or table.
 
         Creates ``num_variants`` copies of the files referenced in the index
-        and augments every segment individually.
+        and augments them.
+        If the index is segmented, only the segments are augmented.
         Augmented files are stored as
-        ``<cache_root>/<uid>/<variant>/<subdir>/<filename>``,
-        where ``subdir`` is the directory tree that remains after removing
-        the common directory shared by all files.
+        ``<cache_root>/<uid>/<variant>/<original_path>``.
+        It is possible to shorten the path by setting ``remove_root``
+        to a directory that should be removed from ``<original_path>``
+        (e.g. the ``audb`` cache folder).
         Parts of the signals that are not covered by at least one segment
         are not augmented.
-        The result is a column / table with a new index that
-        references the augmented files, but the same column / table data.
+        The result is an index, column or table that references the
+        augmented files.
+        If the input is a column or table data, the original content is kept.
         If ``num_variants > 1`` the data is duplicated accordingly.
-        If ``modified_only`` is set to ``False`` includes the original
-        index.
+        If ``modified_only`` is set to ``False`` the original index is also
+        included.
 
         Args:
-            column_or_table: table or column from a database stored in Unified Format
+            data: index, column or table in Unified Format
             cache_root: root directory under which augmented files are stored
+            remove_root: set a path that should be removed from
+                the beginning of the original file path before joining with
+                ``cache_root``
             channel: channel number starting from 0
             modified_only: return only modified segments, otherwise
                 combine original and modified segments
@@ -413,56 +446,71 @@ class Augment(audinterface.Process):
             force: overwrite existing files
 
         Returns:
-            column or table with new index
+            index, column or table including augmented files
 
         Raises:
             RuntimeError: if sampling rates of file and transformation do not
                 match
 
         """
-        column_or_table = audata.utils.to_segmented_frame(column_or_table)
+        data = audata.utils.to_segmented_frame(data)
         modified = []
 
-        if column_or_table.empty:
-            return column_or_table
+        if data.empty:
+            return data
+
+        if isinstance(data, pd.Index):
+            index = data
+            data = data.to_series()
+            return_index = True
+        else:
+            index = data.index
+            return_index = False
 
         for idx in range(num_variants):
 
             cache_root_idx = self._safe_cache(cache_root, idx)
             series = self._augment_index(
-                column_or_table.index,
+                index,
                 cache_root_idx,
+                remove_root,
                 channel,
                 force,
             )
 
             if not modified_only and idx == 0:
-                new_column_or_table = column_or_table.copy()
-                new_column_or_table.index = series.index
-                modified.append(new_column_or_table)
+                new_data = data.copy()
+                new_data.index = series.index
+                modified.append(new_data)
 
+            files = series.index.get_level_values(0).unique()
             new_level = [
-                series[level].values[0] for level in series.index.levels[0]
+                series[file].values[0] for file in files
             ]
             new_index = series.index.set_levels(new_level, level=0)
-            new_column_or_table = column_or_table.copy()
-            new_column_or_table.index = new_index
-            modified.append(new_column_or_table)
+            new_data = data.copy()
+            new_data.index = new_index
+            modified.append(new_data)
 
-        return pd.concat(modified, axis=0)
+        result = pd.concat(modified, axis=0)
+        if return_index:
+            return result.index
+        else:
+            return result
 
     def _augment_index(
             self,
             index: pd.MultiIndex,
             cache_root: str,
+            remove_root: str,
             channel: int,
             force: bool,
     ) -> pd.Series:
         r"""Augment from a segmented index and store augmented files to disk.
         Returns a series that points to the augmented files."""
 
-        files = index.levels[0]
-        out_files = Augment._out_files(files, cache_root)
+        files = index.get_level_values(0).unique()
+        out_files = Augment._out_files(files, cache_root, remove_root)
         params = [
             (
                 (
@@ -585,7 +633,7 @@ class Augment(audinterface.Process):
             idx: int,
     ) -> typing.Optional[str]:
         if cache_root is not None:
-            cache_root = audeer.safe_path(cache_root)
+            cache_root = os.path.realpath(audeer.safe_path(cache_root))
             uid = audeer.uid(from_string=str(self.transform))
             cache_root = os.path.join(cache_root, uid, str(idx))
         return cache_root
@@ -594,14 +642,32 @@ class Augment(audinterface.Process):
     def _out_files(
             files: typing.Sequence[str],
             cache_root: str,
+            remove_root: str = None,
     ) -> typing.Sequence[str]:
-        r"""Return cache file names by replacing the common directory path
-        all files have in common with the cache directory."""
+        r"""Return cache file names by joining with the cache directory."""
         files = [audeer.safe_path(file) for file in files]
-        dirs = [os.path.dirname(file) for file in files]
-        common_dir = audeer.common_directory(dirs)
         cache_root = audeer.safe_path(cache_root)
-        out_files = [file.replace(common_dir, cache_root) for file in files]
+        if remove_root is None:
+            def join(path1: str, path2: str) -> str:
+                seps = os.sep + os.altsep if os.altsep else os.sep
+                return os.path.join(
+                    path1, os.path.splitdrive(path2)[1].lstrip(seps),
+                )
+            out_files = [
+                join(cache_root, file) for file in files
+            ]
+        else:
+            remove_root = audeer.safe_path(remove_root)
+            dirs = [os.path.dirname(file) for file in files]
+            common_root = audeer.common_directory(dirs)
+            if not audeer.common_directory(
+                [remove_root, common_root]
+            ) == remove_root:
+                raise RuntimeError(f"Cannot remove '{remove_root}' "
+                                   f"from '{common_root}'.")
+            out_files = [
+                file.replace(remove_root, cache_root, 1) for file in files
+            ]
         return out_files
 
     @staticmethod

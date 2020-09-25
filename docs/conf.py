@@ -32,6 +32,9 @@ extensions = [
     'sphinx_copybutton',  # for "copy to clipboard" buttons
 ]
 
+copybutton_prompt_text = r'>>> |\.\.\. '
+copybutton_prompt_is_regexp = True
+
 napoleon_use_ivar = True  # List of class attributes
 autodoc_inherit_docstrings = False  # disable docstring inheritance
 
