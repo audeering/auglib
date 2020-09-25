@@ -321,6 +321,16 @@ class AudioModifier(object):  # pragma: no cover
 class Augment(audinterface.Process):
     r"""Augmentation interface.
 
+    Provides an interface for :class:`auglib.Transform`
+    and turns it into an object that can be applied on a list of files
+    and data in the Unified Format.
+
+    Note that all ``process_*`` methods return a column
+    holding the augmented signals or segments,
+    whereas :meth:`auglib.Augment.augment`
+    stores the augmented signals back to disk
+    and returns an index pointing to the augmented files.
+
     Args:
         transform: transformation object
         sampling_rate: sampling rate in Hz.
@@ -393,9 +403,9 @@ class Augment(audinterface.Process):
         index.
 
         Args:
-            column_or_table: table
+            column_or_table: table or column from a database stored in Unified Format
             cache_root: root directory under which augmented files are stored
-            channel: channel number
+            channel: channel number starting from 0
             modified_only: return only modified segments, otherwise
                 combine original and modified segments
             num_variants: number of variations that are created for every

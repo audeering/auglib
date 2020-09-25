@@ -1,3 +1,7 @@
+audb
+matplotlib
+jupyter-sphinx
 sphinx
 sphinx-audeering-theme
 sphinx-autodoc-typehints
+sphinx-copybutton

@@ -23,11 +23,13 @@ source_suffix = '.rst'
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints']
 pygments_style = None
 extensions = [
+    'jupyter_sphinx',  # executing code blocks
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',  # support for Google-style docstrings
     'sphinx_autodoc_typehints',
+    'sphinx_copybutton',  # for "copy to clipboard" buttons
 ]
 
 napoleon_use_ivar = True  # List of class attributes
@@ -49,6 +51,7 @@ html_theme_options = {
     'logo_only': False,
 }
 html_title = title
+html_static_path = ['_static']
 
 
 # Linkcheck ---------------------------------------------------------------
