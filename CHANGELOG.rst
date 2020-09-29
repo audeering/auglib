@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
+Version 0.5.3 (2020-09-29)
+--------------------------
+
+* Added: documentation on supported bit rates to :class:`auglib.transform.AMRNB`
+* Added: link to documentation to Python package
+
 
 Version 0.5.2 (2020-08-31)
 --------------------------
