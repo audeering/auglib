@@ -6,6 +6,17 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
+
+Version 0.6.0 (2020-09-29)
+--------------------------
+
+* Added: :class:`auglib.Augment`
+* Changed: use ``audeer`` helper functions
+* Changed: implement usage example with ``jupyter-sphinx``
+* Changed: mark :class:`auglib.AudioModifier` as deprecated
+* Removed: tests for :class:`auglib.AudioModifier`
+
+
 Version 0.5.3 (2020-09-29)
 --------------------------
 
