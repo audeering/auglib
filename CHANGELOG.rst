@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
+Version 0.6.1 (2020-10-08)
+--------------------------
+
+* Added: :class:`auglib.Transform.Trim`.
+* Changed: :meth:`auglib.Transform.call` made private (changed into
+  :meth:`auglib.Transform._call`).
+
 
 Version 0.6.0 (2020-09-29)
 --------------------------
