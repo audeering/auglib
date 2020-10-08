@@ -123,6 +123,12 @@ ToneShape
 .. autoclass:: ToneShape
     :members:
 
+Trim
+---------
+
+.. autoclass:: Trim
+    :members:
+
 WhiteNoiseGaussian
 ------------------
 

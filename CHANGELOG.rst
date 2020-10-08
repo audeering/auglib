@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
+
+Version 0.6.2 (2020-10-08)
+--------------------------
+
+* Fixed: missing documentation for :class:`auglib.Transform.Trim`
+
+
 Version 0.6.1 (2020-10-08)
 --------------------------
 
