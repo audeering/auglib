@@ -6,7 +6,7 @@ import auglib
 
 
 class Ones(auglib.Transform):
-    def call(self, buf: auglib.AudioBuffer):
+    def _call(self, buf: auglib.AudioBuffer):
         buf.data.fill(1)
 
 

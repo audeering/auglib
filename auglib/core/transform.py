@@ -50,7 +50,7 @@ class Compose(Transform):
         super().__init__(bypass_prob)
         self.transforms = transforms
 
-    def call(self, buf: AudioBuffer) -> AudioBuffer:
+    def _call(self, buf: AudioBuffer) -> AudioBuffer:
         for t in self.transforms:
             t(buf)
         return buf
@@ -69,7 +69,7 @@ class Select(Transform):
         super().__init__(bypass_prob)
         self.transforms = transforms
 
-    def call(self, buf: AudioBuffer) -> AudioBuffer:
+    def _call(self, buf: AudioBuffer) -> AudioBuffer:
         idx = np.random.randint(len(self.transforms))
         self.transforms[idx](buf)
         return buf
@@ -173,7 +173,7 @@ class Mix(Transform):
                             gain_aux_db, write_pos_base, read_pos_aux,
                             read_dur_aux, clip_mix, loop_aux, extend_base)
 
-    def call(self, buf: AudioBuffer) -> AudioBuffer:
+    def _call(self, buf: AudioBuffer) -> AudioBuffer:
         if isinstance(self.aux, AudioBuffer):
             self._mix(buf, self.aux)
         elif isinstance(self.aux, Source):
@@ -241,7 +241,7 @@ class Append(Transform):
         lib.AudioBuffer_append(base.obj, aux.obj, read_pos_aux,
                                read_dur_aux)
 
-    def call(self, buf: AudioBuffer) -> AudioBuffer:
+    def _call(self, buf: AudioBuffer) -> AudioBuffer:
         if isinstance(self.aux, AudioBuffer):
             self._append(buf, self.aux)
         elif isinstance(self.aux, Source):
@@ -281,7 +281,7 @@ class AppendValue(Transform):
         self.unit = unit
 
     @_check_data_decorator
-    def call(self, buf: AudioBuffer) -> AudioBuffer:
+    def _call(self, buf: AudioBuffer) -> AudioBuffer:
         with AudioBuffer(duration=self.duration,
                          sampling_rate=buf.sampling_rate,
                          value=self.value, unit=self.unit) as aux:
@@ -323,7 +323,7 @@ class Trim(Transform):
         self.unit = unit
 
     @_check_data_decorator
-    def call(self, buf: AudioBuffer) -> AudioBuffer:
+    def _call(self, buf: AudioBuffer) -> AudioBuffer:
         start_pos = to_samples(observe(self.start_pos), buf.sampling_rate,
                                unit=self.unit, length=len(buf))
         duration = to_samples(observe(self.duration), buf.sampling_rate,
@@ -359,7 +359,7 @@ class Clip(Transform):
         self.soft = soft
         self.normalize = normalize
 
-    def call(self, buf: AudioBuffer) -> AudioBuffer:
+    def _call(self, buf: AudioBuffer) -> AudioBuffer:
         threshold = observe(self.threshold)
         soft = observe(self.soft)
         normalize = observe(self.normalize)
@@ -397,7 +397,7 @@ class ClipByRatio(Transform):
         self.soft = soft
         self.normalize = normalize
 
-    def call(self, buf: AudioBuffer) -> AudioBuffer:
+    def _call(self, buf: AudioBuffer) -> AudioBuffer:
         ratio = observe(self.ratio)
         soft = observe(self.soft)
         normalize = observe(self.normalize)
@@ -422,7 +422,7 @@ class NormalizeByPeak(Transform):
         self.peak_db = peak_db
         self.clip = clip
 
-    def call(self, buf: AudioBuffer) -> AudioBuffer:
+    def _call(self, buf: AudioBuffer) -> AudioBuffer:
         peak_db = observe(self.peak_db)
         clip = observe(self.clip)
         lib.AudioBuffer_normalizeByPeak(buf.obj, peak_db, clip)
@@ -458,7 +458,7 @@ class GainStage(Transform):
         self.max_peak_db = max_peak_db
         self.clip = clip
 
-    def call(self, buf: AudioBuffer) -> AudioBuffer:
+    def _call(self, buf: AudioBuffer) -> AudioBuffer:
         gain_db = observe(self.gain_db)
         clip = observe(self.clip)
         max_peak_db = observe(self.max_peak_db)
@@ -500,7 +500,7 @@ class FFTConvolve(Transform):
         lib.AudioBuffer_fftConvolve(base.obj, aux.obj, keep_tail)
 
     @_check_data_decorator
-    def call(self, buf: AudioBuffer) -> AudioBuffer:
+    def _call(self, buf: AudioBuffer) -> AudioBuffer:
         if isinstance(self.aux, AudioBuffer):
             self._fft_convolve(buf, self.aux)
         elif isinstance(self.aux, Source):
@@ -539,7 +539,7 @@ class LowPass(Transform):
         self.order = order
         self.design = design
 
-    def call(self, buf: AudioBuffer) -> AudioBuffer:
+    def _call(self, buf: AudioBuffer) -> AudioBuffer:
         cutoff = observe(self.cutoff)
         order = observe(self.order)
         if self.design == FilterDesign.BUTTERWORTH.value:
@@ -568,7 +568,7 @@ class HighPass(Transform):
         self.order = order
         self.design = design
 
-    def call(self, buf: AudioBuffer) -> AudioBuffer:
+    def _call(self, buf: AudioBuffer) -> AudioBuffer:
         cutoff = observe(self.cutoff)
         order = observe(self.order)
         if self.design == FilterDesign.BUTTERWORTH.value:
@@ -600,7 +600,7 @@ class BandPass(Transform):
         self.order = order
         self.design = design
 
-    def call(self, buf: AudioBuffer) -> AudioBuffer:
+    def _call(self, buf: AudioBuffer) -> AudioBuffer:
         center = observe(self.center)
         bandwidth = observe(self.bandwidth)
         order = observe(self.order)
@@ -634,7 +634,7 @@ class BandStop(Transform):
         self.order = order
         self.design = design
 
-    def call(self, buf: AudioBuffer) -> AudioBuffer:
+    def _call(self, buf: AudioBuffer) -> AudioBuffer:
         center = observe(self.center)
         bandwidth = observe(self.bandwidth)
         order = observe(self.order)
@@ -660,7 +660,7 @@ class WhiteNoiseUniform(Transform):
         super().__init__(bypass_prob)
         self.gain_db = gain_db
 
-    def call(self, buf: AudioBuffer) -> AudioBuffer:
+    def _call(self, buf: AudioBuffer) -> AudioBuffer:
         gain_db = observe(self.gain_db)
         lib.AudioBuffer_addWhiteNoiseUniform(buf.obj, gain_db)
         return buf
@@ -683,7 +683,7 @@ class WhiteNoiseGaussian(Transform):
         self.gain_db = gain_db
         self.stddev = stddev
 
-    def call(self, buf: AudioBuffer) -> AudioBuffer:
+    def _call(self, buf: AudioBuffer) -> AudioBuffer:
         gain_db = observe(self.gain_db)
         stddev = observe(self.stddev)
         lib.AudioBuffer_addWhiteNoiseGaussian(buf.obj, gain_db, stddev)
@@ -704,7 +704,7 @@ class PinkNoise(Transform):
         super().__init__(bypass_prob)
         self.gain_db = gain_db
 
-    def call(self, buf: AudioBuffer) -> AudioBuffer:
+    def _call(self, buf: AudioBuffer) -> AudioBuffer:
         gain_db = observe(self.gain_db)
         lib.AudioBuffer_addPinkNoise(buf.obj, gain_db)
         return buf
@@ -748,7 +748,7 @@ class Tone(Transform):
         self.lfo_rate = lfo_rate
         self.lfo_range = lfo_range
 
-    def call(self, buf: AudioBuffer) -> AudioBuffer:
+    def _call(self, buf: AudioBuffer) -> AudioBuffer:
         freq = observe(self.freq)
         gain_db = observe(self.gain_db)
         lfo_rate = observe(self.lfo_rate)
@@ -812,7 +812,7 @@ class CompressDynamicRange(Transform):
         self.makeup_db = makeup_db
         self.clip = clip
 
-    def call(self, buf: AudioBuffer) -> AudioBuffer:
+    def _call(self, buf: AudioBuffer) -> AudioBuffer:
         threshold_db = observe(self.threshold_db)
         ratio = observe(self.ratio)
         attack_time = observe(self.attack_time)
@@ -860,7 +860,7 @@ class AMRNB(Transform):
         self.bit_rate = bit_rate
         self.dtx = dtx
 
-    def call(self, buf: AudioBuffer) -> AudioBuffer:
+    def _call(self, buf: AudioBuffer) -> AudioBuffer:
         bit_rate = observe(self.bit_rate)
         dtx = observe(self.dtx)
         lib.AudioBuffer_AMRNB(buf.obj, bit_rate, 1 if dtx else 0)

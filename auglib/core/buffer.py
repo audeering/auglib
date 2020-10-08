@@ -232,7 +232,7 @@ class Transform(Object):
     def __call__(self, buf: AudioBuffer) -> AudioBuffer:
         bypass_prob = observe(self.bypass_prob)
         if bypass_prob is None or np.random.random_sample() >= bypass_prob:
-            self.call(buf)
+            self._call(buf)
         return buf
 
 
