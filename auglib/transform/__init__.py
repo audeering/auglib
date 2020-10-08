@@ -19,6 +19,7 @@ from auglib.core.transform import (
     Select,
     Tone,
     ToneShape,
+    Trim,
     WhiteNoiseGaussian,
     WhiteNoiseUniform
 )

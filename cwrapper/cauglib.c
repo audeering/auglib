@@ -121,11 +121,15 @@ extern "C"
         CALL(obj->append(*aux, readPos_aux, readLength_aux))
     }
 
+    void AudioBuffer_trim(cAudioBuffer *obj, size_t start, size_t length = 0)
+    {
+        CALL(obj->trim(start, length))
+    }
+
     void AudioBuffer_addWhiteNoiseGaussian(cAudioBuffer *obj, float gain_dB, float stddev = 0.3)
     {
         CALL(obj->addWhiteNoiseGaussian(gain_dB, auglib_randEngine, stddev, false))
     }
-
 
     void AudioBuffer_addWhiteNoiseUniform(cAudioBuffer *obj, float gain_dB)
     {

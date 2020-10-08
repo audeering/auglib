@@ -12,8 +12,7 @@ In order to build the C wrapper:
     * `autoconf`
     * `./configure && make && sudo make install`
 2. Clone and build `auglib` (static version) in *release* mode (follow
- instructions on https
-://gitlab.audeering.com/tools/auglib)
+ instructions on https://gitlab.audeering.com/tools/auglib)
 3. Set $AUGLIB to the path where the `auglib` repo was cloned:
     ```
     export AUGLIB=</path/to/auglib>

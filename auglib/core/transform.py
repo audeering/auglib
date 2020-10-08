@@ -90,7 +90,7 @@ class Mix(Transform):
     Selecting a sub-segment of the auxiliary buffer is possible by means of
     ``read_pos_aux`` (the initial position of the reading pointer) and
     ``read_dur_aux`` (the total length of the selected segment). Note
-    ``read_dur_aux = 0`` (default value) has the effect of selecting
+    ``read_dur_aux = None`` (default value) has the effect of selecting
     the whole auxiliary buffer. In order to force clipping of the mixed
     signal between 1.0 and -1.0, the ``clip_mix``  argument can be
     set. In order to allow the looping of the auxiliary buffer (or the
@@ -107,7 +107,7 @@ class Mix(Transform):
         write_pos_base: write position of base buffer (see ``unit``)
         read_pos_aux: read position of auxiliary buffer (see ``unit``)
         read_dur_aux: duration to read from auxiliary buffer (see
-            ``unit``). Set to 0 to read the whole buffer.
+            ``unit``). Set to None to read the whole buffer.
         clip_mix: clip amplitude values of base buffer to the [-1, 1]
             interval (after mixing)
         loop_aux: loop auxiliary buffer if shorter than base buffer
@@ -260,8 +260,8 @@ class AppendValue(Transform):
     Args:
         duration: duration to read from auxiliary buffer (see ``unit``)
         value: value to append
-        unit: literal specifying the format of ``read_pos_aux`` and
-            ``read_dur_aux`` (see :meth:`auglib.utils.to_samples`)
+        unit: Literal specifying the format of ``duration`` (see
+            :meth:`auglib.utils.to_samples`).
         bypass_prob: probability to bypass the transformation
 
     Example:
@@ -286,6 +286,49 @@ class AppendValue(Transform):
                          sampling_rate=buf.sampling_rate,
                          value=self.value, unit=self.unit) as aux:
             Append(aux)(buf)
+        return buf
+
+
+class Trim(Transform):
+    r"""Trims base buffer to desired duration, given a desired starting point.
+
+    Args:
+        start_pos: Starting point of the trimmed region, relative to the input
+            buffer (see ``unit``).
+        duration: Target duration of the resulting buffer (see ``unit``). If
+            set to None, the selected section extends until the end of the
+            original buffer.
+        unit: Literal specifying the format of ``start`` and ``duration`` (see
+            :meth:`auglib.utils.to_samples`).
+        bypass_prob: Probability to bypass the transformation.
+
+    Example:
+
+        >>> with AudioBuffer(0.5, 8000) as buf:
+        ...     AppendValue(0.5, value=1.0)(buf)
+        ...     Trim(start_pos=0.5)(buf)
+        array([0., 0., 0., ..., 1., 1., 1.], dtype=float32)
+        array([1., 1., 1., ..., 1., 1., 1.], dtype=float32)
+
+    """
+    def __init__(self,
+                 *,
+                 start_pos: Union[int, float, Number] = 0,
+                 duration: Union[int, float, Number] = None,
+                 unit: str = 'seconds',
+                 bypass_prob: Union[float, Float] = None):
+        super().__init__(bypass_prob)
+        self.start_pos = start_pos
+        self.duration = duration or 0
+        self.unit = unit
+
+    @_check_data_decorator
+    def call(self, buf: AudioBuffer) -> AudioBuffer:
+        start_pos = to_samples(observe(self.start_pos), buf.sampling_rate,
+                               unit=self.unit, length=len(buf))
+        duration = to_samples(observe(self.duration), buf.sampling_rate,
+                              unit=self.unit, length=len(buf))
+        lib.AudioBuffer_trim(buf.obj, start_pos, duration)
         return buf
 
 

@@ -5,10 +5,10 @@ import pytest
 from auglib import AudioBuffer
 from auglib.core.buffer import lib
 from auglib.utils import random_seed
-from auglib.transform import Mix, Append, NormalizeByPeak, Clip, ClipByRatio, \
-    GainStage, FFTConvolve, LowPass, HighPass, BandPass, BandStop, \
-    WhiteNoiseUniform, WhiteNoiseGaussian, PinkNoise, Tone, ToneShape, \
-    CompressDynamicRange, AMRNB
+from auglib.transform import Mix, Append, AppendValue, Trim, NormalizeByPeak, \
+    Clip, ClipByRatio, GainStage, FFTConvolve, LowPass, HighPass, BandPass, \
+    BandStop, WhiteNoiseUniform, WhiteNoiseGaussian, PinkNoise, Tone, \
+    ToneShape, CompressDynamicRange, AMRNB
 from auglib.utils import to_samples, to_db, from_db
 
 
@@ -122,6 +122,36 @@ def test_append(base_dur, aux_dur, sr, unit):
         assert base.data[-1] == 1
 
     aux.free()
+
+
+@pytest.mark.parametrize('start,dur,sr',
+                         [(0.1, 0.8, 8000),
+                          (0.25, 0.5, 8000),
+                          (0.1, None, 8000),
+                          (0.1, 0.8, 16000),
+                          (0.25, 0.5, 16000),
+                          (0.1, None, 16000), ])
+def test_trim(start, dur, sr):
+    # start from a step signal (0.5s of zeros, then 0.5s of ones) and trim out
+    # different portions
+    block_dur = 0.5
+    target_start = start
+    if target_start is None:
+        target_start = 0
+    target_dur = dur
+    if target_dur is None:
+        target_dur = 2 * block_dur - target_start
+    target_length = int(round(target_dur * sr))
+
+    target_array = np.append(
+        np.zeros(int((block_dur - target_start) * sr)),
+        np.ones(int((target_start + target_dur - block_dur) * sr))
+    )
+    with AudioBuffer(block_dur, sr) as buf:
+        AppendValue(block_dur, value=1.0)(buf)
+        Trim(start_pos=start, duration=dur)(buf)
+        assert len(buf) == target_length
+        np.testing.assert_equal(target_array, buf.data)
 
 
 @pytest.mark.parametrize('n,sr',

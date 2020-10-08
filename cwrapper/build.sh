@@ -1,5 +1,5 @@
 rm ./cauglib.o
-rm ../auglib/bin/*.so
+rm ../auglib/core/bin/libcauglib.so
 
 g++ -c -fPIC cauglib.c -o cauglib.o \
 -I$AUGLIB \

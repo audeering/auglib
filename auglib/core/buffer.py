@@ -216,7 +216,7 @@ class Transform(Object):
     def __init__(self, bypass_prob: Union[float, Float] = None):
         self.bypass_prob = bypass_prob
 
-    def call(self, buf: AudioBuffer):
+    def _call(self, buf: AudioBuffer):
         r"""Transforms an :class:`auglib.AudioBuffer`.
 
         Args:
