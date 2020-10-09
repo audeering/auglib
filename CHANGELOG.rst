@@ -7,6 +7,12 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Unreleased
+----------
+
+* Removed: previously deprecated :class:`auglib.AudioModifier` is now removed.
+
+
 Version 0.6.3 (2020-10-09)
 --------------------------
 

@@ -15,7 +15,6 @@ from auglib.core.exception import (
     set_exception_handling,
 )
 from auglib.core.interface import (
-    AudioModifier,
     Augment,
     NumpyTransform,
 )
