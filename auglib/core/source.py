@@ -2,8 +2,15 @@ from typing import Union, Sequence
 
 import numpy as np
 
-from .observe import Float, Str
-from .buffer import AudioBuffer, Source, Transform
+from auglib.core.observe import (
+    Float,
+    Str,
+)
+from auglib.core.buffer import (
+    AudioBuffer,
+    Source,
+    Transform,
+)
 
 
 class FromArray(Source):

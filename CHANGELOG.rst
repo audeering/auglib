@@ -7,6 +7,13 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Unreleased
+----------
+
+* Changed: now using the ``audobject`` package to serialize
+  :class:`auglib.Transform` objects to YAML.
+
+
 Version 0.6.2 (2020-10-08)
 --------------------------
 

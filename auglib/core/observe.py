@@ -4,10 +4,10 @@ import random
 import numpy as np
 import scipy.stats
 
-from .common import Object
+import audobject
 
 
-class Observable(Object):
+class Observable(audobject.Object):
     r"""An observable object.
 
     An observable object only reveals its value when it is called.

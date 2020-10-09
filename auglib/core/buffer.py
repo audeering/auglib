@@ -5,15 +5,24 @@ import audiofile as af
 import numpy as np
 
 import audeer
+import audobject
 
-from .api import lib
-from .common import Object
-from .observe import observe, Number, Float, Str
-from .utils import to_samples, safe_path, assert_non_negative_number
-from .exception import _check_exception_decorator
+from auglib.core.api import lib
+from auglib.core.observe import (
+    Float,
+    Number,
+    observe,
+    Str,
+)
+from auglib.core.utils import (
+    assert_non_negative_number,
+    to_samples,
+    safe_path,
+)
+from auglib.core.exception import _check_exception_decorator
 
 
-class AudioBuffer(object):
+class AudioBuffer:
     r"""Holds a chunk of audio.
 
     By default an audio buffer is initialized with zeros. See ``value``
@@ -187,7 +196,7 @@ class AudioBuffer(object):
             sd.wait()
 
 
-class Source(Object):
+class Source(audobject.Object):
     r"""Base class for objects that create an
     :class:`auglib.AudioBuffer`.
 
@@ -205,7 +214,7 @@ class Source(Object):
         return self.call()
 
 
-class Transform(Object):
+class Transform(audobject.Object):
     r"""Base class for objects applying some sort of transformation to an
     :class:`auglib.AudioBuffer`.
 
@@ -236,7 +245,7 @@ class Transform(Object):
         return buf
 
 
-class Sink(Object):
+class Sink(audobject.Object):
     r"""Base class for objects that consume an
     :class:`auglib.AudioBuffer`.
 

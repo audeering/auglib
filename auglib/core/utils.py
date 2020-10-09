@@ -7,8 +7,12 @@ import re
 import humanfriendly as hf
 import numpy as np
 
-from .api import lib
-from .observe import observe, Number, Str
+from auglib.core.api import lib
+from auglib.core.observe import (
+    Number,
+    observe,
+    Str,
+)
 
 
 def random_seed(seed: int = 0):

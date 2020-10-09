@@ -12,7 +12,10 @@ import audeer
 import audinterface
 import audiofile
 
-from auglib.core.buffer import AudioBuffer, Transform
+from auglib.core.buffer import (
+    AudioBuffer,
+    Transform,
+)
 
 
 def _remove(path: str):  # pragma: no cover
@@ -374,7 +377,7 @@ class Augment(audinterface.Process):
         >>> file = augmented_column.index[0][0]  # label of first segment
         >>> file = file.replace(audeer.safe_path('.'), '.')  # remove absolute path
         >>> file, label
-        ('./cache/6bbe88f5-8e8b-6240-a82b-402533d9504e/0/audio/006.wav', 'unhappy')
+        ('./cache/37e84d07-b0c5-30dd-2e9e-c0e81e9fd127/0/audio/006.wav', 'unhappy')
 
     """  # noqa: E501
     def __init__(
@@ -634,7 +637,7 @@ class Augment(audinterface.Process):
     ) -> typing.Optional[str]:
         if cache_root is not None:
             cache_root = os.path.realpath(audeer.safe_path(cache_root))
-            uid = audeer.uid(from_string=str(self.transform))
+            uid = self.transform.id
             cache_root = os.path.join(cache_root, uid, str(idx))
         return cache_root
 

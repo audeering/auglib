@@ -4,7 +4,7 @@ import traceback
 from functools import wraps
 import ctypes
 
-from .api import lib
+from auglib.core.api import lib
 
 
 class LibraryExceptionWarning(UserWarning):

@@ -1,7 +1,6 @@
 import numpy as np
 from scipy import signal
 import pytest
-import humanfriendly
 
 from auglib import AudioBuffer
 from auglib.core.buffer import lib

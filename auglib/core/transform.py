@@ -5,10 +5,21 @@ from enum import Enum, IntEnum
 
 import numpy as np
 
-from .api import lib
-from .buffer import AudioBuffer, Transform, Source
-from .utils import to_samples
-from .observe import observe, Number, Bool, Float, Int, Str
+from auglib.core.api import lib
+from auglib.core.buffer import (
+    AudioBuffer,
+    Source,
+    Transform,
+)
+from auglib.core.utils import to_samples
+from auglib.core.observe import (
+    Bool,
+    Float,
+    Int,
+    Number,
+    observe,
+    Str,
+)
 
 
 def _check_data_decorator(func):

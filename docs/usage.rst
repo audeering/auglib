@@ -107,6 +107,42 @@ And the result:
     <br>
     <br>
 
+Serialize
+~~~~~~~~~
+
+It's possible to serialize a
+:class:`auglib.Transform` object
+to YAML.
+
+.. jupyter-execute::
+
+    print(transform.to_yaml_s())
+
+And we can save it to a file and re-instantiate it from there.
+
+.. jupyter-execute::
+
+    file = 'transform.yaml'
+    transform.to_yaml(file)
+    transform_from_yaml = auglib.Transform.from_yaml(file)
+
+We can prove that (with the same random seed)
+the new object will give the same result.
+
+.. jupyter-execute::
+
+    import numpy as np
+
+    auglib.utils.random_seed(1)
+    with auglib.AudioBuffer.read('docs/_static/speech/sample2.wav') as buf:
+        y = transform(buf).data.copy()
+
+    auglib.utils.random_seed(1)
+    with auglib.AudioBuffer.read('docs/_static/speech/sample2.wav') as buf:
+        y_from_yaml = transform_from_yaml(buf).data.copy()
+
+    np.testing.assert_equal(y, y_from_yaml)
+
 Augment database
 ~~~~~~~~~~~~~~~~
 

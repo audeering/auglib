@@ -1,7 +1,10 @@
 from typing import Union
 
-from .observe import Str
-from .buffer import AudioBuffer, Sink
+from auglib.core.observe import Str
+from auglib.core.buffer import (
+    AudioBuffer,
+    Sink,
+)
 
 
 class Write(Sink):
