@@ -7,11 +7,15 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
-Unreleased
-----------
+Version 0.6.3 (2020-10-09)
+--------------------------
 
-* Changed: now using the ``audobject`` package to serialize
+* Changed: Now using the ``audobject`` package to serialize
   :class:`auglib.Transform` objects to YAML.
+* Fixed: Safer guards against the usage of negative time values whenever
+  ``auglib.core.utils.to_samples`` is called.
+* Fixed: Potential bug when using :class:`auglib.Transform.Trim` with a
+  ``duration`` member greater than the actual input buffer size.
 
 
 Version 0.6.2 (2020-10-08)
