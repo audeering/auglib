@@ -1,9 +1,11 @@
 import numpy as np
 from scipy import signal
 import pytest
+import humanfriendly
 
 from auglib import AudioBuffer
 from auglib.core.buffer import lib
+from auglib.core.exception import LibraryException
 from auglib.utils import random_seed
 from auglib.transform import Mix, Append, AppendValue, Trim, NormalizeByPeak, \
     Clip, ClipByRatio, GainStage, FFTConvolve, LowPass, HighPass, BandPass, \
@@ -124,14 +126,34 @@ def test_append(base_dur, aux_dur, sr, unit):
     aux.free()
 
 
-@pytest.mark.parametrize('start,dur,sr',
-                         [(0.1, 0.8, 8000),
-                          (0.25, 0.5, 8000),
-                          (0.1, None, 8000),
-                          (0.1, 0.8, 16000),
-                          (0.25, 0.5, 16000),
-                          (0.1, None, 16000), ])
-def test_trim(start, dur, sr):
+@pytest.mark.parametrize(
+    'start,dur,sr,unit',
+    [
+        (0.1, 0.8, 8000, 'seconds'),
+        (0.25, 0.5, 8000, 'seconds'),
+        (0.1, None, 8000, 'seconds'),
+        (0.1, 0.8, 16000, 'seconds'),
+        (0.25, 0.5, 16000, 'seconds'),
+        (0.1, None, 16000, 'seconds'),
+        pytest.param(
+            -1.0, 0.8, 8000, 'seconds',
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),  # negative start (seconds) -> error from pyauglib
+        pytest.param(
+            -1, 10, 8000, 'samples',
+            marks=pytest.mark.xfail(raises=ValueError)
+        ),  # negative start -> error from pyauglib
+        pytest.param(
+            0, -1, 8000, 'samples',
+            marks=pytest.mark.xfail(raises=ValueError)
+        ),  # negative duration -> error from pyauglib
+        pytest.param(
+            42.0, 0.5, 8000, 'seconds',
+            marks=pytest.mark.xfail(raises=LibraryException)
+        ),  # start > buffer length -> error from auglib (C++ side)
+    ]
+)
+def test_trim(start, dur, sr, unit):
     # start from a step signal (0.5s of zeros, then 0.5s of ones) and trim out
     # different portions
     block_dur = 0.5
@@ -143,13 +165,17 @@ def test_trim(start, dur, sr):
         target_dur = 2 * block_dur - target_start
     target_length = int(round(target_dur * sr))
 
-    target_array = np.append(
-        np.zeros(int((block_dur - target_start) * sr)),
-        np.ones(int((target_start + target_dur - block_dur) * sr))
-    )
+    try:
+        target_array = np.append(
+            np.zeros(int((block_dur - target_start) * sr)),
+            np.ones(int((target_start + target_dur - block_dur) * sr))
+        )
+    except ValueError:
+        target_array = None
+
     with AudioBuffer(block_dur, sr) as buf:
         AppendValue(block_dur, value=1.0)(buf)
-        Trim(start_pos=start, duration=dur)(buf)
+        Trim(start_pos=start, duration=dur, unit=unit)(buf)
         assert len(buf) == target_length
         np.testing.assert_equal(target_array, buf.data)
 

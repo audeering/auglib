@@ -55,7 +55,8 @@ def to_samples(value: Union[int, float, Number],
                sampling_rate: int,
                *,
                length: int = 0,
-               unit: str = 'seconds') -> int:
+               unit: str = 'seconds',
+               allow_negative: bool = False) -> int:
     r"""Express duration in samples.
 
     Examples (``sample_rate==8000``):
@@ -74,21 +75,34 @@ def to_samples(value: Union[int, float, Number],
     Args:
         value: duration or portion (see description)
         sampling_rate: sampling rate in Hz
-        length: reference point if unit is ``relative``
+        length: reference point if unit is ``relative`` (in number of samples)
         unit: literal specifying the format
+        allow_negative: allow negative values
+
+    Raises:
+        ValueError: if ``allow_negative`` is False and computed value is
+            negative
 
     """
     value = observe(value)
     unit = unit.strip()
     if unit == 'samples':
-        return int(value)
+        num_samples = int(value)
     elif unit == 'relative':
         if not 0.0 <= value <= 1.0:
             raise ValueError('relative value {} not in range ['
                              '0...1]'.format(value))
-        return int(length * value)
+        num_samples = int(length * value)
     else:
-        return int(hf.parse_timespan(str(value) + unit) * sampling_rate)
+        try:
+            num_samples = int(
+                hf.parse_timespan(str(value) + unit) * sampling_rate
+            )
+        except hf.InvalidTimespan as ex:
+            raise ValueError(str(ex))
+    if not allow_negative:
+        assert_non_negative_number(num_samples)
+    return num_samples
 
 
 def _scan_files(root: str,
@@ -153,3 +167,9 @@ def safe_path(path: Union[str, Str], *, root: str = None) -> str:
         path = os.path.join(root, path)
     path = os.path.abspath(os.path.expanduser(path))
     return path
+
+
+def assert_non_negative_number(value: Union[int, float]):
+    if value < 0:
+        raise ValueError('A variable that is supposed to be non-negative was '
+                         'found negative.')

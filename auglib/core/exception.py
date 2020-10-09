@@ -48,6 +48,7 @@ def _check_exception(max_msg_len: int = 2048):
         msg = buffer.value.decode('ascii')
         global _exception_handling
         if _exception_handling == ExceptionHandling.EXCEPTION:
+            lib.auglib_release_exception()
             raise LibraryException(msg)
         else:
             if _exception_handling == ExceptionHandling.SILENT:

@@ -9,7 +9,7 @@ import audeer
 from .api import lib
 from .common import Object
 from .observe import observe, Number, Float, Str
-from .utils import to_samples, safe_path
+from .utils import to_samples, safe_path, assert_non_negative_number
 from .exception import _check_exception_decorator
 
 
@@ -45,7 +45,7 @@ class AudioBuffer(object):
                  sampling_rate: int,
                  value: Union[float, Float] = None, *, unit: str = 'seconds'):
         length = to_samples(duration, sampling_rate, unit=unit)
-        sampling_rate = sampling_rate
+        assert_non_negative_number(sampling_rate)
         self.obj = lib.AudioBuffer_new(length, sampling_rate)
         self.sampling_rate = sampling_rate
         self.data = np.ctypeslib.as_array(lib.AudioBuffer_data(self.obj),
