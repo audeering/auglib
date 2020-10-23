@@ -194,7 +194,7 @@ class FloatUni(Float):
         high: upper bound of the support interval (exclusive)
 
     """
-    def __init__(self, low: float, high: float, *, as_db=False):
+    def __init__(self, low: float, high: float):
         self.low = low
         self.high = high
 

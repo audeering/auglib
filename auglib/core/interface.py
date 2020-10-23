@@ -108,7 +108,7 @@ class Augment(audinterface.Process):
         >>> file = augmented_column.index[0][0]  # label of first segment
         >>> file = file.replace(audeer.safe_path('.'), '.')  # remove absolute path
         >>> file, label
-        ('./cache/37e84d07-b0c5-30dd-2e9e-c0e81e9fd127/0/audio/006.wav', 'unhappy')
+        ('./cache/c47e29aa-d323-4b4f-8cdc-ef8d190a77ab/0/audio/006.wav', 'unhappy')
 
     """  # noqa: E501
     def __init__(
