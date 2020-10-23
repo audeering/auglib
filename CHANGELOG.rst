@@ -7,6 +7,13 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.7.1 (2020-10-23)
+--------------------------
+
+* Changed: remove outdated example from README
+* Fixed: remove unused ``as_db`` argument form :class:`auglib.FloatUni`
+
+
 Version 0.7.0 (2020-10-09)
 --------------------------
 
