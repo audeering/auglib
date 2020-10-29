@@ -1,9 +1,12 @@
+import os
+
 import numpy as np
 import pandas as pd
 import pytest
 
 import audata
 import audata.testing
+import audeer
 import audiofile as af
 
 import auglib
@@ -83,7 +86,7 @@ def test_augment(tmpdir, sampling_rate, resample, keep_nat,
 
         result = process.augment(
             data,
-            tmpdir,
+            cache_root=tmpdir,
             modified_only=modified_only,
             num_variants=num_variants,
             force=force,
@@ -96,7 +99,9 @@ def test_augment(tmpdir, sampling_rate, resample, keep_nat,
 
         for idx in range(num_variants):
 
-            cache_root_idx = process._safe_cache(tmpdir, idx)
+            cache_root_idx = os.path.join(
+                tmpdir, process.transform.id, str(idx),
+            )
             segmented = audata.utils.to_segmented_frame(data)
             index = segmented.index
 
@@ -178,7 +183,7 @@ def test_augment_empty(tmpdir):
     process = auglib.Augment(
         transform=transform,
     )
-    result = process.augment(data, tmpdir)
+    result = process.augment(data, cache_root=tmpdir)
     assert result.empty
 
 
@@ -206,7 +211,7 @@ def test_augment_remove_root(tmpdir, remove_root):
     )
     result = process.augment(
         data,
-        tmpdir,
+        cache_root=tmpdir,
         remove_root=remove_root,
     )
     augmented_file = result.levels[0][0]
@@ -214,3 +219,27 @@ def test_augment_remove_root(tmpdir, remove_root):
         augmented_file.endswith(original_file)
     else:
         augmented_file.endswith(original_file.replace(remove_root, ''))
+
+
+def test_cache_root(tmpdir):
+
+    auglib.config.CACHE_ROOT = tmpdir
+
+    transform = pytest.TRANSFORM_ONES
+    transform_root = os.path.join(tmpdir, transform.id)
+    process = auglib.Augment(
+        transform=transform,
+    )
+    result = process.augment(pytest.DATA_FILES)
+    result[0][0].startswith(str(tmpdir))
+
+    assert auglib.default_cache_root() == tmpdir
+    assert auglib.default_cache_root(transform) == transform_root
+    assert len(audeer.list_file_names(transform_root)) > 0
+
+    auglib.clear_default_cache_root(transform)
+    assert os.path.exists(auglib.default_cache_root())
+    assert not os.path.exists(transform_root)
+
+    auglib.clear_default_cache_root()
+    assert os.path.exists(auglib.default_cache_root())

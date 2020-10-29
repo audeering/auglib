@@ -1,8 +1,6 @@
 import os
-import glob
-from multiprocessing import Pool, cpu_count
+import shutil
 import typing
-import warnings
 
 import numpy as np
 import pandas as pd
@@ -16,6 +14,7 @@ from auglib.core.buffer import (
     AudioBuffer,
     Transform,
 )
+from auglib.core.config import config
 
 
 def _remove(path: str):  # pragma: no cover
@@ -101,7 +100,7 @@ class Augment(audinterface.Process):
         >>> column = db['emotion.test.gold']['emotion'].get()
         >>> augmented_column = augmentation.augment(
         ...     column,
-        ...     'cache',
+        ...     cache_root='cache',
         ...     remove_root=db.meta['audb']['root'],
         ... )
         >>> label = augmented_column[0]  # file of first segment
@@ -139,7 +138,7 @@ class Augment(audinterface.Process):
     def augment(
             self,
             data: typing.Union[pd.Index, pd.Series, pd.DataFrame],
-            cache_root: str,
+            cache_root: str = None,
             *,
             remove_root: str = None,
             channel: int = None,
@@ -168,7 +167,8 @@ class Augment(audinterface.Process):
 
         Args:
             data: index, column or table in Unified Format
-            cache_root: root directory under which augmented files are stored
+            cache_root: directory to cache augmented files,
+                if ``None`` defaults to ``auglib.config.CACHE_ROOT``
             remove_root: set a path that should be removed from
                 the beginning of the original file path before joining with
                 ``cache_root``
@@ -188,10 +188,22 @@ class Augment(audinterface.Process):
 
         """
         data = audata.utils.to_segmented_frame(data)
-        modified = []
-
         if data.empty:
             return data
+
+        modified = []
+        if cache_root is None:
+            cache_root = default_cache_root(self.transform)
+        else:
+            cache_root = audeer.safe_path(
+                os.path.join(cache_root, self.transform.id)
+            )
+
+        # save yaml of transform to cache
+        self.transform.to_yaml(
+            os.path.join(cache_root, 'transform.yaml'),
+            include_version=False,
+        )
 
         if isinstance(data, pd.Index):
             index = data
@@ -203,10 +215,9 @@ class Augment(audinterface.Process):
 
         for idx in range(num_variants):
 
-            cache_root_idx = self._safe_cache(cache_root, idx)
             series = self._augment_index(
                 index,
-                cache_root_idx,
+                os.path.join(cache_root, str(idx)),
                 remove_root,
                 channel,
                 force,
@@ -361,17 +372,6 @@ class Augment(audinterface.Process):
 
         return index
 
-    def _safe_cache(
-            self,
-            cache_root,
-            idx: int,
-    ) -> typing.Optional[str]:
-        if cache_root is not None:
-            cache_root = os.path.realpath(audeer.safe_path(cache_root))
-            uid = self.transform.id
-            cache_root = os.path.join(cache_root, uid, str(idx))
-        return cache_root
-
     @staticmethod
     def _out_files(
             files: typing.Sequence[str],
@@ -411,3 +411,44 @@ class Augment(audinterface.Process):
         with AudioBuffer.from_array(x.copy(), sr) as buf:
             transform(buf)
             return np.atleast_2d(buf.data.copy())
+
+
+def clear_default_cache_root(transform: Transform = None):
+    r"""Clear default cache directory.
+
+    If ``transform`` is not None,
+    deletes only the sub-directory where files
+    created by this transformation are stored.
+
+    Args:
+        transform: optional transform object
+
+    """
+    root = default_cache_root(transform)
+    if os.path.exists(root):
+        shutil.rmtree(root)
+    if transform is None:
+        audeer.mkdir(root)
+
+
+def default_cache_root(transform: Transform = None) -> str:
+    r"""Path to default cache directory.
+
+    The default cache directory defines
+    the path where augmented files will be stored.
+    It can be set via ``auglib.config.CACHE_ROOT``.
+    If ``transform`` is not None,
+    returns the sub-directory where files
+    created by this transformation are stored.
+
+    Args:
+        transform: optional transform object
+
+    Returns:
+        cache directory path
+
+    """
+    root = config.CACHE_ROOT
+    if transform is not None:
+        root = os.path.join(root, transform.id)
+    return audeer.safe_path(root)

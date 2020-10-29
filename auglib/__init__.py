@@ -8,6 +8,7 @@ from auglib.core.buffer import (
     Source,
     Transform,
 )
+from auglib.core.config import config
 from auglib.core.exception import (
     ExceptionHandling,
     LibraryException,
@@ -16,6 +17,8 @@ from auglib.core.exception import (
 )
 from auglib.core.interface import (
     Augment,
+    default_cache_root,
+    clear_default_cache_root,
     NumpyTransform,
 )
 from auglib.core.observe import (

@@ -16,6 +16,17 @@ Augment
     :members:
     :inherited-members:
 
+clear_default_cache_root
+------------------------
+
+.. autofunction:: clear_default_cache_root
+
+config
+------
+
+.. autoclass:: config
+    :members:
+
 ExceptionHandling
 -----------------
 
@@ -39,6 +50,11 @@ FloatUni
 
 .. autoclass:: FloatUni
     :members:
+
+get_default_cache_root
+----------------------
+
+.. autofunction:: default_cache_root
 
 IntList
 ---------

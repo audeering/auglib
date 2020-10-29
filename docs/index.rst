@@ -19,7 +19,7 @@
     :caption: API Documentation
     :hidden:
 
-    api-auglib
+    api
     api-sink
     api-source
     api-transform
