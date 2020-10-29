@@ -7,6 +7,13 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.8.0 (2020-10-29)
+--------------------------
+
+* Added: :class:`auglib.config`, :meth:`auglib.default_cache_root`, :meth:`auglib.clear_default_cache_root`
+* Changed: ``cache_root`` argument of :meth:`auglib.Augment.augment` defaults to :meth:`auglib.default_cache_root`
+
+
 Version 0.7.1 (2020-10-23)
 --------------------------
 
