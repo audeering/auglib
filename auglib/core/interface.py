@@ -132,8 +132,9 @@ class Augment(audinterface.Process):
             keep_nat=keep_nat,
             num_workers=num_workers,
             multiprocessing=multiprocessing,
-            verbose=verbose,
+            verbose=False,
         )
+        self._verbose = verbose
 
     def augment(
             self,
@@ -221,6 +222,7 @@ class Augment(audinterface.Process):
                 remove_root,
                 channel,
                 force,
+                f'Augment ({idx+1} of {num_variants})',
             )
 
             if not modified_only and idx == 0:
@@ -250,6 +252,7 @@ class Augment(audinterface.Process):
             remove_root: str,
             channel: int,
             force: bool,
+            description: str,
     ) -> pd.Series:
         r"""Augment from a segmented index and store augmented files to disk.
         Returns a series that points to the augmented files."""
@@ -275,8 +278,8 @@ class Augment(audinterface.Process):
             params,
             num_workers=self.num_workers,
             multiprocessing=self.multiprocessing,
-            progress_bar=self.verbose,
-            task_description=f'Process {len(index)} segments',
+            progress_bar=self._verbose,
+            task_description=description,
         )
         return pd.concat(segments)
 
