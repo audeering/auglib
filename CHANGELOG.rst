@@ -7,6 +7,12 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.8.1 (2020-11-17)
+--------------------------
+
+* Changed: avoid nested progress bar in :meth:`auglib.Augment.augment`
+
+
 Version 0.8.0 (2020-10-29)
 --------------------------
 
