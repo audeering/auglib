@@ -132,9 +132,8 @@ class Augment(audinterface.Process):
             keep_nat=keep_nat,
             num_workers=num_workers,
             multiprocessing=multiprocessing,
-            verbose=False,
+            verbose=verbose,
         )
-        self._verbose = verbose
 
     def augment(
             self,
@@ -273,14 +272,17 @@ class Augment(audinterface.Process):
             )
             for file, out_file in zip(files, out_files)
         ]
+        verbose = self.verbose
+        self.verbose = False  # avoid nested progress bar
         segments = audeer.run_tasks(
             self._augment_file_to_cache,
             params,
             num_workers=self.num_workers,
             multiprocessing=self.multiprocessing,
-            progress_bar=self._verbose,
+            progress_bar=verbose,
             task_description=description,
         )
+        self.verbose = verbose
         return pd.concat(segments)
 
     def _augment_file(
