@@ -27,6 +27,11 @@ config
 .. autoclass:: config
     :members:
 
+default_cache_root
+------------------
+
+.. autofunction:: default_cache_root
+
 ExceptionHandling
 -----------------
 
@@ -50,11 +55,6 @@ FloatUni
 
 .. autoclass:: FloatUni
     :members:
-
-get_default_cache_root
-----------------------
-
-.. autofunction:: default_cache_root
 
 IntList
 ---------
