@@ -7,6 +7,15 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.8.2 (2020-12-04)
+--------------------------
+
+* Added: ``channels`` and ``mixdown`` argument to :class:`auglib.Augment`
+* Changed: :class:`auglib.Augment` derives from :class:`audobject.Object`
+* Fixed: :meth:`auglib.default_cache_root` uses :meth:`auglib.Augment.id`
+* Fixed: restore progress bar in all ``auglib.Augment.process_*`` methods
+
+
 Version 0.8.1 (2020-11-17)
 --------------------------
 

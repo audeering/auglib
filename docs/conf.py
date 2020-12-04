@@ -40,6 +40,7 @@ autodoc_inherit_docstrings = False  # disable docstring inheritance
 
 intersphinx_mapping = {
     'audata': ('http://tools.pp.audeering.com/audata/', None),
+    'audobject': ('http://tools.pp.audeering.com/audobject/', None),
     'audresample': ('http://tools.pp.audeering.com/pyaudresample/', None),
     'numpy': ('https://docs.scipy.org/doc/numpy/', None),
     'python': ('https://docs.python.org/3/', None),
