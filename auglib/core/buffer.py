@@ -156,22 +156,26 @@ class AudioBuffer:
         x, sr = af.read(path, duration=duration, offset=offset, always_2d=True)
         return AudioBuffer.from_array(x[0, :], sr)
 
+    @audeer.deprecated_keyword_argument(
+        deprecated_argument='precision',
+        removal_version='0.10.0',
+    )
     def write(self, path: Union[str, Str], *, root: str = None,
-              precision: str = '16bit', normalize: bool = False):
+              bit_depth: int = 16, normalize: bool = False):
         r"""Write buffer to a audio file.
 
         Args:
             path: file name of output audio file. The format (WAV, FLAC, OGG)
                 will be inferred from the file name
             root: optional root directory
-            precision: precision of writen file, can be `'16bit'`, `'24bit'`,
-                `'32bit'`. Only available for WAV files
+            bit_depth: bit depth of written file in bit, can be 8, 16,
+                24 for WAV and FLAC files, and in addition 32 for WAV files
             normalize (bool, optional): normalize audio data before writing
 
         """
         path = safe_path(path, root=root)
         audeer.mkdir(os.path.dirname(path))
-        af.write(path, self.data, self.sampling_rate, precision=precision,
+        af.write(path, self.data, self.sampling_rate, bit_depth=bit_depth,
                  normalize=normalize)
 
     def to_array(self) -> np.ndarray:

@@ -23,16 +23,23 @@ def test_numpytransform(n, sr):
 
 
 @pytest.mark.parametrize(
-    'sampling_rate, resample',
+    'sampling_rate, resample, modified_only',
     [
         (
-            None, False,
+            None, False, True,
         ),
         (
-            8000, True,
+            8000, True, True,
         ),
-        pytest.param(
-            8000, False,
+        (
+            None, False, False,
+        ),
+        pytest.param(  # resampling with modified_only=False
+            8000, True, False,
+            marks=pytest.mark.xfail(raises=ValueError)
+        ),
+        pytest.param(  # sampling rate mismatch
+            8000, False, True,
             marks=pytest.mark.xfail(raises=RuntimeError)
         ),
     ]
@@ -50,27 +57,24 @@ def test_numpytransform(n, sr):
     ]
 )
 @pytest.mark.parametrize(
-    'data, modified_only, num_variants',
+    'data, num_variants',
     [
         (
             pytest.DATA_FILES,
-            True,
             1,
         ),
         (
             pytest.DATA_COLUMN,
-            False,
             1,
         ),
         (
             pytest.DATA_TABLE,
-            True,
             3,
         ),
     ]
 )
-def test_augment(tmpdir, sampling_rate, resample, keep_nat,
-                 num_workers, data, modified_only, num_variants):
+def test_augment(tmpdir, sampling_rate, resample, modified_only,
+                 keep_nat, num_workers, data, num_variants):
 
     # create a transformation that sets buffer to 1
     transform = pytest.TRANSFORM_ONES
@@ -100,7 +104,7 @@ def test_augment(tmpdir, sampling_rate, resample, keep_nat,
         for idx in range(num_variants):
 
             cache_root_idx = os.path.join(
-                tmpdir, process.transform.id, str(idx),
+                tmpdir, process.id, str(idx),
             )
             segmented = audata.utils.to_segmented_frame(data)
             index = segmented.index
@@ -226,20 +230,20 @@ def test_cache_root(tmpdir):
     auglib.config.CACHE_ROOT = tmpdir
 
     transform = pytest.TRANSFORM_ONES
-    transform_root = os.path.join(tmpdir, transform.id)
     process = auglib.Augment(
         transform=transform,
     )
+    process_root = os.path.join(tmpdir, process.id)
     result = process.augment(pytest.DATA_FILES)
     result[0][0].startswith(str(tmpdir))
 
     assert auglib.default_cache_root() == tmpdir
-    assert auglib.default_cache_root(transform) == transform_root
-    assert len(audeer.list_file_names(transform_root)) > 0
+    assert auglib.default_cache_root(process) == process_root
+    assert len(audeer.list_file_names(process_root)) > 0
 
-    auglib.clear_default_cache_root(transform)
+    auglib.clear_default_cache_root(process)
     assert os.path.exists(auglib.default_cache_root())
-    assert not os.path.exists(transform_root)
+    assert not os.path.exists(process_root)
 
     auglib.clear_default_cache_root()
     assert os.path.exists(auglib.default_cache_root())

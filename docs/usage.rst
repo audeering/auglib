@@ -155,8 +155,6 @@ Therefore, we pass it to an instance of :class:`auglib.Augment`.
     transform = auglib.transform.WhiteNoiseUniform()
     augment = auglib.Augment(
         transform=transform, # apply transformation
-        sampling_rate=8000,  # and resample
-        resample=True,       # to 8 kHz
         num_workers=5,       # using 5 threads
     )
 
@@ -202,7 +200,7 @@ we see that they now contain noise.
 .. jupyter-execute::
     :hide-code:
 
-    plot(result[0][0], augment.sampling_rate)
+    plot(result[0][0], sampling_rate)
 
 We can do the same on a segmented index in the `Unified Format`_.
 
@@ -220,7 +218,7 @@ If we plot the first segment, we get:
 .. jupyter-execute::
     :hide-code:
 
-    plot(result[0][0], augment.sampling_rate)
+    plot(result[0][0], sampling_rate)
 
 Generally, we can note that all :meth:`process_*` methods
 return a column holding the augmented signals or segments.
@@ -256,7 +254,7 @@ we can spot the augmented segments.
     :hide-code:
 
     augmented_signal, _ = audiofile.read(result[0][0])
-    plot(augmented_signal, augment.sampling_rate)
+    plot(augmented_signal, sampling_rate)
 
 Instead of an index, we also pass a column and
 the column data will be kept:

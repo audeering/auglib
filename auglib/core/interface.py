@@ -8,7 +8,9 @@ import pandas as pd
 import audata
 import audeer
 import audinterface
+from audinterface.core.utils import preprocess_signal
 import audiofile
+import audobject
 
 from auglib.core.buffer import (
     AudioBuffer,
@@ -54,7 +56,7 @@ class NumpyTransform:
         return transformed
 
 
-class Augment(audinterface.Process):
+class Augment(audinterface.Process, audobject.Object):
     r"""Augmentation interface.
 
     Provides an interface for :class:`auglib.Transform`
@@ -67,12 +69,23 @@ class Augment(audinterface.Process):
     stores the augmented signals back to disk
     and returns an index pointing to the augmented files.
 
+    .. note:: The following arguments are not serialized:
+
+        * ``keep_nat``
+        * ``multiprocessing``
+        * ``num_workers``
+        * ``verbose``
+
+        For more information see section on `hidden arguments`_.
+
     Args:
         transform: transformation object
         sampling_rate: sampling rate in Hz.
             If ``None`` it will call ``process_func`` with the actual
             sampling rate of the signal.
         resample: if ``True`` enforces given sampling rate by resampling
+        channels: channel selection, see :func:`audresample.remix`
+        mixdown: apply mono mix-down on selection
         keep_nat: if the end of segment is set to ``NaT`` do not replace
             with file duration in the result
         num_workers: number of parallel jobs or 1 for sequential
@@ -85,6 +98,8 @@ class Augment(audinterface.Process):
 
     Raises:
         ValueError: if ``resample = True``, but ``sampling_rate = None``
+
+    .. _`hidden arguments`: http://tools.pp.audeering.com/audobject/usage.html#hidden-arguments
 
     Example:
         >>> import audb
@@ -107,15 +122,25 @@ class Augment(audinterface.Process):
         >>> file = augmented_column.index[0][0]  # label of first segment
         >>> file = file.replace(audeer.safe_path('.'), '.')  # remove absolute path
         >>> file, label
-        ('./cache/c47e29aa-d323-4b4f-8cdc-ef8d190a77ab/0/audio/006.wav', 'unhappy')
+        ('./cache/0482e0f5-3013-2222-dad7-481251925619/0/audio/006.wav', 'unhappy')
 
     """  # noqa: E501
+    @audobject.init_decorator(
+        hide=[
+            'keep_nat',
+            'multiprocessing',
+            'num_workers',
+            'verbose',
+        ]
+    )
     def __init__(
             self,
             transform: Transform,
             *,
             sampling_rate: int = None,
             resample: bool = False,
+            channels: typing.Union[int, typing.Sequence[int]] = None,
+            mixdown: bool = False,
             keep_nat: bool = False,
             num_workers: typing.Optional[int] = 1,
             multiprocessing: bool = False,
@@ -129,19 +154,24 @@ class Augment(audinterface.Process):
             transform=transform,
             sampling_rate=sampling_rate,
             resample=resample,
+            channels=channels,
+            mixdown=mixdown,
             keep_nat=keep_nat,
             num_workers=num_workers,
             multiprocessing=multiprocessing,
             verbose=verbose,
         )
 
+    @audeer.deprecated_keyword_argument(
+        deprecated_argument='channel',
+        removal_version='0.10.0',
+    )
     def augment(
             self,
             data: typing.Union[pd.Index, pd.Series, pd.DataFrame],
             cache_root: str = None,
             *,
             remove_root: str = None,
-            channel: int = None,
             modified_only: bool = True,
             num_variants: int = 1,
             force: bool = False,
@@ -172,7 +202,6 @@ class Augment(audinterface.Process):
             remove_root: set a path that should be removed from
                 the beginning of the original file path before joining with
                 ``cache_root``
-            channel: channel number starting from 0
             modified_only: return only modified segments, otherwise
                 combine original and modified segments
             num_variants: number of variations that are created for every
@@ -185,18 +214,30 @@ class Augment(audinterface.Process):
         Raises:
             RuntimeError: if sampling rates of file and transformation do not
                 match
+            RuntimeError: if ``modified_only=False`` but resampling or
+                remixing is turned on
 
         """
+        if not modified_only:
+            if self.channels is not None or self.mixdown or self.resample:
+                raise ValueError(
+                    "It is not possible to use 'modified_only=False' "
+                    "if remixing or resampling is turned on. "
+                    "To avoid this error, set arguments "
+                    "'channels', 'mixdown' and 'resample' "
+                    "to their default values."
+                )
+
         data = audata.utils.to_segmented_frame(data)
         if data.empty:
             return data
 
         modified = []
         if cache_root is None:
-            cache_root = default_cache_root(self.transform)
+            cache_root = default_cache_root(self)
         else:
             cache_root = audeer.safe_path(
-                os.path.join(cache_root, self.transform.id)
+                os.path.join(cache_root, self.id)
             )
 
         # save yaml of transform to cache
@@ -219,7 +260,6 @@ class Augment(audinterface.Process):
                 index,
                 os.path.join(cache_root, str(idx)),
                 remove_root,
-                channel,
                 force,
                 f'Augment ({idx+1} of {num_variants})',
             )
@@ -249,7 +289,6 @@ class Augment(audinterface.Process):
             index: pd.MultiIndex,
             cache_root: str,
             remove_root: str,
-            channel: int,
             force: bool,
             description: str,
     ) -> pd.Series:
@@ -266,7 +305,6 @@ class Augment(audinterface.Process):
                     index[
                         index.get_level_values(0) == file
                     ].droplevel(0),
-                    channel,
                     force),
                 {},
             )
@@ -289,13 +327,12 @@ class Augment(audinterface.Process):
             self,
             file: str,
             index: pd.MultiIndex,
-            channel: int,
     ) -> typing.Tuple[np.ndarray, int, pd.Series]:
         r"""Augment file at every segment in index.
         Returns the augmented signal, sampling rate and
         a series with the augmented segments."""
 
-        signal, sampling_rate = self.read_audio(file, channel=channel)
+        signal, sampling_rate = audiofile.read(file, always_2d=True)
         return self._augment_signal(signal, sampling_rate, index)
 
     def _augment_file_to_cache(
@@ -303,16 +340,13 @@ class Augment(audinterface.Process):
             file: str,
             out_file: str,
             index: pd.MultiIndex,
-            channel: int,
             force: bool,
     ) -> pd.Series:
         r"""Augment 'file' and store result to 'out_file'.
         Return a series where every segment points to 'out_file'"""
 
         if force or not os.path.exists(out_file):
-            signal, sampling_rate, segments = self._augment_file(
-                file, index, channel,
-            )
+            signal, sampling_rate, segments = self._augment_file(file, index)
             index = segments.index
             audeer.mkdir(os.path.dirname(out_file))
             audiofile.write(out_file, signal, sampling_rate)
@@ -338,7 +372,14 @@ class Augment(audinterface.Process):
         Returns the augmented signal, sampling rate and
         a series with the augmented segments."""
 
-        signal, sampling_rate = self._resample(signal, sampling_rate)
+        signal, sampling_rate = preprocess_signal(
+            signal,
+            sampling_rate,
+            expected_rate=self.sampling_rate,
+            resample=self.resample,
+            channels=self.channels,
+            mixdown=self.mixdown,
+        )
         new_index = super().process_signal_from_index(
             signal, sampling_rate, index,
         )
@@ -418,42 +459,42 @@ class Augment(audinterface.Process):
             return np.atleast_2d(buf.data.copy())
 
 
-def clear_default_cache_root(transform: Transform = None):
+def clear_default_cache_root(augment: Augment = None):
     r"""Clear default cache directory.
 
-    If ``transform`` is not None,
+    If ``augment`` is not None,
     deletes only the sub-directory where files
-    created by this transformation are stored.
+    created by the :class:`auglib.Augment` object are stored.
 
     Args:
-        transform: optional transform object
+        augment: optional augmentation object
 
     """
-    root = default_cache_root(transform)
+    root = default_cache_root(augment)
     if os.path.exists(root):
         shutil.rmtree(root)
-    if transform is None:
+    if augment is None:
         audeer.mkdir(root)
 
 
-def default_cache_root(transform: Transform = None) -> str:
+def default_cache_root(augment: Augment = None) -> str:
     r"""Path to default cache directory.
 
     The default cache directory defines
     the path where augmented files will be stored.
     It can be set via ``auglib.config.CACHE_ROOT``.
-    If ``transform`` is not None,
+    If ``augment`` is not None,
     returns the sub-directory where files
-    created by this transformation are stored.
+    created by the :class:`auglib.Augment` object are stored.
 
     Args:
-        transform: optional transform object
+        augment: optional augmentation object
 
     Returns:
         cache directory path
 
     """
     root = config.CACHE_ROOT
-    if transform is not None:
-        root = os.path.join(root, transform.id)
+    if augment is not None:
+        root = os.path.join(root, augment.id)
     return audeer.safe_path(root)
