@@ -1,64 +1,42 @@
 stages:
-  - token
+  - prepare
   - test
   - doc
   - pypi
 
 variables:
-  PIP_INDEX_URL: https://artifactory.audeering.com/artifactory/api/pypi/pypi/simple
+  ARTIFACTORY_GROUPS: "readers,deployers"
+  ARTIFACTORY_TOKEN_VARS: "ARTIFACTORY_API_KEY,TWINE_PASSWORD"
+  ARTIFACTORY_USERNAME_VARS: "ARTIFACTORY_USERNAME,TWINE_USERNAME"
 
-generate-token:
-  stage: token
-  image: docker.audeering.com/alpine
-  before_script:
-    - apk --no-cache add git curl bash
-  script:
-    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${GITLAB_USER_LOGIN}/artifactory-tokenizer.git
-    - cd artifactory-tokenizer
-    - bash get_token.sh "readers,deployers" > ../token.json
-  artifacts:
-    paths:
-      - token.json
-    expire_in: 20 mins
+include:
+  - project: 'devops/artifactory-token-helper'
+    file: '/.gitlab-ci-artifactory-token.yml'
+
+cache:
+  paths:
+    - venv/
 
 .pytest:
   before_script:
-    - apt-get update
-    - apt-get install -y sox curl jq pandoc libsndfile1
     - python -V
-    - username=${GITLAB_USER_LOGIN}
-    - api_key=$(cat token.json | jq -r '.access_token')
-    - export ARTIFACTORY_USERNAME=${username}
-    - export ARTIFACTORY_API_KEY=${api_key}
-    - export TWINE_USERNAME=${username}
-    - export TWINE_PASSWORD=${api_key}
-    - python -V
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
   script:
     - pip install -r requirements.txt
     - pip install -r tests/requirements.txt
     - python -m pytest
-  dependencies:
-    - generate-token
 
 python-3.6:
   extends: .pytest
   stage: test
-  image: docker.audeering.com/python:3.6
-
-python-3.7:
-  extends: .pytest
-  stage: test
-  image: docker.audeering.com/python:3.7
-
-#python-3.8:  # https://gitlab.audeering.com/devops/gitlab/-/issues/81
-#  extends: .pytest
-#  stage: test
-#  image: docker.audeering.com/python:3.8
+  image: docker.audeering.com/audeering/python-3.6:latest
 
 docs:
   extends: .pytest
   stage: test
-  image: docker.audeering.com/python:3.7
+  image: docker.audeering.com/audeering/python-3.6:latest
   script:
     - pip install -r requirements.txt
     - pip install -r docs/requirements.txt
@@ -85,13 +63,9 @@ pages:
       - tags
 
 pypi:
-  extends: .pytest
   stage: pypi
-  image: docker.audeering.com/python:3.6
-  variables:
-    TWINE_REPOSITORY_URL: https://artifactory.audeering.com/artifactory/api/pypi/pypi
+  image: docker.audeering.com/audeering/python-3.6:latest
   script:
-    - pip install twine
     - python setup.py sdist bdist_wheel
     - python -m twine upload --repository local dist/*
   only:

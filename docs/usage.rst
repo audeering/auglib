@@ -9,6 +9,17 @@ Usage
     import matplotlib.pyplot as plt
     import pandas as pd
 
+    import audb
+
+
+    audb.config.REPOSITORIES = [
+        audb.Repository(
+            name='data-public-local',
+            host='https://artifactory.audeering.com/artifactory',
+            backend='artifactory',
+        ),
+    ]
+
 
     def series_to_html(self):
         df = self.to_frame()
@@ -207,7 +218,7 @@ We can do the same on a segmented index in the `Unified Format`_.
 .. jupyter-execute::
 
     index = db.segments[:5]
-    result = augment.process_unified_format_index(
+    result = augment.process_index(
         index=index,
     )
     result
