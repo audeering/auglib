@@ -158,7 +158,7 @@ Augment database
 ~~~~~~~~~~~~~~~~
 
 In this section we will show how a :class:`auglib.Transform`
-object can be applied to a database in `Unified Format`_.
+object can be applied to a audformat_ database.
 Therefore, we pass it to an instance of :class:`auglib.Augment`.
 
 .. jupyter-execute::
@@ -213,7 +213,7 @@ we see that they now contain noise.
 
     plot(result[0][0], sampling_rate)
 
-We can do the same on a segmented index in the `Unified Format`_.
+We can do the same on a segmented index conform to audformat_.
 
 .. jupyter-execute::
 
@@ -244,7 +244,7 @@ To disk
 
 Therefore, the interface offers another method
 :meth:`auglib.Augment.augment`, which takes
-as input an index, column or table in `Unified Format`_,
+as input an index, column or table conform to audformat_,
 but instead of returning the augmented signals
 it stores them back to disk.
 The result is an index, column or table pointing to the augmented files.
@@ -294,4 +294,4 @@ and augmenting every file twice.
     )
     result
 
-.. _`Unified Format`: http://tools.pp.audeering.com/audata/data-tables.html
+.. _audformat: https://audeering.github.io/audformat/data-format.html

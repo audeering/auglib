@@ -4,9 +4,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import audata
-import audata.testing
 import audeer
+import audformat
 import audiofile as af
 
 import auglib
@@ -106,7 +105,7 @@ def test_augment(tmpdir, sampling_rate, resample, modified_only,
             cache_root_idx = os.path.join(
                 tmpdir, process.id, str(idx),
             )
-            segmented = audata.utils.to_segmented_frame(data)
+            segmented = audformat.utils.to_segmented_index(data)
             index = segmented.index
 
             if not modified_only and idx == 0:
@@ -119,9 +118,10 @@ def test_augment(tmpdir, sampling_rate, resample, modified_only,
                         if pd.isna(end) else end
                         for file, end in zip(files, ends)
                     ]
-                    new_index = pd.MultiIndex.from_arrays(
-                        [files, starts, ends],
-                        names=['file', 'start', 'end'],
+                    new_index = audformat.segmented_index(
+                        files=files,
+                        starts=starts,
+                        ends=ends,
                     )
                     new_data = segmented.copy()
                     new_data.index = new_index
@@ -141,9 +141,10 @@ def test_augment(tmpdir, sampling_rate, resample, modified_only,
                     if pd.isna(end) else end
                     for file, end in zip(files, ends)
                 ]
-            new_index = pd.MultiIndex.from_arrays(
-                [files, starts, ends],
-                names=['file', 'start', 'end'],
+            new_index = audformat.segmented_index(
+                files=files,
+                starts=starts,
+                ends=ends,
             )
             new_data = segmented.copy()
             new_data.index = new_index
@@ -178,10 +179,8 @@ def test_augment_empty(tmpdir):
 
     data = pd.Series(
         None,
-        index=pd.MultiIndex.from_arrays(
-            [[], [], []],
-            names=['file', 'start', 'end'],
-        )
+        index=audformat.segmented_index(),
+        dtype='float64',
     )
     transform = pytest.TRANSFORM_ONES
     process = auglib.Augment(

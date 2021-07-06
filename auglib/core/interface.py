@@ -5,8 +5,8 @@ import typing
 import numpy as np
 import pandas as pd
 
-import audata
 import audeer
+import audformat
 import audinterface
 from audinterface.core.utils import preprocess_signal
 import audiofile
@@ -61,7 +61,7 @@ class Augment(audinterface.Process, audobject.Object):
 
     Provides an interface for :class:`auglib.Transform`
     and turns it into an object that can be applied on a list of files
-    and data in the Unified Format.
+    and data conform to audformat_.
 
     Note that all :meth:`auglib.Augment.process_*` methods return a column
     holding the augmented signals or segments,
@@ -77,6 +77,8 @@ class Augment(audinterface.Process, audobject.Object):
         * ``verbose``
 
         For more information see section on `hidden arguments`_.
+
+    .. _audformat: https://audeering.github.io/audformat/data-format.html
 
     Args:
         transform: transformation object
@@ -176,7 +178,7 @@ class Augment(audinterface.Process, audobject.Object):
             num_variants: int = 1,
             force: bool = False,
     ) -> typing.Union[pd.Index, pd.Series, pd.DataFrame]:
-        r"""Augment an Unified Format index, column, or table.
+        r"""Augment an index, column, or table conform to audformat.
 
         Creates ``num_variants`` copies of the files referenced in the index
         and augments them.
@@ -196,7 +198,7 @@ class Augment(audinterface.Process, audobject.Object):
         included.
 
         Args:
-            data: index, column or table in Unified Format
+            data: index, column or table conform to audformat
             cache_root: directory to cache augmented files,
                 if ``None`` defaults to ``auglib.config.CACHE_ROOT``
             remove_root: set a path that should be removed from
@@ -228,7 +230,7 @@ class Augment(audinterface.Process, audobject.Object):
                     "to their default values."
                 )
 
-        data = audata.utils.to_segmented_frame(data)
+        data = audformat.utils.to_segmented_index(data)
         if data.empty:
             return data
 
@@ -350,8 +352,7 @@ class Augment(audinterface.Process, audobject.Object):
             index = segments.index
             audeer.mkdir(os.path.dirname(out_file))
             audiofile.write(out_file, signal, sampling_rate)
-        else:
-            index = self._correct_index(out_file, index)
+        index = self._correct_index(out_file, index)
 
         return pd.Series(
             out_file,
@@ -403,17 +404,24 @@ class Augment(audinterface.Process, audobject.Object):
             new_starts = index.get_level_values(0).map(
                 lambda x: pd.to_timedelta(0) if pd.isna(x) else x
             )
+
             # if not keep_nat replace NaT in end with file duration
             if not self.keep_nat:
-                dur = pd.to_timedelta(audiofile.duration(file), unit='s')
                 new_ends = index.get_level_values(1).map(
-                    lambda x: dur if pd.isna(x) else x
+                    lambda x: pd.to_timedelta(
+                        audiofile.duration(file),
+                        unit='s',
+                    )
+                    if pd.isna(x)
+                    else pd.to_timedelta(x)
                 )
             else:
-                new_ends = index.get_level_values(1)
-
-            index = pd.MultiIndex.from_arrays(
-                [new_starts, new_ends], names=['start', 'end']
+                new_ends = index.get_level_values(1).map(
+                    lambda x: pd.to_timedelta(x, unit='s')
+                )
+            index = audinterface.utils.signal_index(
+                starts=new_starts,
+                ends=new_ends,
             )
 
         return index
