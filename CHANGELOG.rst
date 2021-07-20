@@ -7,6 +7,13 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.8.3 (2021-07-20)
+--------------------------
+
+* Added: set cache root with ``$AUGLIB_CACHE_ROOT``
+* Changed: switched from ``audata`` to ``audformat``
+
+
 Version 0.8.2 (2020-12-04)
 --------------------------
 
