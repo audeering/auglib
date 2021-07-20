@@ -490,7 +490,12 @@ def default_cache_root(augment: Augment = None) -> str:
 
     The default cache directory defines
     the path where augmented files will be stored.
-    It can be set via ``auglib.config.CACHE_ROOT``.
+    It is given by the path specified
+    by the environment variable
+    ``AUGLIB_CACHE_ROOT``
+    or by
+    ``auglib.config.CACHE_ROOT``.
+
     If ``augment`` is not None,
     returns the sub-directory where files
     created by the :class:`auglib.Augment` object are stored.
@@ -502,7 +507,10 @@ def default_cache_root(augment: Augment = None) -> str:
         cache directory path
 
     """
-    root = config.CACHE_ROOT
+    root = (
+        os.environ.get('AUGLIB_CACHE_ROOT')
+        or config.CACHE_ROOT
+    )
     if augment is not None:
         root = os.path.join(root, augment.id)
     return audeer.safe_path(root)
