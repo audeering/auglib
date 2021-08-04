@@ -94,7 +94,7 @@ extern "C"
 
     void AudioBuffer_dump(cAudioBuffer *obj)
     {        
-        const sample_t *data = obj->data();
+        const float *data = obj->data();
         for (size_t i = 0; i < obj->size(); i++)
         {
             printf("%lf ", data[i]);

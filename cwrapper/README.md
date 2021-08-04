@@ -1,6 +1,30 @@
-# C wrapper for the auglib C++ interface
+# C wrapper for auglib's C++ interface
 
-In order to build the C wrapper:
+## Conan-related preparation
+
+The C wrapper is intended to be built via CMake, also using Conan as a 
+dependency manager (although not for all dependencies). 
+For the Conan part, it is suggested to set up and activate a Python virtual 
+environment:
+
+```bash
+virtualenv --python=python3 venv
+source venv/bin/activate
+```
+
+Once the virtual environment is activated, install the `conan` package:
+
+```bash
+pip install conan
+```
+
+If you have never used Conan in audEERING, chances are you will need to set up 
+Artifactory as remote. Please consult the internal documentation about Conan:
+https://gitlab.audeering.com/devops/conan/meta.
+
+## Actual steps for building the C wrapper
+
+Once you have Conan set up correctly, in order to build the C wrapper:
 
 1. Clone, build, and install `opencore-amr`:
     * `apt-get install --yes cmake`
