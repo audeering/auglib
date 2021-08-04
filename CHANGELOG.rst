@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
+Version 0.8.4 (2021-08-04)
+--------------------------
+
+* Changed. Updated underlying binary with latest auglib updates. Main change:
+  ClipByRatio transform does not raise exceptions anymore when the computed
+  threshold is too low.
+
 
 Version 0.8.3 (2021-07-20)
 --------------------------
