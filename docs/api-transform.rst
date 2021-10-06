@@ -69,6 +69,12 @@ FilterDesign
 .. autoclass:: FilterDesign
     :members:
 
+Function
+--------
+
+.. autoclass:: Function
+    :members:
+
 GainStage
 ---------
 

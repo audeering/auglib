@@ -1,9 +1,11 @@
-from typing import Sequence, Union
+from typing import Callable, Optional, Sequence, Union
 from functools import wraps
 import ctypes
 from enum import Enum, IntEnum
 
 import numpy as np
+
+import audobject
 
 from auglib.core.api import lib
 from auglib.core.buffer import (
@@ -876,3 +878,99 @@ class AMRNB(Transform):
         dtx = observe(self.dtx)
         lib.AudioBuffer_AMRNB(buf.obj, bit_rate, 1 if dtx else 0)
         return buf
+
+
+class Function(Transform):
+    r"""Apply a custom function to the buffer.
+
+    The function gets as input a :class:`numpy.ndarray`
+    of shape ``(channels, samples)``
+    with the content of the audio buffer
+    and the sampling rate.
+    I can either return ``None``
+    if the operation is applied in-place,
+    or a new :class:`numpy.ndarray`
+    that will be written back to the buffer.
+    If necessary,
+    the size of the audio buffer will be shrinked or expanded
+    to fit the returned array.
+
+    Note that the object is not serializable
+    if the function relies on other locally defined functions.
+    For instance,
+    in this example object ``f`` is not serializable:
+
+    .. code-block:: python
+
+        def _plus_1(x, sr):
+            return x + 1
+
+        def plus_1(x, sr):
+            return _plus_1(x, sr)  # calls local function -> not serializable
+
+        f = auglib.transform.Function(plus_1)
+
+
+    Args:
+        function: (lambda) function object
+        bypass_prob: probability to bypass the transformation
+
+    Example:
+        >>> buf = AudioBuffer(10, 8000, unit='samples')
+        >>> buf
+        array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0.], dtype=float32)
+        >>> def plus_1(x, sr):
+        ...     x += 1
+        >>> Function(plus_1)(buf)
+        array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1.], dtype=float32)
+        >>> def halve(x, sr):
+        ...     return x[:, ::2]
+        >>> Function(halve)(buf)
+        array([1., 1., 1., 1., 1.], dtype=float32)
+        >>> Function(lambda x, sr: x * 2)(buf)
+        array([2., 2., 2., 2., 2.], dtype=float32)
+        >>> buf.free()
+
+    """
+    @audobject.init_decorator(
+        resolvers={
+            'function': audobject.FunctionResolver,
+        },
+    )
+    def __init__(
+            self,
+            function: Callable[
+                [np.ndarray, int],
+                Optional[np.ndarray],
+            ],
+            *,
+            bypass_prob: Union[float, Float] = None,
+    ):
+        super().__init__(bypass_prob)
+        self.function = function
+
+    def _call(self, buf: AudioBuffer):
+
+        # apply function
+        x = buf.data.reshape((1, -1))
+        y = self.function(x, buf.sampling_rate)
+
+        # if a new array is returned
+        # we copy the result to the buffer,
+        # otherwise we assume an inplace operation
+        if y is not None:
+            # ensure result has correct data type
+            y = y.astype(x.dtype)
+            # if necessary fit buffer size to result
+            if y.size < x.size:
+                Trim(
+                    duration=y.size,
+                    unit='samples',
+                )(buf)
+            elif y.size > x.size:
+                AppendValue(
+                    duration=y.size - x.size,
+                    unit='samples',
+                )(buf)
+            # copy result to buffer
+            buf.data[:] = y

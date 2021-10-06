@@ -9,7 +9,7 @@ from auglib.utils import random_seed
 from auglib.transform import Mix, Append, AppendValue, Trim, NormalizeByPeak, \
     Clip, ClipByRatio, GainStage, FFTConvolve, LowPass, HighPass, BandPass, \
     BandStop, WhiteNoiseUniform, WhiteNoiseGaussian, PinkNoise, Tone, \
-    ToneShape, CompressDynamicRange, AMRNB
+    ToneShape, CompressDynamicRange, AMRNB, Function
 from auglib.utils import to_samples, to_db, from_db
 
 
@@ -387,3 +387,50 @@ def test_AMRNB(bit_rate):
             np.testing.assert_allclose(
                 result[:length], target[:length], rtol=0.0, atol=0.065
             )
+
+
+def test_function():
+
+    def func_plus_1(x, sr):
+        return x + 1
+
+    def func_halve(x, sr):
+        return x[:, ::2]
+
+    def func_times_2(x, sr):  # inplace
+        x *= 2
+
+    with AudioBuffer(20, 16000, unit='samples') as buffer:
+
+        np.testing.assert_equal(
+            buffer.data,
+            np.zeros(20, dtype=np.float32),
+        )
+
+        # add 1 to buffer
+        Function(func_plus_1)(buffer)
+        np.testing.assert_equal(
+            buffer.data,
+            np.ones(20, dtype=np.float32),
+        )
+
+        # halve buffer size
+        Function(func_halve)(buffer)
+        np.testing.assert_equal(
+            buffer.data,
+            np.ones(10, dtype=np.float32),
+        )
+
+        # multiple by 2
+        Function(func_times_2)(buffer)
+        np.testing.assert_equal(
+            buffer.data,
+            np.ones(10, dtype=np.float32) * 2,
+        )
+
+        # double buffer size
+        Function(lambda x, sr: np.tile(x, 2))(buffer)
+        np.testing.assert_equal(
+            buffer.data,
+            np.ones(20, dtype=np.float32) * 2,
+        )

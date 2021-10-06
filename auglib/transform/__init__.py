@@ -10,6 +10,7 @@ from auglib.core.transform import (
     CompressDynamicRange,
     FFTConvolve,
     FilterDesign,
+    Function,
     GainStage,
     HighPass,
     LowPass,

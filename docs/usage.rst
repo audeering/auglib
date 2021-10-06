@@ -133,9 +133,11 @@ And we can save it to a file and re-instantiate it from there.
 
 .. jupyter-execute::
 
+    import audobject
+
     file = 'transform.yaml'
     transform.to_yaml(file)
-    transform_from_yaml = auglib.Transform.from_yaml(file)
+    transform_from_yaml = audobject.from_yaml(file)
 
 We can prove that (with the same random seed)
 the new object will give the same result.
