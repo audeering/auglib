@@ -2,6 +2,7 @@ import numpy as np
 from scipy import signal
 import pytest
 
+import auglib
 from auglib import AudioBuffer
 from auglib.core.buffer import lib
 from auglib.core.exception import LibraryException
@@ -391,8 +392,8 @@ def test_AMRNB(bit_rate):
 
 def test_function():
 
-    def func_plus_1(x, sr):
-        return x + 1
+    def func_plus_c(x, sr, c):
+        return x + c
 
     def func_halve(x, sr):
         return x[:, ::2]
@@ -408,7 +409,7 @@ def test_function():
         )
 
         # add 1 to buffer
-        Function(func_plus_1)(buffer)
+        Function(func_plus_c, {'c': auglib.IntUni(1, 2)})(buffer)
         np.testing.assert_equal(
             buffer.data,
             np.ones(20, dtype=np.float32),

@@ -1,3 +1,4 @@
+import typing
 from typing import Callable, Optional, Sequence, Union
 from functools import wraps
 import ctypes
@@ -887,7 +888,12 @@ class Function(Transform):
     of shape ``(channels, samples)``
     with the content of the audio buffer
     and the sampling rate.
-    I can either return ``None``
+    Additional arguments can be provided with
+    the ``function_args`` dictionary.
+    Observable arguments
+    (e.g. :class:`auglib.IntUni`)
+    are automatically evaluated.
+    The function must either return ``None``
     if the operation is applied in-place,
     or a new :class:`numpy.ndarray`
     that will be written back to the buffer.
@@ -913,15 +919,16 @@ class Function(Transform):
 
     Args:
         function: (lambda) function object
+        function_args: dictionary with additional function arguments
         bypass_prob: probability to bypass the transformation
 
     Example:
         >>> buf = AudioBuffer(10, 8000, unit='samples')
         >>> buf
         array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0.], dtype=float32)
-        >>> def plus_1(x, sr):
-        ...     x += 1
-        >>> Function(plus_1)(buf)
+        >>> def plus_c(x, sr, c):
+        ...     x += c
+        >>> Function(plus_c, {'c': 1})(buf)
         array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1.], dtype=float32)
         >>> def halve(x, sr):
         ...     return x[:, ::2]
@@ -939,21 +946,26 @@ class Function(Transform):
     )
     def __init__(
             self,
-            function: Callable[
-                [np.ndarray, int],
-                Optional[np.ndarray],
-            ],
+            function: Callable[..., Optional[np.ndarray]],
+            function_args: typing.Dict = None,
             *,
             bypass_prob: Union[float, Float] = None,
     ):
         super().__init__(bypass_prob)
         self.function = function
+        self.function_args = function_args
 
     def _call(self, buf: AudioBuffer):
 
+        # evaluate function arguments
+        args = {}
+        if self.function_args:
+            for key, value in self.function_args.items():
+                args[key] = observe(value)
+
         # apply function
         x = buf.data.reshape((1, -1))
-        y = self.function(x, buf.sampling_rate)
+        y = self.function(x, buf.sampling_rate, **args)
 
         # if a new array is returned
         # we copy the result to the buffer,
