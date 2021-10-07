@@ -182,10 +182,10 @@ class AudioBuffer:
         r"""Returns copy of buffer data.
 
         Returns:
-            buffer data
+            buffer data with shape ``(1, samples)``
 
         """
-        return self.data.copy()
+        return self.data.copy().reshape(1, -1)
 
     def play(self, wait: bool = True):
         r"""Play back buffer.
