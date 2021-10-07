@@ -5,3 +5,7 @@ build/
 dist/
 .idea/
 venv/
+# docs/examples.rst
+cache/
+docs/_static/speech/augmented.wav
+transform.yaml

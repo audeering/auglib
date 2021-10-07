@@ -1,6 +1,8 @@
 audb
-matplotlib
 jupyter-sphinx
+matplotlib
+pedalboard
+seaborn
 sphinx
 sphinx-audeering-theme
 sphinx-autodoc-typehints
