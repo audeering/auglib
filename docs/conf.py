@@ -61,4 +61,7 @@ html_static_path = ['_static']
 
 # Linkcheck ---------------------------------------------------------------
 
-linkcheck_ignore = [r'https://sail.usc.edu/']
+linkcheck_ignore = [
+    r'https://sail.usc.edu/',
+    'https://sphinx-doc.org/',
+]
