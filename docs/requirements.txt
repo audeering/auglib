@@ -1,7 +1,9 @@
 audb
+audiomentations
 jupyter-sphinx
 matplotlib
 pedalboard
+pydub  # required by audiomentations
 seaborn
 sphinx
 sphinx-audeering-theme

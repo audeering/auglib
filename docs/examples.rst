@@ -185,6 +185,76 @@ with the help of the :class:`auglib.transform.Function` class.
 .. _pedalboard: https://github.com/spotify/pedalboard
 
 
+Audiomentations
+---------------
+
+Audiomentations_ is another Python library
+for audio data augmentation,
+originally inspired by albumentations_.
+It provides additional transformations
+such as pitch shifting and time stretching,
+or mp3 compression to
+simulate lower audio quality.
+It also includes spectrogram transformations
+(not supported by :mod:`auglib`).
+For GPU support the package
+torch-audiomentations_
+is available.
+
+In the following example,
+we combine gaussian noise,
+time stretching,
+and pitch shifting.
+Similar to :mod:`auglib`
+a probability controls if
+a transformation is applied or bypassed.
+Again,
+we use the :class:`auglib.transform.Function` class
+to include transforms from audiomentations_
+into our :mod:`auglib` augmentation chain.
+
+.. jupyter-execute::
+
+    import audiomentations
+
+
+    def audiomentations_transform(signal, sampling_rate, p):
+        r"""Custom augmentation using audiomentations."""
+        compose = audiomentations.Compose([
+            audiomentations.AddGaussianNoise(min_amplitude=0.001, max_amplitude=0.015, p=p),
+            audiomentations.TimeStretch(min_rate=0.8, max_rate=1.25, p=p),
+            audiomentations.PitchShift(min_semitones=-4, max_semitones=4, p=p),
+        ])
+        return compose(signal, sampling_rate)
+
+    transform = auglib.transform.Compose(
+        [
+            auglib.transform.Function(audiomentations_transform, {'p': 1.0}),
+            auglib.transform.NormalizeByPeak(peak_db=-3),
+        ]
+    )
+    augment = auglib.Augment(transform)
+    signal_augmented = augment(signal, sampling_rate)
+
+.. jupyter-execute::
+    :hide-code:
+
+    plot(signal_augmented, green, 'Augmented\nAudio')
+
+.. jupyter-execute::
+    :hide-code:
+
+    Audio(signal_augmented, rate=sampling_rate)
+
+.. empty line for some extra space
+
+|
+
+.. _Audiomentations: https://github.com/iver56/audiomentations
+.. _audiomentations: https://github.com/iver56/audiomentations
+.. _albumentations: https://github.com/albumentations-team/albumentations
+.. _torch-audiomentations: https://github.com/asteroid-team/torch-audiomentations
+
 .. Clean up
 
 .. jupyter-execute::
