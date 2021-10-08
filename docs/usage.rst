@@ -241,3 +241,11 @@ the new object will give the same result.
     signal_augmented_from_yaml = augment_from_yaml(signal, sampling_rate)
 
     np.testing.assert_equal(signal_augmented, signal_augmented_from_yaml)
+
+.. Remove stored YAML file
+.. jupyter-execute::
+    :hide-code:
+    :hide-output:
+
+    import os
+    os.remove(file)

@@ -5,7 +5,5 @@ build/
 dist/
 .idea/
 venv/
-# docs/examples.rst
+.coverage
 cache/
-docs/_static/speech/augmented.wav
-transform.yaml
