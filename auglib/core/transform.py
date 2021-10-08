@@ -941,7 +941,7 @@ class Function(Transform):
     """
     @audobject.init_decorator(
         resolvers={
-            'function': audobject.FunctionResolver,
+            'function': audobject.resolver.Function,
         },
     )
     def __init__(
