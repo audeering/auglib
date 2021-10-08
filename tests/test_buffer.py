@@ -16,11 +16,11 @@ def test_init(dur, sr, unit):
     n = to_samples(dur, sr, unit=unit)
     with AudioBuffer(dur, sr, unit=unit) as buf:
         assert len(buf) == n
-        np.testing.assert_equal(buf.data, np.zeros(n))
-        buf.data += 1
-        np.testing.assert_equal(buf.data, np.ones(n))
-    assert buf.obj is None
-    assert buf.data is None
+        np.testing.assert_equal(buf._data, np.zeros(n))
+        buf._data += 1
+        np.testing.assert_equal(buf._data, np.ones(n))
+    assert buf._obj is None
+    assert buf._data is None
 
 
 @pytest.mark.parametrize('dur,sr',
@@ -36,7 +36,7 @@ def test_file(dur, sr):
     with AudioBuffer.from_array(x, sr) as buf:
         buf.write(path)
     with AudioBuffer.read(path) as buf:
-        np.testing.assert_almost_equal(buf.data, x, decimal=3)
+        np.testing.assert_almost_equal(buf._data, x, decimal=3)
 
     os.remove(path)
 
@@ -48,4 +48,4 @@ def test_from_array(n, sr):
 
     x = np.random.random(n).astype(np.float32)
     with AudioBuffer.from_array(x, sr) as buf:
-        np.testing.assert_equal(x, buf.data)
+        np.testing.assert_equal(x, buf._data)

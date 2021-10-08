@@ -148,11 +148,11 @@ the new object will give the same result.
 
     auglib.utils.random_seed(1)
     with auglib.AudioBuffer.read('docs/_static/speech/sample2.wav') as buf:
-        y = transform(buf).data.copy()
+        y = transform(buf).to_array()
 
     auglib.utils.random_seed(1)
     with auglib.AudioBuffer.read('docs/_static/speech/sample2.wav') as buf:
-        y_from_yaml = transform_from_yaml(buf).data.copy()
+        y_from_yaml = transform_from_yaml(buf).to_array()
 
     np.testing.assert_equal(y, y_from_yaml)
 

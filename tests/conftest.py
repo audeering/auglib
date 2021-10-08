@@ -7,7 +7,7 @@ import auglib
 
 class Ones(auglib.Transform):
     def _call(self, buf: auglib.AudioBuffer):
-        buf.data.fill(1)
+        buf._data.fill(1)
 
 
 # Add access to audEERING data repos

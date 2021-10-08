@@ -28,12 +28,9 @@ class AudioBuffer:
     By default an audio buffer is initialized with zeros. See ``value``
     argument and :doc:`api-source` for other ways.
 
-    .. note:: Always call ``free()`` when a buffer is no longer needed. This
-        will free the memory. Consider to use a ``with`` statement if possible.
-
-    * :attr:`obj` holds the underlying C object
-    * :attr:`sampling_rate` holds the sampling rate in Hz
-    * :attr:`data` holds the audio data as a :class:`numpy.ndarray`
+    .. note:: Always call ``free()`` when a buffer is no longer needed.
+        This will free the memory.
+        Consider to use a ``with`` statement if possible.
 
     Args:
         duration: buffer duration (see ``unit``)
@@ -47,39 +44,66 @@ class AudioBuffer:
 
         >>> with AudioBuffer(5, 8000, 1.0, unit='samples') as buf:
         ...     buf
-        array([1., 1., 1., 1., 1.], dtype=float32)
+        array([[1., 1., 1., 1., 1.]], dtype=float32)
 
     """
-    def __init__(self, duration: Union[int, float, Number],
-                 sampling_rate: int,
-                 value: Union[float, Float] = None, *, unit: str = 'seconds'):
-        length = to_samples(duration, sampling_rate, unit=unit)
+    def __init__(
+            self,
+            duration: Union[int, float, Number],
+            sampling_rate: int,
+            value: Union[float, Float] = None,
+            *,
+            unit: str = 'seconds',
+    ):
         assert_non_negative_number(sampling_rate)
-        self.obj = lib.AudioBuffer_new(length, sampling_rate)
+
+        length = to_samples(duration, sampling_rate, unit=unit)
+        self._obj = lib.AudioBuffer_new(length, sampling_rate)
+        self._data = np.ctypeslib.as_array(
+            lib.AudioBuffer_data(self._obj),
+            shape=(length, ),
+        )
+
         self.sampling_rate = sampling_rate
-        self.data = np.ctypeslib.as_array(lib.AudioBuffer_data(self.obj),
-                                          shape=(length, ))
+        r"""Sampling rate in Hz."""
+
         if value:
-            self.data += observe(value)
-
-    def __len__(self):
-        return lib.AudioBuffer_size(self.obj)
-
-    def __str__(self):
-        return str(self.data)
-
-    def __repr__(self):
-        return repr(self.data)
-
-    def __eq__(self, other: 'AudioBuffer'):
-        return self.sampling_rate == other.sampling_rate and \
-            np.array_equal(self.data, other.data)
+            self._data += observe(value)
 
     def __enter__(self):
         return self
 
+    def __eq__(self, other: 'AudioBuffer'):
+        return self.sampling_rate == other.sampling_rate and \
+            np.array_equal(self._data, other._data)
+
     def __exit__(self, *args):
         self.free()
+
+    def __len__(self):
+        return lib.AudioBuffer_size(self._obj)
+
+    def __repr__(self):
+        return repr(self.to_array(copy=False))
+
+    def __str__(self):
+        return str(self.to_array(copy=False))
+
+    @property
+    def peak(self) -> float:
+        r"""Buffer peak."""
+        if self._obj:
+            return lib.AudioBuffer_getPeak(self._obj)
+
+    @property
+    def peak_db(self) -> float:
+        r"""Buffer peak in decibels."""
+        if self._obj:
+            return lib.AudioBuffer_getPeakDecibels(self._obj)
+
+    def dump(self):
+        r"""Dump audio buffer to stdout."""
+        lib.AudioBuffer_dump(self._obj)
 
     def free(self):
         r"""Free the audio buffer.
@@ -88,26 +112,92 @@ class AudioBuffer:
             release its memory.
 
         """
-        if self.obj:
-            lib.AudioBuffer_free(self.obj)
-            self.data = None
-            self.obj = None
+        if self._obj:
+            lib.AudioBuffer_free(self._obj)
+            self._data = None
+            self._obj = None
 
-    def dump(self):
-        r"""Dump audio buffer to stdout."""
-        lib.AudioBuffer_dump(self.obj)
+    def play(self, wait: bool = True):
+        r"""Play back buffer.
 
-    @property
-    def peak(self) -> float:
-        r"""Return buffer peak."""
-        if self.obj:
-            return lib.AudioBuffer_getPeak(self.obj)
+        Args:
+            wait: pause until file has been played back
 
-    @property
-    def peak_db(self) -> float:
-        r"""Return buffer peak in decibels."""
-        if self.obj:
-            return lib.AudioBuffer_getPeakDecibels(self.obj)
+        """
+        import sounddevice as sd
+        sd.play(self._data, self.sampling_rate)
+        if wait:
+            sd.wait()
+
+    def to_array(
+            self,
+            *,
+            copy: bool = True,
+    ) -> np.ndarray:
+        r"""Return buffer as :class:`numpy.ndarray`.
+
+        By default,
+        returns a copy of the buffer
+        amd changes to the array
+        will not affect the buffer.
+        However,
+        if ``copy`` is set to ``False``
+        changes to the array
+        will also alter the buffer.
+
+        Args:
+            copy: controls if a copy of the data should be returned
+
+        Returns:
+            array with shape ``(1, samples)``
+
+        Example:
+            >>> buf = AudioBuffer(5, 8000, unit='samples')    
+            >>> x = buf.to_array()            
+            >>> x        
+            array([[0., 0., 0., 0., 0.]], dtype=float32)    
+            >>> x.fill(1)
+            >>> x.max()
+            1.0
+            >>> buf.peak
+            0.0
+            >>> y = buf.to_array(copy=False)
+            >>> y
+            array([[0., 0., 0., 0., 0.]], dtype=float32)
+            >>> y.fill(1)
+            >>> y.max()
+            1.0
+            >>> buf.peak
+            1.0            
+            >>> buf.free()
+
+        """  # noqa
+        if copy:
+            return self._data.copy().reshape(1, -1)
+        else:
+            return self._data.reshape(1, -1)
+
+    @audeer.deprecated_keyword_argument(
+        deprecated_argument='precision',
+        removal_version='0.10.0',
+    )
+    def write(self, path: Union[str, Str], *, root: str = None,
+              bit_depth: int = 16, normalize: bool = False):
+        r"""Write buffer to a audio file.
+
+        Args:
+            path: file name of output audio file. The format (WAV, FLAC, OGG)
+                will be inferred from the file name
+            root: optional root directory
+            bit_depth: bit depth of written file in bit, can be 8, 16,
+                24 for WAV and FLAC files, and in addition 32 for WAV files
+            normalize (bool, optional): normalize audio data before writing
+
+        """
+        path = safe_path(path, root=root)
+        audeer.mkdir(os.path.dirname(path))
+        af.write(path, self._data, self.sampling_rate, bit_depth=bit_depth,
+                 normalize=normalize)
 
     @staticmethod
     def from_array(x: Union[np.ndarray, Sequence[float]],
@@ -123,13 +213,13 @@ class AudioBuffer:
         Example:
             >>> with AudioBuffer.from_array([1] * 5, 8000) as buf:
             ...     buf
-            array([1., 1., 1., 1., 1.], dtype=float32)
+            array([[1., 1., 1., 1., 1.]], dtype=float32)
 
         """
         if not isinstance(x, np.ndarray):
             x = np.array(x)
         buf = AudioBuffer(x.size, sampling_rate, unit='samples')
-        np.copyto(buf.data, x.flatten())  # takes care of data type
+        np.copyto(buf._data, x.flatten())  # takes care of data type
         return buf
 
     @staticmethod
@@ -155,49 +245,6 @@ class AudioBuffer:
         offset = observe(offset)
         x, sr = af.read(path, duration=duration, offset=offset, always_2d=True)
         return AudioBuffer.from_array(x[0, :], sr)
-
-    @audeer.deprecated_keyword_argument(
-        deprecated_argument='precision',
-        removal_version='0.10.0',
-    )
-    def write(self, path: Union[str, Str], *, root: str = None,
-              bit_depth: int = 16, normalize: bool = False):
-        r"""Write buffer to a audio file.
-
-        Args:
-            path: file name of output audio file. The format (WAV, FLAC, OGG)
-                will be inferred from the file name
-            root: optional root directory
-            bit_depth: bit depth of written file in bit, can be 8, 16,
-                24 for WAV and FLAC files, and in addition 32 for WAV files
-            normalize (bool, optional): normalize audio data before writing
-
-        """
-        path = safe_path(path, root=root)
-        audeer.mkdir(os.path.dirname(path))
-        af.write(path, self.data, self.sampling_rate, bit_depth=bit_depth,
-                 normalize=normalize)
-
-    def to_array(self) -> np.ndarray:
-        r"""Returns copy of buffer data.
-
-        Returns:
-            buffer data with shape ``(1, samples)``
-
-        """
-        return self.data.copy().reshape(1, -1)
-
-    def play(self, wait: bool = True):
-        r"""Play back buffer.
-
-        Args:
-            wait: pause until file has been played back
-
-        """
-        import sounddevice as sd
-        sd.play(self.data, self.sampling_rate)
-        if wait:
-            sd.wait()
 
 
 class Source(audobject.Object):

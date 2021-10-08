@@ -464,7 +464,7 @@ class Augment(audinterface.Process, audobject.Object):
         and runs it through the transformation object."""
         with AudioBuffer.from_array(x.copy(), sr) as buf:
             transform(buf)
-            return np.atleast_2d(buf.data.copy())
+            return np.atleast_2d(buf._data.copy())
 
 
 def clear_default_cache_root(augment: Augment = None):

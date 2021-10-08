@@ -25,7 +25,7 @@ class FromArray(Source):
     Example:
         >>> with FromArray([1] * 5, 8000)() as buf:
         ...     buf
-        array([1., 1., 1., 1., 1.], dtype=float32)
+        array([[1., 1., 1., 1., 1.]], dtype=float32)
 
     """
     def __init__(self, x: Union[np.ndarray, Sequence[float]],
