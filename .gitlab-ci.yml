@@ -38,10 +38,13 @@ docs:
   stage: test
   image: docker.audeering.com/audeering/python-3.6:latest
   script:
-    - apt-get update
-    - apt-get -y install ffmpeg
     - pip install -r requirements.txt
     - pip install -r docs/requirements.txt
+    # Create Artifactory config script to manage user access
+    - echo -e "[artifactory.audeering.com/artifactory]\nusername = ${ARTIFACTORY_USERNAME}\npassword = ${ARTIFACTORY_API_KEY}\n" >~/.artifactory_python.cfg
+    # Allow anonymous access
+    - unset ARTIFACTORY_USERNAME
+    - unset ARTIFACTORY_API_KEY
     - python -m sphinx -W docs/ build/html -b html
     - python -m sphinx -W docs/ build/linkcheck -b linkcheck
   artifacts:

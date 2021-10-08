@@ -16,20 +16,6 @@ Examples
     import auglib
 
 
-    # Ensure we can access public repo
-    artifactory_user = os.environ.get('ARTIFACTORY_USERNAME')
-    artifactory_key = os.environ.get('ARTIFACTORY_API_KEY')
-    os.environ['ARTIFACTORY_USERNAME'] = 'anonymous'
-    os.environ['ARTIFACTORY_API_KEY'] = ''
-
-    audb.config.REPOSITORIES = [
-        audb.Repository(
-            name='data-public',
-            host='https://audeering.jfrog.io/artifactory',
-            backend='artifactory',
-        ),
-    ]
-
     blue = '#6649ff'
     green = '#55dbb1'
 
@@ -254,15 +240,3 @@ into our :mod:`auglib` augmentation chain.
 .. _audiomentations: https://github.com/iver56/audiomentations
 .. _albumentations: https://github.com/albumentations-team/albumentations
 .. _torch-audiomentations: https://github.com/asteroid-team/torch-audiomentations
-
-.. Clean up
-
-.. jupyter-execute::
-    :hide-code:
-    :hide-output:
-
-    # Restore artifactory user
-    if artifactory_user is not None:
-        os.environ['ARTIFACTORY_USERNAME'] = artifactory_user
-    if artifactory_key is not None:
-        os.environ['ARTIFACTORY_API_KEY'] = artifactory_key
