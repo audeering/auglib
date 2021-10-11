@@ -88,6 +88,88 @@ Let's start with loading an example file to augment.
 |
 
 
+.. _examples-recorded-reverb:
+
+Recorded Reverb
+---------------
+
+Recorded reverb can be used
+to make machine learning models robust
+against changes of the room.
+We have a few databases
+with recorded reverb,
+including air_,
+ir-c4dm_,
+and mardy_.
+In the following we focus on air_,
+which can be used commercially
+and provides binaural `impulse responses`_
+recorded with a `dummy head`_
+for different rooms.
+Its `rir` table holds recordings
+for four different rooms
+at different distances.
+
+.. jupyter-execute::
+
+    df = audb.load_table('air', 'rir', version='1.4.2', verbose=False)
+    set(df.room)
+
+We load the left channel
+of all impulse responses
+stored in the `air` table
+and resample them to 16000 Hz.
+We then randomly pick
+an impulse response
+during augmentation
+with :class:`auglib.StrList`.
+
+.. jupyter-execute::
+
+    auglib.utils.random_seed(0)
+
+    db = audb.load(
+        'air',
+        version='1.4.2',
+        tables='rir',
+        channels=[0],
+        sampling_rate=16000,
+        verbose=False,
+    )
+    transform = auglib.transform.Compose(
+        [
+            auglib.transform.FFTConvolve(
+                auglib.StrList(db.files, draw=True),
+                keep_tail=False,
+            ),
+            auglib.transform.NormalizeByPeak(),
+        ]
+    )
+    augment = auglib.Augment(transform)
+    signal_augmented = augment(signal, sampling_rate)
+
+
+.. jupyter-execute::
+    :hide-code:
+
+    plot(signal_augmented, green, 'Recorded\nReverb')
+
+.. jupyter-execute::
+    :hide-code:
+
+    Audio(signal_augmented, rate=sampling_rate)
+
+.. empty line for some extra space
+
+|
+
+.. _air: http://data.pp.audeering.com/databases/air/air.html
+.. _ir-c4dm: http://data.pp.audeering.com/databases/ir-c4dm/ir-c4dm.html
+.. _mardy: http://data.pp.audeering.com/databases/mardy/mardy.html
+.. _impulse responses: https://en.wikipedia.org/wiki/Impulse_response
+.. _dummy head: https://en.wikipedia.org/wiki/Dummy_head_recording
+
+
 .. _examples-artificial-reverb:
 
 Artificial Reverb
