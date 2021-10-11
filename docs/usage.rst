@@ -18,7 +18,7 @@
             'axes.facecolor': (0, 0, 0, 0),
             'figure.facecolor': (0, 0, 0, 0),
             'axes.grid': False,
-            'figure.figsize': (8, 3),
+            'figure.figsize': (8, 2.5),
         },
     )
 

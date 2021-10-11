@@ -1,3 +1,5 @@
+.. _examples:
+
 Examples
 ========
 
@@ -24,7 +26,7 @@ Examples
             'axes.facecolor': (0, 0, 0, 0),
             'figure.facecolor': (0, 0, 0, 0),
             'axes.grid' : False,
-            'figure.figsize':(8, 3)
+            'figure.figsize':(8, 2.5)
         },
     )
 
@@ -52,12 +54,9 @@ Examples
 
 .. === Document starts here ===
 
-Here we will collect augmentation examples,
+Augmentation examples,
 showing you
-how to solve certain augmentation tasks
-or how to
-combine :mod:`auglib`
-with external augmentation solutions.
+how to solve certain augmentation tasks.
 
 Let's start with loading an example file to augment.
 
@@ -89,65 +88,66 @@ Let's start with loading an example file to augment.
 |
 
 
-Pedalboard
-----------
+.. _examples-artificial-reverb:
 
-Pedalboard_ is a Python package from Spotify,
-that provides a collection
-of useful and fast augmentations.
-It also allows you
-to include VST plugins
-in your augmentation pipeline.
+Artificial Reverb
+-----------------
 
-Pedalboard_ lacks direct documentation
-of the parameters you can set for each of their classes.
-You can list available parameters
-by inspecting the attributes of a class:
-
-.. jupyter-execute::
-
-    import pedalboard
-
-    [attr for attr in dir(pedalboard.Reverb) if not attr.startswith('_')]
-
-For the value range
-and an explanation
-of the parameters,
-you might want to look
-at the corresponding documentation
-of the underlying JUCE C code.
-For reverb it is located at
-https://docs.juce.com/master/structReverb_1_1Parameters.html
-
-In the following example,
-we use the compressor,
-chorus,
-phaser,
-and reverb
-augmentation from pedalboard_,
-as part of our :mod:`auglib`
-augmentation chain
-with the help of the :class:`auglib.transform.Function` class.
+If you don't have enough examples of recorded reverb,
+or want to tune one particular parameter of reverb,
+you can artificially generate it.
+Pedalboard_ provides you a reverb transform,
+that let you adjust a bunch of parameters
+in the range 0 to 1.
+For more information on Pedalboard_
+see the :ref:`Pedalboard section <external-pedalboard>`.
+In the following,
+we simply pick all parameters
+randomly from a normal distribution.
 
 .. jupyter-execute::
 
-    def pedalboard_transform(signal, sampling_rate):
-        r"""Custom augmentation using pedalboard."""
+    auglib.utils.random_seed(0)
+
+    def reverb(
+            signal,
+            sampling_rate,
+            room_size,
+            damping,
+            wet_level,
+            dry_level,
+            width,
+    ):
+        r"""Reverb augmentation using pedalboard."""
+        import pedalboard
         board = pedalboard.Pedalboard(
             [
-                pedalboard.Compressor(threshold_db=-50, ratio=25),
-                pedalboard.Chorus(),
-                pedalboard.Phaser(),
-                pedalboard.Reverb(room_size=0.25),
+                pedalboard.Reverb(
+                    room_size=room_size,
+                    damping=damping,
+                    wet_level=wet_level,
+                    dry_level=dry_level,
+                    width=width,
+                ),
             ],
             sample_rate=sampling_rate,
         )
         return board(signal)
 
+    random_params = auglib.FloatNorm(mean=0.5, std=0.5, minimum=0, maximum=1)
     transform = auglib.transform.Compose(
         [
-            auglib.transform.Function(pedalboard_transform),
-            auglib.transform.NormalizeByPeak(peak_db=-3),
+            auglib.transform.Function(
+                reverb,
+                function_args={
+                    'room_size': random_params,
+                    'damping': random_params,
+                    'wet_level': random_params,
+                    'dry_level': random_params,
+                    'width': random_params,
+                },
+            ),
+            auglib.transform.NormalizeByPeak(),
         ]
     )
     augment = auglib.Augment(transform)
@@ -156,7 +156,7 @@ with the help of the :class:`auglib.transform.Function` class.
 .. jupyter-execute::
     :hide-code:
 
-    plot(signal_augmented, green, 'Augmented\nAudio')
+    plot(signal_augmented, green, 'Artificial\nReverb')
 
 .. jupyter-execute::
     :hide-code:
@@ -168,75 +168,3 @@ with the help of the :class:`auglib.transform.Function` class.
 |
 
 .. _Pedalboard: https://github.com/spotify/pedalboard
-.. _pedalboard: https://github.com/spotify/pedalboard
-
-
-Audiomentations
----------------
-
-Audiomentations_ is another Python library
-for audio data augmentation,
-originally inspired by albumentations_.
-It provides additional transformations
-such as pitch shifting and time stretching,
-or mp3 compression to
-simulate lower audio quality.
-It also includes spectrogram transformations
-(not supported by :mod:`auglib`).
-For GPU support the package
-torch-audiomentations_
-is available.
-
-In the following example,
-we combine gaussian noise,
-time stretching,
-and pitch shifting.
-Similar to :mod:`auglib`
-a probability controls if
-a transformation is applied or bypassed.
-Again,
-we use the :class:`auglib.transform.Function` class
-to include transforms from audiomentations_
-into our :mod:`auglib` augmentation chain.
-
-.. jupyter-execute::
-
-    import audiomentations
-
-
-    def audiomentations_transform(signal, sampling_rate, p):
-        r"""Custom augmentation using audiomentations."""
-        compose = audiomentations.Compose([
-            audiomentations.AddGaussianNoise(min_amplitude=0.001, max_amplitude=0.015, p=p),
-            audiomentations.TimeStretch(min_rate=0.8, max_rate=1.25, p=p),
-            audiomentations.PitchShift(min_semitones=-4, max_semitones=4, p=p),
-        ])
-        return compose(signal, sampling_rate)
-
-    transform = auglib.transform.Compose(
-        [
-            auglib.transform.Function(audiomentations_transform, {'p': 1.0}),
-            auglib.transform.NormalizeByPeak(peak_db=-3),
-        ]
-    )
-    augment = auglib.Augment(transform)
-    signal_augmented = augment(signal, sampling_rate)
-
-.. jupyter-execute::
-    :hide-code:
-
-    plot(signal_augmented, green, 'Augmented\nAudio')
-
-.. jupyter-execute::
-    :hide-code:
-
-    Audio(signal_augmented, rate=sampling_rate)
-
-.. empty line for some extra space
-
-|
-
-.. _Audiomentations: https://github.com/iver56/audiomentations
-.. _audiomentations: https://github.com/iver56/audiomentations
-.. _albumentations: https://github.com/albumentations-team/albumentations
-.. _torch-audiomentations: https://github.com/asteroid-team/torch-audiomentations

@@ -8,6 +8,7 @@
 
     install
     usage
+    external
     examples
 
 .. Warning: then usage of genindex is a hack to get a TOC entry, see
