@@ -38,36 +38,6 @@ ExceptionHandling
 .. autoclass:: ExceptionHandling
     :members:
 
-FloatList
----------
-
-.. autoclass:: FloatList
-    :members:
-
-FloatNorm
----------
-
-.. autoclass:: FloatNorm
-    :members:
-
-FloatUni
---------
-
-.. autoclass:: FloatUni
-    :members:
-
-IntList
----------
-
-.. autoclass:: IntList
-    :members:
-
-IntUni
-------
-
-.. autoclass:: IntUni
-    :members:
-
 LibraryException
 ----------------
 
@@ -101,12 +71,6 @@ Source
 ------
 
 .. autoclass:: Source
-    :members:
-
-StrList
--------
-
-.. autoclass:: StrList
     :members:
 
 Transform

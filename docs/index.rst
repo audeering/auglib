@@ -19,6 +19,7 @@
     :hidden:
 
     api
+    api-observe
     api-sink
     api-source
     api-transform

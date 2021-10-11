@@ -2,6 +2,7 @@ from auglib import sink
 from auglib import source
 from auglib import transform
 from auglib import utils
+from auglib import observe
 from auglib.core.buffer import (
     AudioBuffer,
     Sink,
@@ -21,13 +22,13 @@ from auglib.core.interface import (
     clear_default_cache_root,
     NumpyTransform,
 )
-from auglib.core.observe import (
+from auglib.core.observe_legacy import (
+    FloatList,
     FloatNorm,
     FloatUni,
+    IntList,
     IntUni,
     StrList,
-    IntList,
-    FloatList
 )
 
 __all__ = []

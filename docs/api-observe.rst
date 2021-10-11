@@ -1,0 +1,57 @@
+auglib.observe
+==============
+
+.. automodule:: auglib.observe
+
+Base
+----
+
+.. autoclass:: Base
+    :members:
+
+BoolRand
+--------
+
+.. autoclass:: BoolRand
+    :members:
+
+FloatList
+---------
+
+.. autoclass:: FloatList
+    :members:
+
+FloatNorm
+---------
+
+.. autoclass:: FloatNorm
+    :members:
+
+FloatUni
+--------
+
+.. autoclass:: FloatUni
+    :members:
+
+IntList
+---------
+
+.. autoclass:: IntList
+    :members:
+
+IntUni
+------
+
+.. autoclass:: IntUni
+    :members:
+
+observe
+-------
+
+.. autofunction:: observe
+
+StrList
+-------
+
+.. autoclass:: StrList
+    :members:

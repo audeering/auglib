@@ -409,7 +409,7 @@ def test_function():
         )
 
         # add 1 to buffer
-        Function(func_plus_c, {'c': auglib.IntUni(1, 2)})(buffer)
+        Function(func_plus_c, {'c': auglib.observe.IntUni(1, 2)})(buffer)
         np.testing.assert_equal(
             buffer._data,
             np.ones(20, dtype=np.float32),

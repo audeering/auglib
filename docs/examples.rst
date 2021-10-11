@@ -122,7 +122,7 @@ and resample them to 16000 Hz.
 We then randomly pick
 an impulse response
 during augmentation
-with :class:`auglib.StrList`.
+with :class:`auglib.observe.StrList`.
 
 .. jupyter-execute::
 
@@ -139,7 +139,7 @@ with :class:`auglib.StrList`.
     transform = auglib.transform.Compose(
         [
             auglib.transform.FFTConvolve(
-                auglib.StrList(db.files, draw=True),
+                auglib.observe.StrList(db.files, draw=True),
                 keep_tail=False,
             ),
             auglib.transform.NormalizeByPeak(),
@@ -216,7 +216,12 @@ randomly from a normal distribution.
         )
         return board(signal)
 
-    random_params = auglib.FloatNorm(mean=0.5, std=0.5, minimum=0, maximum=1)
+    random_params = auglib.observe.FloatNorm(
+        mean=0.5,
+        std=0.5,
+        minimum=0,
+        maximum=1,
+    )
     transform = auglib.transform.Compose(
         [
             auglib.transform.Function(
