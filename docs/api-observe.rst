@@ -9,17 +9,15 @@ Base
 .. autoclass:: Base
     :members:
 
+    .. automethod:: __call__
+
 Bool
 ----
 
 .. autoclass:: Bool
     :members:
 
-FloatList
----------
-
-.. autoclass:: FloatList
-    :members:
+    .. automethod:: __call__
 
 FloatNorm
 ---------
@@ -27,17 +25,15 @@ FloatNorm
 .. autoclass:: FloatNorm
     :members:
 
+    .. automethod:: __call__
+
 FloatUni
 --------
 
 .. autoclass:: FloatUni
     :members:
 
-IntList
----------
-
-.. autoclass:: IntList
-    :members:
+    .. automethod:: __call__
 
 IntUni
 ------
@@ -45,13 +41,17 @@ IntUni
 .. autoclass:: IntUni
     :members:
 
+    .. automethod:: __call__
+
+List
+----
+
+.. autoclass:: List
+    :members:
+
+    .. automethod:: __call__
+
 observe
 -------
 
 .. autofunction:: observe
-
-StrList
--------
-
-.. autoclass:: StrList
-    :members:

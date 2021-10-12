@@ -5,9 +5,9 @@ import audeer
 
 @audeer.deprecated(
     removal_version='1.0.0',
-    alternative='observe.FloatList',
+    alternative='observe.List',
 )
-class FloatList(observe.FloatList):  # pragma: no cover
+class FloatList(observe.List):  # pragma: no cover
     pass
 
 
@@ -29,9 +29,9 @@ class FloatUni(observe.FloatUni):  # pragma: no cover
 
 @audeer.deprecated(
     removal_version='1.0.0',
-    alternative='observe.IntList',
+    alternative='observe.List',
 )
-class IntList(observe.IntList):  # pragma: no cover
+class IntList(observe.List):  # pragma: no cover
     pass
 
 
@@ -45,7 +45,7 @@ class IntUni(observe.IntUni):  # pragma: no cover
 
 @audeer.deprecated(
     removal_version='1.0.0',
-    alternative='observe.StrList',
+    alternative='observe.List',
 )
-class StrList(observe.StrList):  # pragma: no cover
+class StrList(observe.List):  # pragma: no cover
     pass

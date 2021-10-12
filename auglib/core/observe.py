@@ -7,28 +7,20 @@ import scipy.stats
 import audobject
 
 
-# abstract
-
 class Base(audobject.Object):
-    r"""An observable object.
+    r"""Interface for observable objects.
 
     An observable object only reveals its value when it is called.
 
-    Example:
-        >>> s = StrList(['a', 'b', 'c'])
-        >>> s()
-        'a'
-        >>> s()
-        'b'
-        >>> s()
-        'c'
-
     """
     def __call__(self) -> typing.Any:
-        raise (NotImplementedError())
+        r"""Observe next value.
 
+        Returns:
+            next value
 
-# implementations
+        """
+        raise NotImplementedError()
 
 
 class Bool(Base):
@@ -45,6 +37,21 @@ class Bool(Base):
         self.prob_true = prob_true
 
     def __call__(self) -> bool:
+        r"""Observe next boolean value.
+
+        Returns:
+            boolean
+
+        Example:
+            >>> from auglib.core import utils
+            >>> utils.random_seed(1)
+            >>> o = Bool(prob_true=0.5)
+            >>> o()
+            True
+            >>> o()
+            False
+
+        """
         return np.random.random() <= self.prob_true
 
 
@@ -57,9 +64,19 @@ class FloatNorm(Base):
         minimum: lower bound
         maximum: upper bound
 
+    Example:
+        >>> from auglib.core import utils
+        >>> utils.random_seed(1)
+        >>> o = FloatNorm(mean=0.0, std=1.0, minimum=0.0)
+        >>> round(o(), 2)
+        0.55
+        >>> round(o(), 2)
+        1.08
+
     """
     def __init__(
-            self, mean: float,
+            self,
+            mean: float,
             std: float,
             *,
             minimum: float = None,
@@ -79,6 +96,12 @@ class FloatNorm(Base):
         )
 
     def __call__(self) -> float:
+        r"""Observe next float value.
+
+        Returns:
+            float value
+
+        """
         value = self._gen.rvs()
         return value
 
@@ -86,9 +109,20 @@ class FloatNorm(Base):
 class FloatUni(Base):
     r"""Draw floating point numbers from a uniform distribution.
 
+    Draws from a "half-open" interval defined by ``[low, high)``.
+
     Args:
-        low: lower bound of the support interval (inclusive)
-        high: upper bound of the support interval (exclusive)
+        low: low interval (inclusive)
+        high: high interval (exclusive)
+
+    Examples:
+        >>> from auglib.core import utils
+        >>> utils.random_seed(1)
+        >>> o = FloatUni(low=0.0, high=1.0)
+        >>> round(o(), 2)
+        0.42
+        >>> round(o(), 2)
+        0.72
 
     """
     def __init__(
@@ -100,6 +134,12 @@ class FloatUni(Base):
         self.high = high
 
     def __call__(self) -> float:
+        r"""Observe next float value.
+
+        Returns:
+            float value
+
+        """
         value = np.random.uniform(self.low, self.high)
         return value
 
@@ -107,9 +147,20 @@ class FloatUni(Base):
 class IntUni(Base):
     r"""Draw integers from a uniform distribution.
 
+    Draws from a "half-open" interval defined by ``[low, high)``.
+
     Args:
         low: low interval (inclusive)
         high: high interval (exclusive)
+
+    Example:
+        >>> from auglib.core import utils
+        >>> utils.random_seed(1)
+        >>> o = IntUni(low=0, high=5)
+        >>> round(o(), 2)
+        3
+        >>> round(o(), 2)
+        4
 
     """
     def __init__(
@@ -121,27 +172,52 @@ class IntUni(Base):
         self.high = high
 
     def __call__(self) -> int:
+        r"""Observe next integer.
+
+        Returns:
+            integer
+
+        """
         return np.random.randint(self.low, self.high)
 
 
-# lists
-
-
 class List(Base):
-    r"""Iterate over a list of observable objects.
+    r"""Iterate over a list of (observable) objects.
+
+    List can contain objects with any type.
+    Objects that implement
+    :class:`auglib.observe.Base`
+    are automatically observed
+    and the observed value is returned.
 
     Args:
-        elements: list of observables
+        elements: list of (observables) objects
         shuffle: return elements in random order
         draw: randomly draw the next element
 
     Raises:
         ValueError: when trying to ``shuffle`` and ``draw`` at the same time
 
+    Example:
+        >>> from auglib.core import utils
+        >>> utils.random_seed(1)
+        >>> o = List([0, 'b', 'c'])
+        >>> [o() for _ in range(5)]
+        [0, 'b', 'c', 0, 'b']
+        >>> o = List([0, 'b', 'c'], shuffle=True)
+        >>> [o() for _ in range(5)]
+        ['b', 'c', 0, 0, 'b']
+        >>> o = List([0, 'b', 'c'], draw=True)
+        >>> [o() for _ in range(5)]
+        ['b', 'b', 'b', 'c', 'b']
+        >>> o = List([IntUni(0, 5), 99])
+        >>> [o() for _ in range(5)]
+        [3, 99, 4, 99, 0]
+
     """
     def __init__(
             self,
-            elements: typing.MutableSequence[typing.Union[int, float, str]],
+            elements: typing.MutableSequence[typing.Any],
             *,
             shuffle: bool = False,
             draw: bool = False,
@@ -156,13 +232,10 @@ class List(Base):
         self._counter = 0
         self._iter = False
 
-    def __len__(self):
-        return len(self.elements)
-
-    def _draw(self) -> typing.Union[int, float, str]:
+    def _draw(self) -> typing.Any:
         return self.elements[random.randint(0, len(self) - 1)]
 
-    def _next(self) -> typing.Union[int, float, str]:
+    def _next(self) -> typing.Any:
         if self.shuffle and self._counter == 0:
             random.shuffle(self.elements)
         element = self.elements[self._counter]
@@ -172,16 +245,25 @@ class List(Base):
             self._iter = False
         return element
 
-    def __call__(self) -> typing.Union[int, float, str]:
+    def __call__(self) -> typing.Any:
+        r"""Observe next value from list.
+
+        Returns:
+            next value
+
+        """
         if self.draw:
-            return self._draw()
+            return observe(self._draw())
         else:
-            return self._next()
+            return observe(self._next())
 
     def __iter__(self):
         self._counter = 0
         self._iter = True
         return self
+
+    def __len__(self):
+        return len(self.elements)
 
     def __next__(self):
         if not self._iter:
@@ -189,82 +271,30 @@ class List(Base):
         return self()
 
 
-class FloatList(List):
-    r"""Iterate over a list of floats.
-
-    Args:
-        elements: list of floats
-        shuffle: return elements in random order
-        draw: randomly draw the next element
-
-    Raises:
-        ValueError: when trying to ``shuffle`` and ``draw`` at the same time
-
-    """
-    def __init__(
-            self,
-            elements: typing.MutableSequence[float],
-            *,
-            shuffle: bool = False,
-            draw: bool = False,
-    ):
-        super().__init__(elements, shuffle=shuffle, draw=draw)
-
-
-class IntList(List):
-    r"""Iterate over a list of integers.
-
-    Args:
-        elements: list of integers
-        shuffle: return elements in random order
-        draw: randomly draw the next element
-
-    Raises:
-        ValueError: when trying to ``shuffle`` and ``draw`` at the same time
-
-    """
-    def __init__(
-            self,
-            elements: typing.MutableSequence[int],
-            *,
-            shuffle: bool = False,
-            draw: bool = False,
-    ):
-        super().__init__(elements, shuffle=shuffle, draw=draw)
-
-
-class StrList(List):
-    r"""Iterate over a list of strings.
-
-    Args:
-        elements: list of strings
-        shuffle: return elements in random order
-        draw: randomly draw the next element
-
-    Raises:
-        ValueError: when trying to ``shuffle`` and ``draw`` at the same time
-
-    """
-    def __init__(
-            self,
-            elements: typing.MutableSequence[str],
-            *,
-            shuffle: bool = False,
-            draw: bool = False,
-    ):
-        super().__init__(elements, shuffle=shuffle, draw=draw)
-
-
 def observe(
         x: typing.Union[typing.Any, Base],
 ) -> typing.Any:
-    r"""Convenient function to observe an object.
+    r"""Convenient function to observe a value.
 
     Returns ``x()`` if ``x`` is of type :class:`auglib.observe.Base`,
-    otherwise returns ``x``.
+    otherwise just ``x``.
 
     Args:
-        x: source
+        x: (observable) object
+
+    Returns:
+        observed value
+
+    Example:
+        >>> from auglib.core import utils
+        >>> utils.random_seed(1)
+        >>> observe(99)
+        99
+        >>> o = IntUni(low=0, high=5)
+        >>> observe(o)
+        3
+        >>> observe(o)
+        4
 
     """
     return x() if isinstance(x, Base) else x

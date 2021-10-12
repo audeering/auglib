@@ -243,7 +243,7 @@ class AudioBuffer:
 
 
 class Source(audobject.Object):
-    r"""observe.Base class for objects that create an
+    r"""Base class for objects that create an
     :class:`auglib.AudioBuffer`.
 
     """
@@ -261,7 +261,7 @@ class Source(audobject.Object):
 
 
 class Transform(audobject.Object):
-    r"""observe.Base class for objects applying some sort of transformation to an
+    r"""Base class for objects applying some sort of transformation to an
     :class:`auglib.AudioBuffer`.
 
     Args:
@@ -292,7 +292,7 @@ class Transform(audobject.Object):
 
 
 class Sink(audobject.Object):
-    r"""observe.Base class for objects that consume an
+    r"""Base class for objects that consume an
     :class:`auglib.AudioBuffer`.
 
     """

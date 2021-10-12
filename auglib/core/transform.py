@@ -86,7 +86,7 @@ class Mix(Transform):
     r"""Mix the audio buffer (base) with another buffer (auxiliary) by
     adding the auxiliary buffer to the base buffer.
 
-    observe.Base and auxiliary buffer may differ in length but must have the
+    Base and auxiliary buffer may differ in length but must have the
     same sampling rate.
 
     Mix the content of an auxiliary buffer ``aux`` on top of the base
@@ -196,7 +196,7 @@ class Mix(Transform):
 class Append(Transform):
     r"""Append an auxiliary buffer at the end of the base buffer.
 
-    observe.Base and auxiliary buffer may differ in length but must have the
+    Base and auxiliary buffer may differ in length but must have the
     same sampling rate.
 
     Options are provided for selecting a specific portion of the

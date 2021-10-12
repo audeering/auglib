@@ -10,10 +10,11 @@ import auglib
         1,
         1.0,
         'str',
+        auglib.observe.Bool(),
         auglib.observe.IntUni(0, 10),
         auglib.observe.FloatUni(0.0, 1.0),
         auglib.observe.FloatNorm(0.0, 1.0),
-        auglib.observe.StrList(['a', 'b', 'c'], draw=True),
+        auglib.observe.List(['a', 'b', 'c'], draw=True),
     ]
 )
 def test_observe(x):
@@ -27,7 +28,7 @@ def test_observe(x):
 
 
 @pytest.mark.parametrize('n', [1000])
-def test_BoolRand(n):
+def test_Bool(n):
     x = auglib.observe.Bool()
     draws = []
     for _ in range(n):
@@ -77,51 +78,25 @@ def test_FloatNorm(n, mean, std, minimum, maximum):
 
 
 @pytest.mark.parametrize(
-    'n,strings',
+    'n,elements',
     (
         [100, ['a', 'b', 'c']],
-    )
-)
-def test_StrList(n, strings):
-    x = auglib.observe.StrList(strings)
-    for s in strings:
-        assert x() == s
-    x = auglib.observe.StrList(strings.copy(), shuffle=True)
-    assert strings == sorted([s for s in x])
-    x = auglib.observe.StrList(strings, draw=True)
-    for _ in range(n):
-        assert x() in strings
-
-
-@pytest.mark.parametrize(
-    'n,observables',
-    (
         [100, [1, 2, 3]],
-    )
-)
-def test_IntList(n, observables):
-    x = auglib.observe.IntList(observables)
-    for o in observables:
-        assert x() == o
-    x = auglib.observe.IntList(observables.copy(), shuffle=True)
-    assert observables == sorted([o for o in x])
-    x = auglib.observe.IntList(observables, draw=True)
-    for _ in range(n):
-        assert x() in observables
-
-
-@pytest.mark.parametrize(
-    'n,observables',
-    (
         [100, [1.0, 2.0, 3.0]],
     )
 )
-def test_FloatList(n, observables):
-    x = auglib.observe.FloatList(observables)
-    for o in observables:
-        assert x() == o
-    x = auglib.observe.FloatList(observables.copy(), shuffle=True)
-    assert observables == sorted([o for o in x])
-    x = auglib.observe.FloatList(observables, draw=True)
+def test_List(n, elements):
+
+    x = auglib.observe.List(elements)
+    for s in elements:
+        assert x() == s
+
+    x = auglib.observe.List(elements.copy(), shuffle=True)
+    assert elements == sorted([s for s in x])
+
+    x = auglib.observe.List(elements, draw=True)
     for _ in range(n):
-        assert x() in observables
+        assert x() in elements
+
+    with pytest.raises(ValueError):
+        auglib.observe.List(elements.copy(), shuffle=True, draw=True)
