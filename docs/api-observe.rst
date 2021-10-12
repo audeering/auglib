@@ -9,10 +9,10 @@ Base
 .. autoclass:: Base
     :members:
 
-BoolRand
---------
+Bool
+----
 
-.. autoclass:: BoolRand
+.. autoclass:: Bool
     :members:
 
 FloatList

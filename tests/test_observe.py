@@ -28,7 +28,7 @@ def test_observe(x):
 
 @pytest.mark.parametrize('n', [1000])
 def test_BoolRand(n):
-    x = auglib.observe.BoolRand()
+    x = auglib.observe.Bool()
     draws = []
     for _ in range(n):
         draws += [x()]

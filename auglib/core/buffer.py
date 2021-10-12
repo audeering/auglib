@@ -7,13 +7,8 @@ import numpy as np
 import audeer
 import audobject
 
+from auglib.core import observe
 from auglib.core.api import lib
-from auglib.core.observe import (
-    Float,
-    Number,
-    observe,
-    Str,
-)
 from auglib.core.utils import (
     assert_non_negative_number,
     to_samples,
@@ -49,9 +44,9 @@ class AudioBuffer:
     """
     def __init__(
             self,
-            duration: Union[int, float, Number],
+            duration: Union[int, float, observe.Base],
             sampling_rate: int,
-            value: Union[float, Float] = None,
+            value: Union[float, observe.Base] = None,
             *,
             unit: str = 'seconds',
     ):
@@ -68,7 +63,7 @@ class AudioBuffer:
         r"""Sampling rate in Hz."""
 
         if value:
-            self._data += observe(value)
+            self._data += observe.observe(value)
 
     def __enter__(self):
         return self
@@ -181,7 +176,7 @@ class AudioBuffer:
         deprecated_argument='precision',
         removal_version='0.10.0',
     )
-    def write(self, path: Union[str, Str], *, root: str = None,
+    def write(self, path: Union[str, observe.Base], *, root: str = None,
               bit_depth: int = 16, normalize: bool = False):
         r"""Write buffer to a audio file.
 
@@ -223,9 +218,9 @@ class AudioBuffer:
         return buf
 
     @staticmethod
-    def read(path: Union[str, Str], *, root: str = None,
-             duration: Union[float, Float] = None,
-             offset: Union[float, Float] = 0) -> 'AudioBuffer':
+    def read(path: Union[str, observe.Base], *, root: str = None,
+             duration: Union[float, observe.Base] = None,
+             offset: Union[float, observe.Base] = 0) -> 'AudioBuffer':
         r"""Create buffer from an audio file.
 
         Uses soundfile for WAV, FLAC, and OGG files. All other audio files are
@@ -241,14 +236,14 @@ class AudioBuffer:
 
         """
         path = safe_path(path, root=root)
-        duration = observe(duration)
-        offset = observe(offset)
+        duration = observe.observe(duration)
+        offset = observe.observe(offset)
         x, sr = af.read(path, duration=duration, offset=offset, always_2d=True)
         return AudioBuffer.from_array(x[0, :], sr)
 
 
 class Source(audobject.Object):
-    r"""Base class for objects that create an
+    r"""observe.Base class for objects that create an
     :class:`auglib.AudioBuffer`.
 
     """
@@ -266,14 +261,14 @@ class Source(audobject.Object):
 
 
 class Transform(audobject.Object):
-    r"""Base class for objects applying some sort of transformation to an
+    r"""observe.Base class for objects applying some sort of transformation to an
     :class:`auglib.AudioBuffer`.
 
     Args:
         bypass_prob: probability to bypass the transformation
 
     """
-    def __init__(self, bypass_prob: Union[float, Float] = None):
+    def __init__(self, bypass_prob: Union[float, observe.Base] = None):
         self.bypass_prob = bypass_prob
 
     def _call(self, buf: AudioBuffer):
@@ -290,14 +285,14 @@ class Transform(audobject.Object):
 
     @_check_exception_decorator
     def __call__(self, buf: AudioBuffer) -> AudioBuffer:
-        bypass_prob = observe(self.bypass_prob)
+        bypass_prob = observe.observe(self.bypass_prob)
         if bypass_prob is None or np.random.random_sample() >= bypass_prob:
             self._call(buf)
         return buf
 
 
 class Sink(audobject.Object):
-    r"""Base class for objects that consume an
+    r"""observe.Base class for objects that consume an
     :class:`auglib.AudioBuffer`.
 
     """

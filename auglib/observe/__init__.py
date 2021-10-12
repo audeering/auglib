@@ -1,6 +1,6 @@
 from auglib.core.observe import (
     Base,
-    BoolRand,
+    Bool,
     FloatList,
     FloatNorm,
     FloatUni,

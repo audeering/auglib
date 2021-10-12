@@ -14,15 +14,8 @@ from auglib.core.buffer import (
     Source,
     Transform,
 )
+from auglib.core import observe
 from auglib.core.utils import to_samples
-from auglib.core.observe import (
-    Bool,
-    Float,
-    Int,
-    Number,
-    observe,
-    Str,
-)
 
 
 def _check_data_decorator(func):
@@ -60,7 +53,7 @@ class Compose(Transform):
 
     """
     def __init__(self, transforms: Sequence[Transform], *,
-                 bypass_prob: Union[float, Float] = None):
+                 bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.transforms = transforms
 
@@ -79,7 +72,7 @@ class Select(Transform):
 
     """
     def __init__(self, transforms: Sequence[Transform],
-                 bypass_prob: Union[float, Float] = None):
+                 bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.transforms = transforms
 
@@ -93,7 +86,7 @@ class Mix(Transform):
     r"""Mix the audio buffer (base) with another buffer (auxiliary) by
     adding the auxiliary buffer to the base buffer.
 
-    Base and auxiliary buffer may differ in length but must have the
+    observe.Base and auxiliary buffer may differ in length but must have the
     same sampling rate.
 
     Mix the content of an auxiliary buffer ``aux`` on top of the base
@@ -141,19 +134,19 @@ class Mix(Transform):
         array([[1., 1., 1., ..., 1., 1., 1.]], dtype=float32)
 
     """
-    def __init__(self, aux: Union[str, Str, Source, AudioBuffer],
+    def __init__(self, aux: Union[str, observe.Base, Source, AudioBuffer],
                  *,
-                 gain_base_db: Union[float, Float] = 0.0,
-                 gain_aux_db: Union[float, Float] = 0.0,
-                 write_pos_base: Union[int, float, Number] = 0.0,
-                 read_pos_aux: Union[int, float, Number] = 0.0,
-                 read_dur_aux: Union[int, float, Number] = None,
-                 clip_mix: Union[bool, Bool] = False,
-                 loop_aux: Union[bool, Bool] = False,
-                 extend_base: Union[bool, Bool] = False,
+                 gain_base_db: Union[float, observe.Base] = 0.0,
+                 gain_aux_db: Union[float, observe.Base] = 0.0,
+                 write_pos_base: Union[int, float, observe.Base] = 0.0,
+                 read_pos_aux: Union[int, float, observe.Base] = 0.0,
+                 read_dur_aux: Union[int, float, observe.Base] = None,
+                 clip_mix: Union[bool, observe.Base] = False,
+                 loop_aux: Union[bool, observe.Base] = False,
+                 extend_base: Union[bool, observe.Base] = False,
                  unit='seconds',
                  transform: Transform = None,
-                 bypass_prob: Union[float, Float] = None):
+                 bypass_prob: Union[float, observe.Base] = None):
 
         super().__init__(bypass_prob)
         self.aux = aux
@@ -176,11 +169,11 @@ class Mix(Transform):
                                   unit=self.unit, length=len(aux))
         read_dur_aux = to_samples(self.read_dur_aux, aux.sampling_rate,
                                   unit=self.unit, length=len(aux))
-        gain_aux_db = observe(self.gain_aux_db)
-        gain_base_db = observe(self.gain_base_db)
-        clip_mix = observe(self.clip_mix)
-        loop_aux = observe(self.loop_aux)
-        extend_base = observe(self.extend_base)
+        gain_aux_db = observe.observe(self.gain_aux_db)
+        gain_base_db = observe.observe(self.gain_base_db)
+        clip_mix = observe.observe(self.clip_mix)
+        loop_aux = observe.observe(self.loop_aux)
+        extend_base = observe.observe(self.extend_base)
         if self.transform:
             self.transform(aux)
         lib.AudioBuffer_mix(base._obj, aux._obj, gain_base_db,
@@ -194,7 +187,7 @@ class Mix(Transform):
             with self.aux() as aux:
                 self._mix(buf, aux)
         else:
-            path = observe(self.aux)
+            path = observe.observe(self.aux)
             with AudioBuffer.read(path) as aux:
                 self._mix(buf, aux)
         return buf
@@ -203,7 +196,7 @@ class Mix(Transform):
 class Append(Transform):
     r"""Append an auxiliary buffer at the end of the base buffer.
 
-    Base and auxiliary buffer may differ in length but must have the
+    observe.Base and auxiliary buffer may differ in length but must have the
     same sampling rate.
 
     Options are provided for selecting a specific portion of the
@@ -229,12 +222,12 @@ class Append(Transform):
         array([[0., 0., 0., ..., 1., 1., 1.]], dtype=float32)
 
     """
-    def __init__(self, aux: Union[str, Str, Source, AudioBuffer], *,
-                 read_pos_aux: Union[int, float, Number] = 0.0,
-                 read_dur_aux: Union[int, float, Number] = 0.0,
+    def __init__(self, aux: Union[str, observe.Base, Source, AudioBuffer], *,
+                 read_pos_aux: Union[int, float, observe.Base] = 0.0,
+                 read_dur_aux: Union[int, float, observe.Base] = 0.0,
                  unit: str = 'seconds',
                  transform: Transform = None,
-                 bypass_prob: Union[float, Float] = None):
+                 bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.aux = aux
         self.read_pos_aux = read_pos_aux
@@ -262,7 +255,7 @@ class Append(Transform):
             with self.aux() as aux:
                 self._append(buf, aux)
         else:
-            path = observe(self.aux)
+            path = observe.observe(self.aux)
             with AudioBuffer.read(path) as aux:
                 self._append(buf, aux)
         return buf
@@ -285,10 +278,10 @@ class AppendValue(Transform):
         array([[0., 0., 0., ..., 1., 1., 1.]], dtype=float32)
 
     """
-    def __init__(self, duration: Union[int, float, Number],
-                 value: Union[float, Float] = 0, *,
+    def __init__(self, duration: Union[int, float, observe.Base],
+                 value: Union[float, observe.Base] = 0, *,
                  unit: str = 'seconds',
-                 bypass_prob: Union[float, Float] = None):
+                 bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.duration = duration
         self.value = value
@@ -327,10 +320,10 @@ class Trim(Transform):
     """
     def __init__(self,
                  *,
-                 start_pos: Union[int, float, Number] = 0,
-                 duration: Union[int, float, Number] = None,
+                 start_pos: Union[int, float, observe.Base] = 0,
+                 duration: Union[int, float, observe.Base] = None,
                  unit: str = 'seconds',
-                 bypass_prob: Union[float, Float] = None):
+                 bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.start_pos = start_pos
         self.duration = duration or 0
@@ -338,10 +331,18 @@ class Trim(Transform):
 
     @_check_data_decorator
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
-        start_pos = to_samples(observe(self.start_pos), buf.sampling_rate,
-                               unit=self.unit, length=len(buf))
-        duration = to_samples(observe(self.duration), buf.sampling_rate,
-                              unit=self.unit, length=len(buf))
+        start_pos = to_samples(
+            observe.observe(self.start_pos),
+            buf.sampling_rate,
+            unit=self.unit,
+            length=len(buf),
+        )
+        duration = to_samples(
+            observe.observe(self.duration),
+            buf.sampling_rate,
+            unit=self.unit,
+            length=len(buf),
+        )
         lib.AudioBuffer_trim(buf._obj, start_pos, duration)
         return buf
 
@@ -364,19 +365,19 @@ class Clip(Transform):
 
     """
     def __init__(self, *,
-                 threshold: Union[float, Float] = 0.0,
-                 soft: Union[bool, Bool] = False,
-                 normalize: Union[bool, Bool] = False,
-                 bypass_prob: Union[float, Float] = None):
+                 threshold: Union[float, observe.Base] = 0.0,
+                 soft: Union[bool, observe.Base] = False,
+                 normalize: Union[bool, observe.Base] = False,
+                 bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.threshold = threshold
         self.soft = soft
         self.normalize = normalize
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
-        threshold = observe(self.threshold)
-        soft = observe(self.soft)
-        normalize = observe(self.normalize)
+        threshold = observe.observe(self.threshold)
+        soft = observe.observe(self.soft)
+        normalize = observe.observe(self.normalize)
         lib.AudioBuffer_clip(buf._obj, threshold, soft, normalize)
         return buf
 
@@ -402,19 +403,19 @@ class ClipByRatio(Transform):
         bypass_prob: probability to bypass the transformation
 
     """
-    def __init__(self, ratio: Union[float, Float], *,
-                 soft: Union[bool, Bool] = False,
-                 normalize: Union[bool, Bool] = False,
-                 bypass_prob: Union[float, Float] = None):
+    def __init__(self, ratio: Union[float, observe.Base], *,
+                 soft: Union[bool, observe.Base] = False,
+                 normalize: Union[bool, observe.Base] = False,
+                 bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.ratio = ratio
         self.soft = soft
         self.normalize = normalize
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
-        ratio = observe(self.ratio)
-        soft = observe(self.soft)
-        normalize = observe(self.normalize)
+        ratio = observe.observe(self.ratio)
+        soft = observe.observe(self.soft)
+        normalize = observe.observe(self.normalize)
         lib.AudioBuffer_clipByRatio(buf._obj, ratio, soft, normalize)
         return buf
 
@@ -429,16 +430,16 @@ class NormalizeByPeak(Transform):
 
     """
     def __init__(self, *,
-                 peak_db: Union[float, Float] = 0.0,
-                 clip: Union[bool, Bool] = False,
-                 bypass_prob: Union[float, Float] = None):
+                 peak_db: Union[float, observe.Base] = 0.0,
+                 clip: Union[bool, observe.Base] = False,
+                 bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.peak_db = peak_db
         self.clip = clip
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
-        peak_db = observe(self.peak_db)
-        clip = observe(self.clip)
+        peak_db = observe.observe(self.peak_db)
+        clip = observe.observe(self.clip)
         lib.AudioBuffer_normalizeByPeak(buf._obj, peak_db, clip)
         return buf
 
@@ -463,19 +464,19 @@ class GainStage(Transform):
         bypass_prob: probability to bypass the transformation
 
     """
-    def __init__(self, gain_db: Union[float, Float], *,
-                 max_peak_db: Union[float, Float] = None,
-                 clip: Union[bool, Bool] = False,
-                 bypass_prob: Union[float, Float] = None):
+    def __init__(self, gain_db: Union[float, observe.Base], *,
+                 max_peak_db: Union[float, observe.Base] = None,
+                 clip: Union[bool, observe.Base] = False,
+                 bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.gain_db = gain_db
         self.max_peak_db = max_peak_db
         self.clip = clip
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
-        gain_db = observe(self.gain_db)
-        clip = observe(self.clip)
-        max_peak_db = observe(self.max_peak_db)
+        gain_db = observe.observe(self.gain_db)
+        clip = observe.observe(self.clip)
+        max_peak_db = observe.observe(self.max_peak_db)
         if max_peak_db is not None:
             lib.AudioBuffer_gainStageSafe(buf._obj, gain_db, max_peak_db)
             if self.clip:
@@ -498,10 +499,10 @@ class FFTConvolve(Transform):
         bypass_prob: probability to bypass the transformation
 
     """
-    def __init__(self, aux: Union[str, Str, Source, AudioBuffer], *,
-                 keep_tail: Union[bool, Bool] = True,
+    def __init__(self, aux: Union[str, observe.Base, Source, AudioBuffer], *,
+                 keep_tail: Union[bool, observe.Base] = True,
                  transform: Transform = None,
-                 bypass_prob: Union[float, Float] = None):
+                 bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.aux = aux
         self.keep_tail = keep_tail
@@ -510,7 +511,7 @@ class FFTConvolve(Transform):
     def _fft_convolve(self, base: AudioBuffer, aux: AudioBuffer):
         if self.transform:
             self.transform(aux)
-        keep_tail = observe(self.keep_tail)
+        keep_tail = observe.observe(self.keep_tail)
         lib.AudioBuffer_fftConvolve(base._obj, aux._obj, keep_tail)
 
     @_check_data_decorator
@@ -521,7 +522,7 @@ class FFTConvolve(Transform):
             with self.aux() as aux:
                 self._fft_convolve(buf, aux)
         else:
-            path = observe(self.aux)
+            path = observe.observe(self.aux)
             with AudioBuffer.read(path) as aux:
                 self._fft_convolve(buf, aux)
         return buf
@@ -544,18 +545,18 @@ class LowPass(Transform):
         bypass_prob: probability to bypass the transformation
 
     """
-    def __init__(self, cutoff: Union[float, Float], *,
-                 order: Union[int, Int] = 1,
+    def __init__(self, cutoff: Union[float, observe.Base], *,
+                 order: Union[int, observe.Base] = 1,
                  design: str = FilterDesign.BUTTERWORTH.value,
-                 bypass_prob: Union[float, Float] = None):
+                 bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.cutoff = cutoff
         self.order = order
         self.design = design
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
-        cutoff = observe(self.cutoff)
-        order = observe(self.order)
+        cutoff = observe.observe(self.cutoff)
+        order = observe.observe(self.order)
         if self.design == FilterDesign.BUTTERWORTH.value:
             lib.AudioBuffer_butterworthLowPassFilter(buf._obj, cutoff, order)
         else:
@@ -573,18 +574,18 @@ class HighPass(Transform):
         bypass_prob: probability to bypass the transformation
 
     """
-    def __init__(self, cutoff: Union[float, Float], *,
-                 order: Union[int, Int] = 1,
+    def __init__(self, cutoff: Union[float, observe.Base], *,
+                 order: Union[int, observe.Base] = 1,
                  design: str = FilterDesign.BUTTERWORTH.value,
-                 bypass_prob: Union[float, Float] = None):
+                 bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.cutoff = cutoff
         self.order = order
         self.design = design
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
-        cutoff = observe(self.cutoff)
-        order = observe(self.order)
+        cutoff = observe.observe(self.cutoff)
+        order = observe.observe(self.order)
         if self.design == FilterDesign.BUTTERWORTH.value:
             lib.AudioBuffer_butterworthHighPassFilter(buf._obj, cutoff, order)
         else:
@@ -603,11 +604,11 @@ class BandPass(Transform):
         bypass_prob: probability to bypass the transformation
 
     """
-    def __init__(self, center: Union[float, Float],
-                 bandwidth: Union[float, Float], *,
-                 order: Union[int, Int] = 1,
+    def __init__(self, center: Union[float, observe.Base],
+                 bandwidth: Union[float, observe.Base], *,
+                 order: Union[int, observe.Base] = 1,
                  design: str = FilterDesign.BUTTERWORTH.value,
-                 bypass_prob: Union[float, Float] = None):
+                 bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.center = center
         self.bandwidth = bandwidth
@@ -615,9 +616,9 @@ class BandPass(Transform):
         self.design = design
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
-        center = observe(self.center)
-        bandwidth = observe(self.bandwidth)
-        order = observe(self.order)
+        center = observe.observe(self.center)
+        bandwidth = observe.observe(self.bandwidth)
+        order = observe.observe(self.order)
         if self.design == FilterDesign.BUTTERWORTH.value:
             lib.AudioBuffer_butterworthBandPassFilter(buf._obj, center,
                                                       bandwidth, order)
@@ -637,11 +638,11 @@ class BandStop(Transform):
         bypass_prob: probability to bypass the transformation
 
     """
-    def __init__(self, center: Union[float, Float],
-                 bandwidth: Union[float, Float], *,
-                 order: Union[int, Int] = 1,
+    def __init__(self, center: Union[float, observe.Base],
+                 bandwidth: Union[float, observe.Base], *,
+                 order: Union[int, observe.Base] = 1,
                  design: str = FilterDesign.BUTTERWORTH.value,
-                 bypass_prob: Union[float, Float] = None):
+                 bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.center = center
         self.bandwidth = bandwidth
@@ -649,9 +650,9 @@ class BandStop(Transform):
         self.design = design
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
-        center = observe(self.center)
-        bandwidth = observe(self.bandwidth)
-        order = observe(self.order)
+        center = observe.observe(self.center)
+        bandwidth = observe.observe(self.bandwidth)
+        order = observe.observe(self.order)
         if self.design == FilterDesign.BUTTERWORTH.value:
             lib.AudioBuffer_butterworthBandStopFilter(buf._obj, center,
                                                       bandwidth, order)
@@ -669,13 +670,13 @@ class WhiteNoiseUniform(Transform):
 
     """
     def __init__(self, *,
-                 gain_db: Union[float, Float] = 0.0,
-                 bypass_prob: Union[float, Float] = None):
+                 gain_db: Union[float, observe.Base] = 0.0,
+                 bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.gain_db = gain_db
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
-        gain_db = observe(self.gain_db)
+        gain_db = observe.observe(self.gain_db)
         lib.AudioBuffer_addWhiteNoiseUniform(buf._obj, gain_db)
         return buf
 
@@ -690,16 +691,16 @@ class WhiteNoiseGaussian(Transform):
 
     """
     def __init__(self, *,
-                 gain_db: Union[float, Float] = 0.0,
-                 stddev: Union[float, Float] = 0.3,
-                 bypass_prob: Union[float, Float] = None):
+                 gain_db: Union[float, observe.Base] = 0.0,
+                 stddev: Union[float, observe.Base] = 0.3,
+                 bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.gain_db = gain_db
         self.stddev = stddev
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
-        gain_db = observe(self.gain_db)
-        stddev = observe(self.stddev)
+        gain_db = observe.observe(self.gain_db)
+        stddev = observe.observe(self.stddev)
         lib.AudioBuffer_addWhiteNoiseGaussian(buf._obj, gain_db, stddev)
         return buf
 
@@ -713,13 +714,13 @@ class PinkNoise(Transform):
 
     """
     def __init__(self, *,
-                 gain_db: Union[float, Float] = 0.0,
-                 bypass_prob: Union[float, Float] = None):
+                 gain_db: Union[float, observe.Base] = 0.0,
+                 bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.gain_db = gain_db
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
-        gain_db = observe(self.gain_db)
+        gain_db = observe.observe(self.gain_db)
         lib.AudioBuffer_addPinkNoise(buf._obj, gain_db)
         return buf
 
@@ -749,12 +750,12 @@ class Tone(Transform):
         bypass_prob: probability to bypass the transformation
 
     """
-    def __init__(self, freq: Union[float, Float],
-                 *, gain_db: Union[float, Float] = 0.0,
+    def __init__(self, freq: Union[float, observe.Base],
+                 *, gain_db: Union[float, observe.Base] = 0.0,
                  shape: ToneShape = ToneShape.SINE,
-                 lfo_rate: Union[float, Float] = 0.0,
-                 lfo_range: Union[float, Float] = 0.0,
-                 bypass_prob: Union[float, Float] = None):
+                 lfo_rate: Union[float, observe.Base] = 0.0,
+                 lfo_range: Union[float, observe.Base] = 0.0,
+                 bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.freq = freq
         self.gain_db = gain_db
@@ -763,10 +764,10 @@ class Tone(Transform):
         self.lfo_range = lfo_range
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
-        freq = observe(self.freq)
-        gain_db = observe(self.gain_db)
-        lfo_rate = observe(self.lfo_rate)
-        lfo_range = observe(self.lfo_range)
+        freq = observe.observe(self.freq)
+        gain_db = observe.observe(self.gain_db)
+        lfo_rate = observe.observe(self.lfo_rate)
+        lfo_range = observe.observe(self.lfo_range)
         lib.AudioBuffer_addTone(buf._obj, freq, gain_db, self.shape.value,
                                 lfo_rate, lfo_range)
         return buf
@@ -809,14 +810,14 @@ class CompressDynamicRange(Transform):
 
     """
     def __init__(self,
-                 threshold_db: Union[float, Float],
-                 ratio: Union[float, Float], *,
-                 attack_time: Union[float, Float] = 0.01,
-                 release_time: Union[float, Float] = 0.02,
-                 knee_radius_db: Union[float, Float] = 4.0,
-                 makeup_db: Union[None, float, Float] = 0.0,
-                 clip: Union[bool, Bool] = False,
-                 bypass_prob: Union[float, Float] = None):
+                 threshold_db: Union[float, observe.Base],
+                 ratio: Union[float, observe.Base], *,
+                 attack_time: Union[float, observe.Base] = 0.01,
+                 release_time: Union[float, observe.Base] = 0.02,
+                 knee_radius_db: Union[float, observe.Base] = 4.0,
+                 makeup_db: Union[None, float, observe.Base] = 0.0,
+                 clip: Union[bool, observe.Base] = False,
+                 bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.threshold_db = threshold_db
         self.ratio = ratio
@@ -827,16 +828,16 @@ class CompressDynamicRange(Transform):
         self.clip = clip
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
-        threshold_db = observe(self.threshold_db)
-        ratio = observe(self.ratio)
-        attack_time = observe(self.attack_time)
-        release_time = observe(self.release_time)
-        knee_radius_db = observe(self.knee_radius_db)
+        threshold_db = observe.observe(self.threshold_db)
+        ratio = observe.observe(self.ratio)
+        attack_time = observe.observe(self.attack_time)
+        release_time = observe.observe(self.release_time)
+        knee_radius_db = observe.observe(self.knee_radius_db)
         if self.makeup_db is None:
             makeup_db = np.nan
         else:
-            makeup_db = observe(self.makeup_db)
-        clip = observe(self.clip)
+            makeup_db = observe.observe(self.makeup_db)
+        clip = observe.observe(self.clip)
         lib.AudioBuffer_compressDynamicRange(buf._obj,
                                              threshold_db,
                                              ratio,
@@ -866,17 +867,17 @@ class AMRNB(Transform):
 
     """
     def __init__(self,
-                 bit_rate: Union[int, Int],
+                 bit_rate: Union[int, observe.Base],
                  *,
-                 dtx: Union[bool, Bool] = False,
-                 bypass_prob: Union[float, Float] = None):
+                 dtx: Union[bool, observe.Base] = False,
+                 bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.bit_rate = bit_rate
         self.dtx = dtx
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
-        bit_rate = observe(self.bit_rate)
-        dtx = observe(self.dtx)
+        bit_rate = observe.observe(self.bit_rate)
+        dtx = observe.observe(self.dtx)
         lib.AudioBuffer_AMRNB(buf._obj, bit_rate, 1 if dtx else 0)
         return buf
 
@@ -949,7 +950,7 @@ class Function(Transform):
             function: Callable[..., Optional[np.ndarray]],
             function_args: typing.Dict = None,
             *,
-            bypass_prob: Union[float, Float] = None,
+            bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(bypass_prob)
         self.function = function
@@ -961,7 +962,7 @@ class Function(Transform):
         args = {}
         if self.function_args:
             for key, value in self.function_args.items():
-                args[key] = observe(value)
+                args[key] = observe.observe(value)
 
         # apply function
         x = buf.to_array(copy=False)

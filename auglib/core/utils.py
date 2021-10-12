@@ -8,11 +8,7 @@ import numpy as np
 import audeer
 
 from auglib.core.api import lib
-from auglib.core.observe import (
-    Number,
-    observe,
-    Str,
-)
+from auglib.core import observe
 
 
 def assert_non_negative_number(value: Union[int, float]):
@@ -21,14 +17,14 @@ def assert_non_negative_number(value: Union[int, float]):
                          'found negative.')
 
 
-def from_db(x_db: Union[float, Number]) -> float:
+def from_db(x_db: Union[float, observe.Base]) -> float:
     r"""Convert decibels (dB) to gain.
 
     Args:
         x_db: input gain in decibels
 
     """
-    x_db = observe(x_db)
+    x_db = observe.observe(x_db)
     x = pow(10.0, x_db / 20.0)
     return x
 
@@ -48,7 +44,7 @@ def random_seed(seed: int = 0):
     lib.auglib_random_seed(seed)
 
 
-def safe_path(path: Union[str, Str], *, root: str = None) -> str:
+def safe_path(path: Union[str, observe.Base], *, root: str = None) -> str:
     r"""Turns ``path`` into an absolute path.
 
     Args:
@@ -56,26 +52,26 @@ def safe_path(path: Union[str, Str], *, root: str = None) -> str:
         root: optional root directory
 
     """
-    path = observe(path)
+    path = observe.observe(path)
     if root:
         path = os.path.join(root, path)
     return audeer.safe_path(path)
 
 
-def to_db(x: Union[float, Number]) -> float:
+def to_db(x: Union[float, observe.Base]) -> float:
     r"""Convert gain to decibels (dB).
 
     Args:
         x: input gain
 
     """
-    x = observe(x)
+    x = observe.observe(x)
     assert x > 0, 'cannot convert gain {} to decibels'.format(x)
     x_db = 20 * np.log10(x)
     return x_db
 
 
-def to_samples(value: Union[int, float, Number],
+def to_samples(value: Union[int, float, observe.Base],
                sampling_rate: int,
                *,
                length: int = 0,
@@ -108,7 +104,7 @@ def to_samples(value: Union[int, float, Number],
             negative
 
     """
-    value = observe(value)
+    value = observe.observe(value)
     unit = unit.strip()
     if unit == 'samples':
         num_samples = int(value)

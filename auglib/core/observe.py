@@ -28,45 +28,14 @@ class Base(audobject.Object):
         raise (NotImplementedError())
 
 
-class Bool(Base):
-    r"""An observable boolean."""
-    def __call__(self) -> bool:
-        raise NotImplementedError()
-
-
-class Number(Base):
-    r"""An observable integer or floating point number."""
-    def __call__(self) -> typing.Union[int, float]:
-        raise NotImplementedError()
-
-
-class Float(Number):
-    r"""An observable floating point number."""
-    def __call__(self) -> float:
-        raise NotImplementedError()
-
-
-class Int(Number):
-    r"""An observable integer."""
-    def __call__(self) -> int:
-        raise NotImplementedError()
-
-
-class Str(Base):
-    r"""An observable string object."""
-    def __call__(self) -> str:
-        raise (NotImplementedError())
-
-
 # implementations
 
 
-class BoolRand(Bool):
+class Bool(Base):
     r"""Draw booleans with a given probability for True.
 
     Args:
-        prob_true: probability for True values to be drawn (the probability for
-            False values is simply 1.0 - prob_true)
+        prob_true: probability for True values to be drawn
 
     """
     def __init__(
@@ -79,7 +48,7 @@ class BoolRand(Bool):
         return np.random.random() <= self.prob_true
 
 
-class FloatNorm(Float):
+class FloatNorm(Base):
     r"""Draw floating point numbers from a normal (Gaussian) distribution.
 
     Args:
@@ -102,17 +71,19 @@ class FloatNorm(Float):
         self.std = std
         self.minimum = minimum
         self.maximum = maximum
-        self._gen = scipy.stats.truncnorm((minimum - mean) / std,
-                                          (maximum - mean) / std,
-                                          loc=mean,
-                                          scale=std)
+        self._gen = scipy.stats.truncnorm(
+            (minimum - mean) / std,
+            (maximum - mean) / std,
+            loc=mean,
+            scale=std,
+        )
 
     def __call__(self) -> float:
         value = self._gen.rvs()
         return value
 
 
-class FloatUni(Float):
+class FloatUni(Base):
     r"""Draw floating point numbers from a uniform distribution.
 
     Args:
@@ -133,7 +104,7 @@ class FloatUni(Float):
         return value
 
 
-class IntUni(Int):
+class IntUni(Base):
     r"""Draw integers from a uniform distribution.
 
     Args:
@@ -170,7 +141,7 @@ class List(Base):
     """
     def __init__(
             self,
-            elements: typing.Sequence[typing.Union[int, float, str]],
+            elements: typing.MutableSequence[typing.Union[int, float, str]],
             *,
             shuffle: bool = False,
             draw: bool = False,
@@ -218,7 +189,7 @@ class List(Base):
         return self()
 
 
-class FloatList(List, Float):
+class FloatList(List):
     r"""Iterate over a list of floats.
 
     Args:
@@ -232,7 +203,7 @@ class FloatList(List, Float):
     """
     def __init__(
             self,
-            elements: typing.Sequence[float],
+            elements: typing.MutableSequence[float],
             *,
             shuffle: bool = False,
             draw: bool = False,
@@ -240,7 +211,7 @@ class FloatList(List, Float):
         super().__init__(elements, shuffle=shuffle, draw=draw)
 
 
-class IntList(List, Int):
+class IntList(List):
     r"""Iterate over a list of integers.
 
     Args:
@@ -254,7 +225,7 @@ class IntList(List, Int):
     """
     def __init__(
             self,
-            elements: typing.Sequence[int],
+            elements: typing.MutableSequence[int],
             *,
             shuffle: bool = False,
             draw: bool = False,
@@ -262,7 +233,7 @@ class IntList(List, Int):
         super().__init__(elements, shuffle=shuffle, draw=draw)
 
 
-class StrList(List, Str):
+class StrList(List):
     r"""Iterate over a list of strings.
 
     Args:
@@ -276,7 +247,7 @@ class StrList(List, Str):
     """
     def __init__(
             self,
-            elements: typing.Sequence[str],
+            elements: typing.MutableSequence[str],
             *,
             shuffle: bool = False,
             draw: bool = False,

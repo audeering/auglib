@@ -1,6 +1,6 @@
 from typing import Union
 
-from auglib.core.observe import Str
+from auglib.core import observe
 from auglib.core.buffer import (
     AudioBuffer,
     Sink,
@@ -19,7 +19,7 @@ class Write(Sink):
         normalize (bool, optional): normalize audio data before writing
 
     """
-    def __init__(self, path: Union[str, Str], *, root: str = None,
+    def __init__(self, path: Union[str, observe.Base], *, root: str = None,
                  precision: str = '16bit', normalize: bool = False):
         self.path = path
         self.root = root

@@ -2,10 +2,7 @@ from typing import Union, Sequence
 
 import numpy as np
 
-from auglib.core.observe import (
-    Float,
-    Str,
-)
+from auglib.core import observe
 from auglib.core.buffer import (
     AudioBuffer,
     Source,
@@ -53,10 +50,10 @@ class Read(Source):
         transform: optional transformation
 
     """
-    def __init__(self, path: Union[str, Str], *,
+    def __init__(self, path: Union[str, observe.Base], *,
                  root: str = None,
-                 duration: Union[float, Float] = None,
-                 offset: Union[float, Float] = 0,
+                 duration: Union[float, observe.Base] = None,
+                 offset: Union[float, observe.Base] = 0,
                  transform: Transform = None):
         self.path = path
         self.root = root
