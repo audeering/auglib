@@ -147,20 +147,20 @@ class FloatUni(Base):
 class IntUni(Base):
     r"""Draw integers from a uniform distribution.
 
-    Draws from a "half-open" interval defined by ``[low, high)``.
+    Draws from the interval defined by ``[low, high]``.
 
     Args:
         low: low interval (inclusive)
-        high: high interval (exclusive)
+        high: high interval (inclusive)
 
     Example:
         >>> from auglib.core import utils
         >>> utils.random_seed(1)
         >>> o = IntUni(low=0, high=5)
         >>> round(o(), 2)
-        3
+        5
         >>> round(o(), 2)
-        4
+        3
 
     """
     def __init__(
@@ -178,7 +178,9 @@ class IntUni(Base):
             integer
 
         """
-        return np.random.randint(self.low, self.high)
+        # self.high + 1 ensures upper bound is included
+        # as np.random.randint excludes it
+        return np.random.randint(self.low, self.high + 1)
 
 
 class List(Base):
@@ -212,7 +214,7 @@ class List(Base):
         ['b', 'b', 'b', 'c', 'b']
         >>> o = List([IntUni(0, 5), 99])
         >>> [o() for _ in range(5)]
-        [3, 99, 4, 99, 0]
+        [5, 99, 3, 99, 4]
 
     """
     def __init__(
@@ -292,9 +294,9 @@ def observe(
         99
         >>> o = IntUni(low=0, high=5)
         >>> observe(o)
-        3
+        5
         >>> observe(o)
-        4
+        3
 
     """
     return x() if isinstance(x, Base) else x

@@ -45,7 +45,7 @@ def test_Bool(n):
 def test_IntUni(n, low, high):
     x = auglib.observe.IntUni(low, high)
     for _ in range(n):
-        assert low <= x() < high
+        assert low <= x() <= high
 
 
 @pytest.mark.parametrize(
