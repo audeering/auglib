@@ -37,6 +37,7 @@ copybutton_prompt_is_regexp = True
 
 napoleon_use_ivar = True  # List of class attributes
 autodoc_inherit_docstrings = False  # disable docstring inheritance
+typehints_fully_qualified = True  # show fully qualified class names
 
 intersphinx_mapping = {
     'audformat': ('https://audeering.github.io/audformat/', None),
