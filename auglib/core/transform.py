@@ -99,13 +99,16 @@ class Mix(Transform):
     ``read_dur_aux`` (the total length of the selected segment). Note
     ``read_dur_aux = None`` (default value) has the effect of selecting
     the whole auxiliary buffer. In order to force clipping of the mixed
-    signal between 1.0 and -1.0, the ``clip_mix``  argument can be
+    signal between 1.0 and -1.0, the ``clip_mix`` argument can be
     set. In order to allow the looping of the auxiliary buffer (or the
     selected sub-segment), the ``loop_aux`` argument can be used. In case
     the auxiliary buffer (or the selected sub-segment) ends beyond the
     original ending point, the extra portion will be discarded, unless
     the ``extend_base`` is set turned on, in which case the base buffer is
-    extended accordingly.
+    extended accordingly. By default, the auxiliary buffer is mixed
+    into the base buffer exactly once. However, the number of repetitions
+    can be controlled vith ``num_repeat``. Usually, this only makes sense
+    when reading from random positions or random files.
 
     Args:
         aux: auxiliary buffer
@@ -120,6 +123,7 @@ class Mix(Transform):
         loop_aux: loop auxiliary buffer if shorter than base buffer
         extend_base: if needed, extend base buffer to total required
             length (considering length of auxiliary buffer)
+        num_repeat: number of repetitions
         unit: literal specifying the format of ``write_pos_base``,
             ``read_pos_aux`` and ``read_dur_aux``
             (see :meth:`auglib.utils.to_samples`)
@@ -130,23 +134,27 @@ class Mix(Transform):
 
         >>> with AudioBuffer(1.0, 8000) as base:
         ...     with AudioBuffer(1.0, 8000, value=1.0) as aux:
-        ...         Mix(aux)(base)
-        array([[1., 1., 1., ..., 1., 1., 1.]], dtype=float32)
+        ...         Mix(aux, num_repeat=2)(base)
+        array([[2., 2., 2., ..., 2., 2., 2.]], dtype=float32)
 
     """
-    def __init__(self, aux: Union[str, observe.Base, Source, AudioBuffer],
-                 *,
-                 gain_base_db: Union[float, observe.Base] = 0.0,
-                 gain_aux_db: Union[float, observe.Base] = 0.0,
-                 write_pos_base: Union[int, float, observe.Base] = 0.0,
-                 read_pos_aux: Union[int, float, observe.Base] = 0.0,
-                 read_dur_aux: Union[int, float, observe.Base] = None,
-                 clip_mix: Union[bool, observe.Base] = False,
-                 loop_aux: Union[bool, observe.Base] = False,
-                 extend_base: Union[bool, observe.Base] = False,
-                 unit='seconds',
-                 transform: Transform = None,
-                 bypass_prob: Union[float, observe.Base] = None):
+    def __init__(
+            self,
+            aux: Union[str, observe.Base, Source, AudioBuffer],
+            *,
+            gain_base_db: Union[float, observe.Base] = 0.0,
+            gain_aux_db: Union[float, observe.Base] = 0.0,
+            write_pos_base: Union[int, float, observe.Base] = 0.0,
+            read_pos_aux: Union[int, float, observe.Base] = 0.0,
+            read_dur_aux: Union[int, float, observe.Base] = None,
+            clip_mix: Union[bool, observe.Base] = False,
+            loop_aux: Union[bool, observe.Base] = False,
+            extend_base: Union[bool, observe.Base] = False,
+            num_repeat: Union[int, observe.Base] = 1,
+            unit='seconds',
+            transform: Transform = None,
+            bypass_prob: Union[float, observe.Base] = None,
+    ):
 
         super().__init__(bypass_prob)
         self.aux = aux
@@ -158,17 +166,30 @@ class Mix(Transform):
         self.clip_mix = clip_mix
         self.loop_aux = loop_aux
         self.extend_base = extend_base
+        self.num_repeat = num_repeat
         self.unit = unit
         self.transform = transform
 
     @_check_data_decorator
     def _mix(self, base: AudioBuffer, aux: AudioBuffer):
-        write_pos_base = to_samples(self.write_pos_base, base.sampling_rate,
-                                    unit=self.unit, length=len(base))
-        read_pos_aux = to_samples(self.read_pos_aux, aux.sampling_rate,
-                                  unit=self.unit, length=len(aux))
-        read_dur_aux = to_samples(self.read_dur_aux, aux.sampling_rate,
-                                  unit=self.unit, length=len(aux))
+        write_pos_base = to_samples(
+            self.write_pos_base,
+            base.sampling_rate,
+            unit=self.unit,
+            length=len(base),
+        )
+        read_pos_aux = to_samples(
+            self.read_pos_aux,
+            aux.sampling_rate,
+            unit=self.unit,
+            length=len(aux),
+        )
+        read_dur_aux = to_samples(
+            self.read_dur_aux,
+            aux.sampling_rate,
+            unit=self.unit,
+            length=len(aux),
+        )
         gain_aux_db = observe.observe(self.gain_aux_db)
         gain_base_db = observe.observe(self.gain_base_db)
         clip_mix = observe.observe(self.clip_mix)
@@ -176,20 +197,31 @@ class Mix(Transform):
         extend_base = observe.observe(self.extend_base)
         if self.transform:
             self.transform(aux)
-        lib.AudioBuffer_mix(base._obj, aux._obj, gain_base_db,
-                            gain_aux_db, write_pos_base, read_pos_aux,
-                            read_dur_aux, clip_mix, loop_aux, extend_base)
+        lib.AudioBuffer_mix(
+            base._obj,
+            aux._obj,
+            gain_base_db,
+            gain_aux_db,
+            write_pos_base,
+            read_pos_aux,
+            read_dur_aux,
+            clip_mix,
+            loop_aux,
+            extend_base,
+        )
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
-        if isinstance(self.aux, AudioBuffer):
-            self._mix(buf, self.aux)
-        elif isinstance(self.aux, Source):
-            with self.aux() as aux:
-                self._mix(buf, aux)
-        else:
-            path = observe.observe(self.aux)
-            with AudioBuffer.read(path) as aux:
-                self._mix(buf, aux)
+        num_repeat = observe.observe(self.num_repeat)
+        for _ in range(num_repeat):
+            if isinstance(self.aux, AudioBuffer):
+                self._mix(buf, self.aux)
+            elif isinstance(self.aux, Source):
+                with self.aux() as aux:
+                    self._mix(buf, aux)
+            else:
+                path = observe.observe(self.aux)
+                with AudioBuffer.read(path) as aux:
+                    self._mix(buf, aux)
         return buf
 
 
