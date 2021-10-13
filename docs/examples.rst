@@ -17,7 +17,6 @@ Examples
     import audb
     import auglib
 
-
     blue = '#6649ff'
     green = '#55dbb1'
 
@@ -148,7 +147,6 @@ with :class:`auglib.observe.List`.
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-
 .. jupyter-execute::
     :hide-code:
 
@@ -255,3 +253,71 @@ randomly from a normal distribution.
 |
 
 .. _Pedalboard: https://github.com/spotify/pedalboard
+
+
+.. _examples-babble-noise:
+
+Babble Noise
+------------
+
+Babble noise refers to having several speakers
+in the background
+all talking at the same time.
+The easiest way to augment your signal
+with babble noise
+is to use another speech database
+that we can use to generate the babble noise
+samples from.
+
+In the next example, we use speech from musan_
+and augment our signal with it
+similar to Section 3.3
+in `Snyder et al. 2018`_.
+We only load 10 speech files from musan_
+to speed the example up.
+We recommend to use all media files,
+when using the augmentation in a real application.
+We randomly crop
+with repetition
+from 4 to 7 speech samples,
+attenuate each of them
+between -20 dB and -13 dB,
+and add each to the original input signal.
+
+.. jupyter-execute::
+
+    db = audb.load(
+        'musan',
+        tables='speech',
+        media='.*speech-librivox-000\d',
+        version='1.0.0',
+        verbose=False,
+    )
+
+    transform = auglib.transform.Mix(
+        auglib.observe.List(db.files),
+        gain_aux_db=auglib.observe.IntUni(-20, -13),
+        num_repeat=auglib.observe.IntUni(4, 7),
+        read_pos_aux=auglib.observe.FloatUni(0, 1),
+        unit='relative',
+        loop_aux=True,
+    )
+    augment = auglib.Augment(transform)
+    signal_augmented = augment(signal_augmented, sampling_rate)
+
+.. jupyter-execute::
+    :hide-code:
+
+    plot(signal_augmented, green, 'Bable\nNoise')
+
+.. jupyter-execute::
+    :hide-code:
+
+    Audio(signal_augmented, rate=sampling_rate)
+
+.. empty line for some extra space
+
+|
+
+.. _musan: http://data.pp.audeering.com/databases/musan/musan.html
+.. _Snyder et al. 2018: https://www.danielpovey.com/files/2018_icassp_xvectors.pdf
