@@ -286,6 +286,8 @@ and add each to the original input signal.
 
 .. jupyter-execute::
 
+    auglib.utils.random_seed(0)
+
     db = audb.load(
         'musan',
         tables='speech',
@@ -303,7 +305,7 @@ and add each to the original input signal.
         loop_aux=True,
     )
     augment = auglib.Augment(transform)
-    signal_augmented = augment(signal_augmented, sampling_rate)
+    signal_augmented = augment(signal, sampling_rate)
 
 .. jupyter-execute::
     :hide-code:
