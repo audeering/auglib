@@ -102,7 +102,7 @@ class Augment(audinterface.Process, audobject.Object):
     Raises:
         ValueError: if ``resample = True``, but ``sampling_rate = None``
 
-    .. _`hidden arguments`: http://tools.pp.audeering.com/audobject/usage.html#hidden-arguments
+    .. _`hidden arguments`: https://audeering.github.io/audobject/usage.html#hidden-arguments
 
     Example:
         >>> import audb
