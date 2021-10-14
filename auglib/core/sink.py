@@ -1,5 +1,7 @@
 from typing import Union
 
+import audeer
+
 from auglib.core import observe
 from auglib.core.buffer import (
     AudioBuffer,
@@ -7,6 +9,10 @@ from auglib.core.buffer import (
 )
 
 
+@audeer.deprecated(
+    removal_version='1.0.0',
+    alternative='auglib.AudioBuffer.write',
+)
 class Write(Sink):
     r"""Write buffer to file.
 
@@ -31,6 +37,10 @@ class Write(Sink):
                   normalize=self.normalize)
 
 
+@audeer.deprecated(
+    removal_version='1.0.0',
+    alternative='auglib.AudioBuffer.play',
+)
 class Play(Sink):
     r"""Play back buffer.
 

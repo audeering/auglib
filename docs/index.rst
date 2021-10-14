@@ -20,7 +20,6 @@
 
     api
     api-observe
-    api-sink
     api-transform
     api-utils
     genindex

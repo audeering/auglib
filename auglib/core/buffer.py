@@ -278,11 +278,27 @@ class Source(audobject.Object):
         return self.call()
 
 
+# @audeer.deprecated(
+#     removal_version='1.0.0',
+#     alternative='auglib.AudioBuffer',
+# )
+# ->
+# TypeError: function() argument 1 must be code, not str
+# ->
+# as a workaround we raise the deprecation warning in __init__
+# This happens when deriving from this class.
 class Sink(audobject.Object):
     r"""Base class for objects that consume an
     :class:`auglib.AudioBuffer`.
 
     """
+    def __init__(self):
+        message = (
+            'Sink is deprecated and will be removed '
+            'with version 1.0.0. Use auglib.AudioBuffer instead.'
+        )
+        warnings.warn(message, category=UserWarning, stacklevel=2)
+
     def call(self, buf: AudioBuffer):
         r"""Consume an :class:`auglib.AudioBuffer`.
 

@@ -42,9 +42,3 @@ set_exception_handling
 ----------------------
 
 .. autofunction:: set_exception_handling
-
-Sink
----------
-
-.. autoclass:: Sink
-    :members:
