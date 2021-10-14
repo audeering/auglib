@@ -32,24 +32,6 @@ default_cache_root
 
 .. autofunction:: default_cache_root
 
-ExceptionHandling
------------------
-
-.. autoclass:: ExceptionHandling
-    :members:
-
-LibraryException
-----------------
-
-.. autoclass:: LibraryException
-    :members:
-
-LibraryExceptionWarning
------------------------
-
-.. autoclass:: LibraryExceptionWarning
-    :members:
-
 seed
 ----
 

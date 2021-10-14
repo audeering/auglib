@@ -26,7 +26,7 @@ class ExceptionHandling:
 _exception_handling = ExceptionHandling.EXCEPTION
 
 
-def set_exception_handling(strategy: ExceptionHandling):
+def set_exception_handling(strategy: str):
     r"""Set strategy how to handle exceptions thrown by the c library.
 
     * ``'silent'``: ignore (shows no message)

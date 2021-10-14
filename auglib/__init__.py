@@ -13,9 +13,6 @@ from auglib.core.buffer_legacy import (
 )
 from auglib.core.config import config
 from auglib.core.exception import (
-    ExceptionHandling,
-    LibraryException,
-    LibraryExceptionWarning,
     set_exception_handling,
 )
 from auglib.core.interface import (
