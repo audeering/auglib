@@ -44,20 +44,6 @@ def random_seed(seed: int = 0):
     lib.auglib_random_seed(seed)
 
 
-def safe_path(path: Union[str, observe.Base], *, root: str = None) -> str:
-    r"""Turns ``path`` into an absolute path.
-
-    Args:
-        path: file path
-        root: optional root directory
-
-    """
-    path = observe.observe(path)
-    if root:
-        path = os.path.join(root, path)
-    return audeer.safe_path(path)
-
-
 def to_db(x: Union[float, observe.Base]) -> float:
     r"""Convert gain to decibels (dB).
 

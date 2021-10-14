@@ -12,7 +12,6 @@ from auglib.core.api import lib
 from auglib.core.utils import (
     assert_non_negative_number,
     to_samples,
-    safe_path,
 )
 from auglib.core.exception import _check_exception_decorator
 
@@ -310,3 +309,17 @@ class Sink(audobject.Object):
 
     def __call__(self, buf: AudioBuffer):
         self.call(buf)
+
+
+def safe_path(path: Union[str, observe.Base], *, root: str = None) -> str:
+    r"""Turns ``path`` into an absolute path.
+
+    Args:
+        path: file path
+        root: optional root directory
+
+    """
+    path = observe.observe(path)
+    if root:
+        path = os.path.join(root, path)
+    return audeer.safe_path(path)
