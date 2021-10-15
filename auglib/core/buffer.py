@@ -39,6 +39,9 @@ class AudioBuffer:
         >>> with AudioBuffer(5, 8000, 1.0, unit='samples') as buf:
         ...     buf
         array([[1., 1., 1., 1., 1.]], dtype=float32)
+        >>> with AudioBuffer.from_array([1] * 5, 8000) as buf:
+        ...     buf
+        array([[1., 1., 1., 1., 1.]], dtype=float32)
 
     """
     def __init__(
