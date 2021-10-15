@@ -2,7 +2,6 @@ import random
 import typing
 
 import numpy as np
-import scipy.stats
 
 import audobject
 
@@ -69,9 +68,9 @@ class FloatNorm(Base):
         >>> utils.random_seed(1)
         >>> o = FloatNorm(mean=0.0, std=1.0, minimum=0.0)
         >>> round(o(), 2)
-        0.55
+        1.62
         >>> round(o(), 2)
-        1.08
+        0.87
 
     """
     def __init__(
@@ -88,12 +87,7 @@ class FloatNorm(Base):
         self.std = std
         self.minimum = minimum
         self.maximum = maximum
-        self._gen = scipy.stats.truncnorm(
-            (minimum - mean) / std,
-            (maximum - mean) / std,
-            loc=mean,
-            scale=std,
-        )
+        self._gen = _truncnorm
 
     def __call__(self) -> float:
         r"""Observe next float value.
@@ -102,7 +96,7 @@ class FloatNorm(Base):
             float value
 
         """
-        value = self._gen.rvs()
+        value = self._gen(self.mean, self.std, self.minimum, self.maximum)
         return value
 
 
@@ -300,3 +294,33 @@ def observe(
 
     """
     return x() if isinstance(x, Base) else x
+
+
+def _truncnorm(
+        mu: float,
+        sigma: float,
+        minimum: float,
+        maximum: float,
+) -> float:
+    r"""Truncated standard normal distribution.
+
+    Alternative to scipy.stats.truncnorm.
+
+    It simply draws from the random distribution
+    until the returned value
+    is within the given boundary.
+
+    Args:
+        loc: mean of distribution
+        sigma: standard deviation of distribution
+        minimum: lowest value to be returned
+        maximum: highest number to be returned
+
+    Returns:
+        value drawn from standard deviation within given boundaries
+
+    """
+    s = np.random.normal(mu, sigma)
+    while s < minimum or s > maximum:
+        s = np.random.normal(mu, sigma)
+    return s
