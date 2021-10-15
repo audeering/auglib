@@ -7,8 +7,8 @@ import numpy as np
 
 import audeer
 
-from auglib.core.api import lib
 from auglib.core import observe
+from auglib.core.api import lib
 
 
 def assert_non_negative_number(value: Union[int, float]):
@@ -29,11 +29,11 @@ def from_db(x_db: Union[float, observe.Base]) -> float:
     return x
 
 
-def random_seed(seed: int = 0):
-    r"""(Re-)initialize random generator..
+@audeer.deprecated(removal_version='1.0.0', alternative='auglib.seed')
+def random_seed(seed: int):
+    r"""(Re-)initialize random generator.
 
-    .. note:: Controls a random generator that is shared among all audio
-        classes.
+    The random generator is shared among all audio classes.
 
     Args:
         seed: seed number (0 for random initialization)

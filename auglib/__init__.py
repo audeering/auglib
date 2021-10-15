@@ -30,6 +30,7 @@ from auglib.core.observe_legacy import (
     IntUni,
     StrList,
 )
+from auglib.core.seed import seed
 
 __all__ = []
 

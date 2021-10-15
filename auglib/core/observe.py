@@ -42,8 +42,8 @@ class Bool(Base):
             boolean
 
         Example:
-            >>> from auglib.core import utils
-            >>> utils.random_seed(1)
+            >>> import auglib
+            >>> auglib.seed(1)
             >>> o = Bool(prob_true=0.5)
             >>> o()
             True
@@ -64,8 +64,8 @@ class FloatNorm(Base):
         maximum: upper bound
 
     Example:
-        >>> from auglib.core import utils
-        >>> utils.random_seed(1)
+        >>> import auglib
+        >>> auglib.seed(1)
         >>> o = FloatNorm(mean=0.0, std=1.0, minimum=0.0)
         >>> round(o(), 2)
         1.62
@@ -110,8 +110,8 @@ class FloatUni(Base):
         high: high interval (exclusive)
 
     Examples:
-        >>> from auglib.core import utils
-        >>> utils.random_seed(1)
+        >>> import auglib
+        >>> auglib.seed(1)
         >>> o = FloatUni(low=0.0, high=1.0)
         >>> round(o(), 2)
         0.42
@@ -148,8 +148,8 @@ class IntUni(Base):
         high: high interval (inclusive)
 
     Example:
-        >>> from auglib.core import utils
-        >>> utils.random_seed(1)
+        >>> import auglib
+        >>> auglib.seed(1)
         >>> o = IntUni(low=0, high=5)
         >>> round(o(), 2)
         5
@@ -195,8 +195,8 @@ class List(Base):
         ValueError: when trying to ``shuffle`` and ``draw`` at the same time
 
     Example:
-        >>> from auglib.core import utils
-        >>> utils.random_seed(1)
+        >>> import auglib
+        >>> auglib.seed(1)
         >>> o = List([0, 'b', 'c'])
         >>> [o() for _ in range(5)]
         [0, 'b', 'c', 0, 'b']
@@ -282,8 +282,8 @@ def observe(
         observed value
 
     Example:
-        >>> from auglib.core import utils
-        >>> utils.random_seed(1)
+        >>> import auglib
+        >>> auglib.seed(1)
         >>> observe(99)
         99
         >>> o = IntUni(low=0, high=5)

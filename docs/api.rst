@@ -50,6 +50,11 @@ LibraryExceptionWarning
 .. autoclass:: LibraryExceptionWarning
     :members:
 
+seed
+----
+
+.. autofunction:: seed
+
 set_exception_handling
 ----------------------
 

@@ -19,9 +19,9 @@ import auglib
 )
 def test_observe(x):
     if isinstance(x, auglib.observe.Base):
-        auglib.utils.random_seed(1)
+        auglib.seed(0)
         tmp = x()
-        auglib.utils.random_seed(1)
+        auglib.seed(0)
         assert tmp == auglib.observe.observe(x)
     else:
         assert x == auglib.observe.observe(x)

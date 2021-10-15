@@ -125,7 +125,7 @@ with :class:`auglib.observe.List`.
 
 .. jupyter-execute::
 
-    auglib.utils.random_seed(0)
+    auglib.seed(0)
 
     db = audb.load(
         'air',
@@ -187,7 +187,7 @@ randomly from a normal distribution.
 
 .. jupyter-execute::
 
-    auglib.utils.random_seed(0)
+    auglib.seed(0)
 
     def reverb(
             signal,
@@ -286,7 +286,7 @@ and add each to the original input signal.
 
 .. jupyter-execute::
 
-    auglib.utils.random_seed(0)
+    auglib.seed(0)
 
     db = audb.load(
         'musan',

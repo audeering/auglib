@@ -1,6 +1,6 @@
 import pytest
 
-from auglib.utils import random_seed
+import auglib
 from auglib import AudioBuffer
 from auglib.transform import WhiteNoiseUniform
 
@@ -12,11 +12,11 @@ def test_random_generator(seed):
     sr = 8000
     dur = 1.0
 
-    random_seed(seed)
+    auglib.seed(seed)
     with WhiteNoiseUniform()(AudioBuffer(dur, sr)) as noise:
-        random_seed(seed)
+        auglib.seed(seed)
         with WhiteNoiseUniform()(AudioBuffer(dur, sr)) as noise2:
             assert noise == noise2
-        random_seed(seed + 1)
+        auglib.seed(seed + 1)
         with WhiteNoiseUniform()(AudioBuffer(dur, sr)) as noise2:
             assert noise != noise2

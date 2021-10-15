@@ -6,7 +6,6 @@ import auglib
 from auglib import AudioBuffer
 from auglib.core.buffer import lib
 from auglib.core.exception import LibraryException
-from auglib.utils import random_seed
 from auglib.transform import Mix, Append, AppendValue, Trim, NormalizeByPeak, \
     Clip, ClipByRatio, GainStage, FFTConvolve, LowPass, HighPass, BandPass, \
     BandStop, WhiteNoiseUniform, WhiteNoiseGaussian, PinkNoise, Tone, \
@@ -296,11 +295,11 @@ def test_filter(n, sr):
                          [(1.0, 8000, 0.0, 1)])
 def test_WhiteNoiseUniform(dur, sr, gain, seed):
 
-    random_seed(seed)
+    auglib.seed(seed)
     with WhiteNoiseUniform(gain_db=gain)(AudioBuffer(dur, sr)) as noise:
         with AudioBuffer(len(noise), noise.sampling_rate,
                          unit='samples') as buf:
-            random_seed(seed)
+            auglib.seed(seed)
             lib.AudioBuffer_addWhiteNoiseUniform(buf._obj, gain)
             np.testing.assert_equal(noise._data, buf._data)
             np.testing.assert_almost_equal(buf._data.mean(), 0, decimal=1)
@@ -310,12 +309,12 @@ def test_WhiteNoiseUniform(dur, sr, gain, seed):
                          [(1.0, 8000, 0.0, 0.3, 1)])
 def test_WhiteNoiseGaussian(dur, sr, gain, stddev, seed):
 
-    random_seed(seed)
+    auglib.seed(seed)
     with WhiteNoiseGaussian(stddev=stddev, gain_db=gain)(AudioBuffer(dur, sr))\
             as noise:
         with AudioBuffer(len(noise), noise.sampling_rate,
                          unit='samples') as buf:
-            random_seed(seed)
+            auglib.seed(seed)
             lib.AudioBuffer_addWhiteNoiseGaussian(buf._obj, gain, stddev)
             np.testing.assert_equal(noise._data, buf._data)
             np.testing.assert_almost_equal(buf._data.mean(), 0, decimal=1)
@@ -326,11 +325,11 @@ def test_WhiteNoiseGaussian(dur, sr, gain, stddev, seed):
                          [(1.0, 8000, 0.0, 1)])
 def test_PinkNoise(dur, sr, gain, seed):
 
-    random_seed(seed)
+    auglib.seed(seed)
     with PinkNoise(gain_db=gain)(AudioBuffer(dur, sr)) as noise:
         with AudioBuffer(len(noise), noise.sampling_rate,
                          unit='samples') as buf:
-            random_seed(seed)
+            auglib.seed(seed)
             lib.AudioBuffer_addPinkNoise(buf._obj, gain)
             np.testing.assert_equal(noise._data, buf._data)
             np.testing.assert_almost_equal(buf._data.mean(), 0, decimal=1)
