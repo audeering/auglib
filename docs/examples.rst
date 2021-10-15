@@ -255,6 +255,61 @@ randomly from a normal distribution.
 .. _Pedalboard: https://github.com/spotify/pedalboard
 
 
+.. _examples-music:
+
+Music
+-----
+
+Music can be added
+as a background signal
+during training of a machine learning model.
+We load a single music file from musan_
+in this example.
+We recommend to use all media files
+from the `music` table,
+when using the augmentation in a real application.
+We randomly crop each music sample
+with repetition,
+attenuate it by -15 dB to -10 dB,
+and add it to the original input signal.
+
+.. jupyter-execute::
+
+    auglib.seed(0)
+
+    db = audb.load(
+        'musan',
+        tables='music',
+        media='music/fma/music-fma-0097.wav',
+        version='1.0.0',
+        verbose=False,
+    )
+
+    transform = auglib.transform.Mix(
+        auglib.observe.List(db.files),
+        gain_aux_db=auglib.observe.IntUni(-15, -10),
+        read_pos_aux=auglib.observe.FloatUni(0, 1),
+        unit='relative',
+        loop_aux=True,
+    )
+    augment = auglib.Augment(transform)
+    signal_augmented = augment(signal, sampling_rate)
+
+.. jupyter-execute::
+    :hide-code:
+
+    plot(signal_augmented, green, 'Music')
+
+.. jupyter-execute::
+    :hide-code:
+
+    Audio(signal_augmented, rate=sampling_rate)
+
+.. empty line for some extra space
+
+|
+
+
 .. _examples-babble-noise:
 
 Babble Noise
