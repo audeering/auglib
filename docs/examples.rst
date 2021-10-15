@@ -323,3 +323,64 @@ and add each to the original input signal.
 
 .. _musan: http://data.pp.audeering.com/databases/musan/musan.html
 .. _Snyder et al. 2018: https://www.danielpovey.com/files/2018_icassp_xvectors.pdf
+
+
+Telephone
+---------
+
+Telephone transmission is mainly characterised
+by the applied transmission codec,
+compare `Vu et al. 2019`_.
+With :mod:`auglib` we can use
+the Adaptive Multi-Rate audio codec
+in its narrow band version (AMR-NB).
+Here,
+we select from three different codec bitrates,
+and add the possibility of clipping
+at the beginning,
+and the possibility of additive noise
+at the end of the processing.
+The AMR-NB codec requires a sampling rate of 8000 Hz,
+which :class:`auglib.Augment` can take care of.
+
+.. jupyter-execute::
+
+    auglib.seed(0)
+
+    transform = auglib.transform.Compose(
+        [
+            auglib.transform.ClipByRatio(
+                auglib.observe.FloatUni(0, 0.01),
+                normalize=True,
+            ),
+            auglib.transform.AMRNB(
+                auglib.observe.List([4750, 5900, 7400]),
+            ),
+            auglib.transform.WhiteNoiseGaussian(
+                gain_db=auglib.observe.FloatUni(-35, -30),
+                bypass_prob=0.7,
+            ),
+        ]
+    )
+    augment = auglib.Augment(
+        transform,
+        sampling_rate=8000,
+        resample=True,
+    )
+    signal_augmented = augment(signal, sampling_rate)
+
+.. jupyter-execute::
+    :hide-code:
+
+    plot(signal_augmented, green, 'Telephone')
+
+.. jupyter-execute::
+    :hide-code:
+
+    Audio(signal_augmented, rate=8000)
+
+.. empty line for some extra space
+
+|
+
+.. _Vu et al. 2019: http://www.apsipa.org/proceedings/2019/pdfs/216.pdf
