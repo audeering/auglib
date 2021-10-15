@@ -291,6 +291,21 @@ def test_filter(n, sr):
         np.testing.assert_almost_equal(buf._data, sig_out)
 
 
+@pytest.mark.parametrize(
+    'filter_obj, params',
+    [
+        (LowPass, [1]),
+        (HighPass, [1]),
+        (BandPass, [1, 1]),
+        (BandStop, [1, 1]),
+    ]
+)
+def test_filter_errors(filter_obj, params):
+    with pytest.raises(ValueError):
+        design = 'non-supported'
+        filter_obj(*params, design=design)
+
+
 @pytest.mark.parametrize('dur,sr,gain,seed',
                          [(1.0, 8000, 0.0, 1)])
 def test_WhiteNoiseUniform(dur, sr, gain, seed):

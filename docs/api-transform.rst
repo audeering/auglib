@@ -63,12 +63,6 @@ FFTConvolve
 .. autoclass:: FFTConvolve
     :members:
 
-FilterDesign
-------------
-
-.. autoclass:: FilterDesign
-    :members:
-
 Function
 --------
 

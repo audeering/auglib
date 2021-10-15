@@ -18,6 +18,7 @@ from auglib.core import observe
 from auglib.core.utils import to_samples
 
 
+SUPPORTED_FILTER_DESIGNS = ['butter']
 SUPPORTED_TONE_SHAPES = ['sine', 'square', 'triangle', 'sawtooth']
 
 
@@ -563,39 +564,41 @@ class FFTConvolve(Transform):
         return buf
 
 
-class FilterDesign(Enum):
-    r"""
-    * `BUTTERWORTH`: Butterworth filter design
-    """
-    BUTTERWORTH = 'butter'
-
-
 class LowPass(Transform):
     r"""Run audio buffer through a low-pass filter.
 
     Args:
         cutoff: cutoff frequency in Hz
         order: filter order
-        design: filter design (see :class:`FilterDesign`)
+        design: filter design,
+            at the moment only `'butter'` is available
+            corresponding to a Butterworth filter
         bypass_prob: probability to bypass the transformation
+
+    Raises:
+        ValueError: if ``design`` contains a non-supported value
 
     """
     def __init__(self, cutoff: Union[float, observe.Base], *,
                  order: Union[int, observe.Base] = 1,
-                 design: str = FilterDesign.BUTTERWORTH.value,
+                 design: str = 'butter',
                  bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.cutoff = cutoff
         self.order = order
+        if design not in SUPPORTED_FILTER_DESIGNS:
+            raise ValueError(
+                f"Unknown filter design '{design}'. "
+                "Supported designs are: "
+                f"{', '.join(SUPPORTED_FILTER_DESIGNS)}."
+            )
         self.design = design
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
         cutoff = observe.observe(self.cutoff)
         order = observe.observe(self.order)
-        if self.design == FilterDesign.BUTTERWORTH.value:
+        if self.design == 'butter':
             lib.AudioBuffer_butterworthLowPassFilter(buf._obj, cutoff, order)
-        else:
-            assert False, 'unknown filter design {}'.format(self.design)
         return buf
 
 
@@ -605,26 +608,35 @@ class HighPass(Transform):
     Args:
         cutoff: cutoff frequency in Hz
         order: filter order
-        design: filter design (see :class:`FilterDesign`)
+        design: filter design,
+            at the moment only `'butter'` is available
+            corresponding to a Butterworth filter
         bypass_prob: probability to bypass the transformation
+
+    Raises:
+        ValueError: if ``design`` contains a non-supported value
 
     """
     def __init__(self, cutoff: Union[float, observe.Base], *,
                  order: Union[int, observe.Base] = 1,
-                 design: str = FilterDesign.BUTTERWORTH.value,
+                 design: str = 'butter',
                  bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.cutoff = cutoff
         self.order = order
+        if design not in SUPPORTED_FILTER_DESIGNS:
+            raise ValueError(
+                f"Unknown filter design '{design}'. "
+                "Supported designs are: "
+                f"{', '.join(SUPPORTED_FILTER_DESIGNS)}."
+            )
         self.design = design
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
         cutoff = observe.observe(self.cutoff)
         order = observe.observe(self.order)
-        if self.design == FilterDesign.BUTTERWORTH.value:
+        if self.design == 'butter':
             lib.AudioBuffer_butterworthHighPassFilter(buf._obj, cutoff, order)
-        else:
-            assert False, 'unknown filter design {}'.format(self.design)
         return buf
 
 
@@ -635,30 +647,39 @@ class BandPass(Transform):
         center: center frequency in Hz
         bandwidth: bandwidth frequency in Hz
         order: filter order
-        design: filter design (see :class:`FilterDesign`)
+        design: filter design,
+            at the moment only `'butter'` is available
+            corresponding to a Butterworth filter
         bypass_prob: probability to bypass the transformation
+
+    Raises:
+        ValueError: if ``design`` contains a non-supported value
 
     """
     def __init__(self, center: Union[float, observe.Base],
                  bandwidth: Union[float, observe.Base], *,
                  order: Union[int, observe.Base] = 1,
-                 design: str = FilterDesign.BUTTERWORTH.value,
+                 design: str = 'butter',
                  bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.center = center
         self.bandwidth = bandwidth
         self.order = order
+        if design not in SUPPORTED_FILTER_DESIGNS:
+            raise ValueError(
+                f"Unknown filter design '{design}'. "
+                "Supported designs are: "
+                f"{', '.join(SUPPORTED_FILTER_DESIGNS)}."
+            )
         self.design = design
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
         center = observe.observe(self.center)
         bandwidth = observe.observe(self.bandwidth)
         order = observe.observe(self.order)
-        if self.design == FilterDesign.BUTTERWORTH.value:
+        if self.design == 'butter':
             lib.AudioBuffer_butterworthBandPassFilter(buf._obj, center,
                                                       bandwidth, order)
-        else:
-            assert False, 'unknown filter design {}'.format(self.design)
         return buf
 
 
@@ -669,30 +690,39 @@ class BandStop(Transform):
         center: center frequency in Hz
         bandwidth: bandwidth frequency in Hz
         order: filter order
-        design: filter design (see :class:`FilterDesign`)
+        design: filter design,
+            at the moment only `'butter'` is available
+            corresponding to a Butterworth filter
         bypass_prob: probability to bypass the transformation
+
+    Raises:
+        ValueError: if ``design`` contains a non-supported value
 
     """
     def __init__(self, center: Union[float, observe.Base],
                  bandwidth: Union[float, observe.Base], *,
                  order: Union[int, observe.Base] = 1,
-                 design: str = FilterDesign.BUTTERWORTH.value,
+                 design: str = 'butter',
                  bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.center = center
         self.bandwidth = bandwidth
         self.order = order
+        if design not in SUPPORTED_FILTER_DESIGNS:
+            raise ValueError(
+                f"Unknown filter design '{design}'. "
+                "Supported designs are: "
+                f"{', '.join(SUPPORTED_FILTER_DESIGNS)}."
+            )
         self.design = design
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
         center = observe.observe(self.center)
         bandwidth = observe.observe(self.bandwidth)
         order = observe.observe(self.order)
-        if self.design == FilterDesign.BUTTERWORTH.value:
+        if self.design == 'butter':
             lib.AudioBuffer_butterworthBandStopFilter(buf._obj, center,
                                                       bandwidth, order)
-        else:
-            assert False, 'unknown filter design {}'.format(self.design)
         return buf
 
 
