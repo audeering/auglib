@@ -157,15 +157,18 @@ and augment it.
         media=['wav/03a01Fa.wav', 'wav/03a01Nc.wav', 'wav/03a01Wa.wav'],
         verbose=False,
     )
-    augment.process_index(db.files)
+    y_augmented = augment.process_index(db.files)
+    y_augmented
 
-Generally, we can note that all :meth:`process_*` methods
-return a column holding the augmented signals or segments.
+All :meth:`process_*` methods
+return a column (:class:`pd.Series`)
+with a segmented index
+holding the augmented signals.
 However, this has two drawbacks.
 Keeping results in memory may exceed available resources
 for a large database.
-And it may be expensive to redo the
-augmentation every time we run an experiment.
+And it may be expensive to redo the augmentation
+every time we run an experiment.
 
 
 Augment a database to disk
@@ -180,7 +183,8 @@ The result is an index, column or table pointing to the augmented files.
 
 .. jupyter-execute::
 
-    augment.augment(data=db.files, cache_root='cache')
+    index_augmented = augment.augment(data=db.files, cache_root='cache')
+    index_augmented
 
 The files are stored inside the :file:`cache_root` folder,
 and :meth:`auglib.Augment.augment`
@@ -197,7 +201,8 @@ the column data will be kept:
 .. jupyter-execute::
 
     y = db['files']['speaker'].get()
-    augment.augment(data=y, cache_root='cache')
+    y_augmented = augment.augment(data=y, cache_root='cache')
+    y_augmented
 
 Finally, we the repeat last command on a table,
 this time keeping the original files
@@ -205,13 +210,14 @@ and augmenting every file twice.
 
 .. jupyter-execute::
 
-    table = db['files'].get()
-    augment.augment(
-        data=table,
+    df = db['files'].get()
+    df_augmented = augment.augment(
+        data=df,
         cache_root='cache',
         modified_only=False,
         num_variants=2,
     )
+    df_augmented
 
 .. _audformat: https://audeering.github.io/audformat/data-format.html
 
