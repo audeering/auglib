@@ -48,9 +48,3 @@ Sink
 
 .. autoclass:: Sink
     :members:
-
-Source
-------
-
-.. autoclass:: Source
-    :members:

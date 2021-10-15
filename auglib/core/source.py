@@ -6,12 +6,18 @@ from auglib.core import (
     observe,
     transform,
 )
+import audeer
+
 from auglib.core.buffer import (
     AudioBuffer,
     Source,
 )
 
 
+@audeer.deprecated(
+    removal_version='1.0.0',
+    alternative='auglib.AudioBuffer.from_array',
+)
 class FromArray(Source):
     r"""Create buffer from an array.
 
@@ -36,6 +42,10 @@ class FromArray(Source):
         return AudioBuffer.from_array(self.x, self.sampling_rate)
 
 
+@audeer.deprecated(
+    removal_version='1.0.0',
+    alternative='auglib.AudioBuffer.read',
+)
 class Read(Source):
     r"""Create :class:`auglib.AudioBuffer` from an audio file.
 

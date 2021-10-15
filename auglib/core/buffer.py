@@ -1,5 +1,6 @@
 import os
 from typing import Union, Sequence
+import warnings
 
 import audiofile as af
 import numpy as np
@@ -18,8 +19,8 @@ from auglib.core.utils import (
 class AudioBuffer:
     r"""Holds a chunk of audio.
 
-    By default an audio buffer is initialized with zeros. See ``value``
-    argument and :doc:`api-source` for other ways.
+    By default an audio buffer is initialized with zeros.
+    See ``value`` argument for other ways.
 
     .. note:: Always call ``free()`` when a buffer is no longer needed.
         This will free the memory.
@@ -148,10 +149,10 @@ class AudioBuffer:
             array with shape ``(1, samples)``
 
         Example:
-            >>> buf = AudioBuffer(5, 8000, unit='samples')    
-            >>> x = buf.to_array()            
-            >>> x        
-            array([[0., 0., 0., 0., 0.]], dtype=float32)    
+            >>> buf = AudioBuffer(5, 8000, unit='samples')
+            >>> x = buf.to_array()
+            >>> x
+            array([[0., 0., 0., 0., 0.]], dtype=float32)
             >>> x.fill(1)
             >>> x.max()
             1.0
@@ -164,7 +165,7 @@ class AudioBuffer:
             >>> y.max()
             1.0
             >>> buf.peak
-            1.0            
+            1.0
             >>> buf.free()
 
         """  # noqa
@@ -243,11 +244,27 @@ class AudioBuffer:
         return AudioBuffer.from_array(x[0, :], sr)
 
 
+# @audeer.deprecated(
+#     removal_version='1.0.0',
+#     alternative='auglib.AudioBuffer',
+# )
+# ->
+# TypeError: function() argument 1 must be code, not str
+# ->
+# as a workaround we raise the deprecation warning in __init__
+# This happens when deriving from this class.
 class Source(audobject.Object):
     r"""Base class for objects that create an
     :class:`auglib.AudioBuffer`.
 
     """
+    def __init__(self):
+        message = (
+            'Source is deprecated and will be removed '
+            'with version 1.0.0. Use auglib.AudioBuffer instead.'
+        )
+        warnings.warn(message, category=UserWarning, stacklevel=2)
+
     def call(self) -> AudioBuffer:
         r"""Creates an :class:`auglib.AudioBuffer`.
 

@@ -9,10 +9,7 @@ import numpy as np
 import audobject
 
 from auglib.core.api import lib
-from auglib.core.buffer import (
-    AudioBuffer,
-    Source,
-)
+from auglib.core.buffer import AudioBuffer
 from auglib.core import observe
 from auglib.core.exception import _check_exception_decorator
 from auglib.core.utils import to_samples
@@ -174,7 +171,7 @@ class Mix(Base):
     """
     def __init__(
             self,
-            aux: Union[str, observe.Base, Source, AudioBuffer],
+            aux: Union[str, observe.Base, AudioBuffer],
             *,
             gain_base_db: Union[float, observe.Base] = 0.0,
             gain_aux_db: Union[float, observe.Base] = 0.0,
@@ -249,9 +246,6 @@ class Mix(Base):
         for _ in range(num_repeat):
             if isinstance(self.aux, AudioBuffer):
                 self._mix(buf, self.aux)
-            elif isinstance(self.aux, Source):
-                with self.aux() as aux:
-                    self._mix(buf, aux)
             else:
                 path = observe.observe(self.aux)
                 with AudioBuffer.read(path) as aux:
@@ -288,7 +282,7 @@ class Append(Base):
         array([[0., 0., 0., ..., 1., 1., 1.]], dtype=float32)
 
     """
-    def __init__(self, aux: Union[str, observe.Base, Source, AudioBuffer], *,
+    def __init__(self, aux: Union[str, observe.Base, AudioBuffer], *,
                  read_pos_aux: Union[int, float, observe.Base] = 0.0,
                  read_dur_aux: Union[int, float, observe.Base] = 0.0,
                  unit: str = 'seconds',
@@ -317,9 +311,6 @@ class Append(Base):
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
         if isinstance(self.aux, AudioBuffer):
             self._append(buf, self.aux)
-        elif isinstance(self.aux, Source):
-            with self.aux() as aux:
-                self._append(buf, aux)
         else:
             path = observe.observe(self.aux)
             with AudioBuffer.read(path) as aux:
@@ -565,7 +556,7 @@ class FFTConvolve(Base):
         bypass_prob: probability to bypass the transformation
 
     """
-    def __init__(self, aux: Union[str, observe.Base, Source, AudioBuffer], *,
+    def __init__(self, aux: Union[str, observe.Base, AudioBuffer], *,
                  keep_tail: Union[bool, observe.Base] = True,
                  transform: Base = None,
                  bypass_prob: Union[float, observe.Base] = None):
@@ -584,9 +575,6 @@ class FFTConvolve(Base):
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
         if isinstance(self.aux, AudioBuffer):
             self._fft_convolve(buf, self.aux)
-        elif isinstance(self.aux, Source):
-            with self.aux() as aux:
-                self._fft_convolve(buf, aux)
         else:
             path = observe.observe(self.aux)
             with AudioBuffer.read(path) as aux:
