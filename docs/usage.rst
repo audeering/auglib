@@ -56,6 +56,7 @@
     setattr(pd.Index, '_repr_html_', index_to_html)
 
 
+.. _usage:
 
 Usage
 =====

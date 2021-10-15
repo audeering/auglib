@@ -59,23 +59,44 @@ class Augment(audinterface.Process, audobject.Object):
     r"""Augmentation interface.
 
     Provides an interface for :class:`auglib.Transform`
-    and turns it into an object that can be applied on a list of files
-    and data conform to audformat_.
+    and turns it into an object
+    that can be applied
+    on a signal,
+    file(s)
+    and an audformat_ database.
+    More details are discussed under :ref:`usage`.
 
-    Note that all :meth:`auglib.Augment.process_*` methods return a column
-    holding the augmented signals or segments,
-    whereas :meth:`auglib.Augment.augment`
-    stores the augmented signals back to disk
-    and returns an index pointing to the augmented files.
+    .. code-block:: python
 
-    .. note:: The following arguments are not serialized:
+        augment = auglib.Augment(transform)
+        # Apply on signal, returns np.ndarray
+        signal = augment(signal, sampling_rate)
+        # Apply on signal, file, files, database index.
+        # Returns a column holding the augmented signals
+        y = augment.process_signal(signal, sampling_rate)
+        y = augment.process_file(file)
+        y = augment.process_files(files)
+        y = augment.process_index(index)
+        # Apply on index, table, column.
+        # Writes results to disk
+        # and returns index, table, column
+        # pointing to augmented files
+        index = augment.augment(index)
+        y = augment.augment(y)
+        df = augment.augment(df)
 
-        * ``keep_nat``
-        * ``multiprocessing``
-        * ``num_workers``
-        * ``verbose``
-
-        For more information see section on `hidden arguments`_.
+    :class:`auglib.Augment` inherits from :class:`audobject.Object`,
+    which means you can seralize to
+    and instantiate the class
+    from a YAML file.
+    Have a look at :class:`audobject.Object`
+    to see all available methods.
+    The following arguments are not serialized:
+    ``keep_nat``,
+    ``multiprocessing``,
+    ``num_workers``,
+    ``verbose``.
+    For more information see section on `hidden arguments`_.
 
     .. _audformat: https://audeering.github.io/audformat/data-format.html
 
@@ -105,6 +126,7 @@ class Augment(audinterface.Process, audobject.Object):
     Example:
         >>> import audb
         >>> import audeer
+        >>> import audiofile
         >>> import auglib
         >>> db = audb.load(
         ...     'testdata',
@@ -112,15 +134,19 @@ class Augment(audinterface.Process, audobject.Object):
         ...     verbose=False,
         ... )
         >>> transform = auglib.transform.WhiteNoiseUniform()
-        >>> augmentation = auglib.Augment(transform)
+        >>> augment = auglib.Augment(transform)
+        >>> # Augment a numpy array
+        >>> signal, sampling_rate = audiofile.read(db.files[0])
+        >>> signal_augmented = augment(signal, sampling_rate)
+        >>> # Augment (parts of) a database
         >>> column = db['emotion.test.gold']['emotion'].get()
-        >>> augmented_column = augmentation.augment(
+        >>> augmented_column = augment.augment(
         ...     column,
         ...     cache_root='cache',
         ...     remove_root=db.meta['audb']['root'],
         ... )
-        >>> label = augmented_column[0]  # file of first segment
-        >>> file = augmented_column.index[0][0]  # label of first segment
+        >>> label = augmented_column[0]
+        >>> file = augmented_column.index[0][0]
         >>> file = file.replace(audeer.safe_path('.'), '.')  # remove absolute path
         >>> file, label
         ('./cache/0482e0f5-3013-2222-dad7-481251925619/0/audio/006.wav', 'unhappy')

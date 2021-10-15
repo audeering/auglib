@@ -14,7 +14,8 @@ Augment
 
 .. autoclass:: Augment
     :members:
-    :inherited-members:
+    :inherited-members: Object
+    :special-members: __call__
 
 clear_default_cache_root
 ------------------------
