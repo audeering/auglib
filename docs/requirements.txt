@@ -5,6 +5,7 @@ matplotlib
 pedalboard
 pydub  # required by audiomentations
 seaborn
+sox
 sphinx
 sphinx-audeering-theme
 sphinx-autodoc-typehints

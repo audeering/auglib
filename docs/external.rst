@@ -243,3 +243,56 @@ into our :mod:`auglib` augmentation chain.
 .. _audiomentations: https://github.com/iver56/audiomentations
 .. _albumentations: https://github.com/albumentations-team/albumentations
 .. _torch-audiomentations: https://github.com/asteroid-team/torch-audiomentations
+
+
+.. _external-sox:
+
+Sox
+---
+
+Sox_ provides a large variety of effects,
+so called Transformers_,
+that might be useful for augmentation.
+Here,
+we shift the pitch by two semitones,
+and apply a `Flanger effect`_.
+
+.. jupyter-execute::
+
+    def sox_transform(signal, sampling_rate):
+        r"""Custom augmentation using sox."""
+        import sox
+        tfm = sox.Transformer()
+        tfm.pitch(2)
+        tfm.flanger()
+        return tfm.build_array(
+            input_array=signal.squeeze(),
+            sample_rate_in=sampling_rate,
+        )
+
+    transform = auglib.transform.Compose(
+        [
+            auglib.transform.Function(sox_transform),
+            auglib.transform.NormalizeByPeak(),
+        ]
+    )
+    augment = auglib.Augment(transform)
+    signal_augmented = augment(signal, sampling_rate)
+
+.. jupyter-execute::
+    :hide-code:
+
+    plot(signal_augmented, green, 'Augmented\nAudio')
+
+.. jupyter-execute::
+    :hide-code:
+
+    Audio(signal_augmented, rate=sampling_rate)
+
+.. empty line for some extra space
+
+|
+
+.. _Sox: https://pysox.readthedocs.io/en/latest/
+.. _Transformers: https://pysox.readthedocs.io/en/latest/api.html#module-sox.transform
+.. _Flanger effect: https://en.wikipedia.org/wiki/Flanging
