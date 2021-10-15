@@ -23,6 +23,10 @@ def from_db(x_db: Union[float, observe.Base]) -> float:
     Args:
         x_db: input gain in decibels
 
+    Example:
+        >>> from_db(-3)
+        0.7079457843841379
+
     """
     x_db = observe.observe(x_db)
     x = pow(10.0, x_db / 20.0)
@@ -49,6 +53,10 @@ def to_db(x: Union[float, observe.Base]) -> float:
 
     Args:
         x: input gain
+
+    Example:
+        >>> to_db(2)
+        6.020599913279624
 
     """
     x = observe.observe(x)
@@ -88,6 +96,10 @@ def to_samples(value: Union[int, float, observe.Base],
     Raises:
         ValueError: if ``allow_negative`` is False and computed value is
             negative
+
+    Example:
+        >>> to_samples(0.25, 4000)
+        1000
 
     """
     value = observe.observe(value)
