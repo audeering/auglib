@@ -11,16 +11,6 @@ import audiofile as af
 import auglib
 
 
-@pytest.mark.parametrize('n,sr',
-                         [(10, 8000),
-                          (10, 44100)])
-def test_numpytransform(n, sr):
-
-    x = np.linspace(-0.5, 0.5, num=n)
-    t = auglib.NumpyTransform(auglib.transform.NormalizeByPeak(), sr)
-    assert np.abs(t(x)).max() == 1.0
-
-
 @pytest.mark.parametrize(
     'sampling_rate, resample, modified_only',
     [

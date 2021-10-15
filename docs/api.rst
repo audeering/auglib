@@ -50,12 +50,6 @@ LibraryExceptionWarning
 .. autoclass:: LibraryExceptionWarning
     :members:
 
-NumpyTransform
---------------
-
-.. autoclass:: NumpyTransform
-    :members:
-
 set_exception_handling
 ----------------------
 
