@@ -3,6 +3,12 @@ auglib.transform
 
 .. automodule:: auglib.transform
 
+Base
+----
+
+.. autoclass:: Base
+    :members:
+
 AMRNB
 -----
 

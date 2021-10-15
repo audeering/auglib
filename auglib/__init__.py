@@ -7,6 +7,8 @@ from auglib.core.buffer import (
     AudioBuffer,
     Sink,
     Source,
+)
+from auglib.core.buffer_legacy import (
     Transform,
 )
 from auglib.core.config import config
@@ -31,6 +33,7 @@ from auglib.core.observe_legacy import (
     StrList,
 )
 from auglib.core.seed import seed
+
 
 __all__ = []
 

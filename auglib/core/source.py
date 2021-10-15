@@ -2,11 +2,13 @@ from typing import Union, Sequence
 
 import numpy as np
 
-from auglib.core import observe
+from auglib.core import (
+    observe,
+    transform,
+)
 from auglib.core.buffer import (
     AudioBuffer,
     Source,
-    Transform,
 )
 
 
@@ -54,7 +56,7 @@ class Read(Source):
                  root: str = None,
                  duration: Union[float, observe.Base] = None,
                  offset: Union[float, observe.Base] = 0,
-                 transform: Transform = None):
+                 transform: transform.Base = None):
         self.path = path
         self.root = root
         self.duration = duration

@@ -12,14 +12,44 @@ from auglib.core.api import lib
 from auglib.core.buffer import (
     AudioBuffer,
     Source,
-    Transform,
 )
 from auglib.core import observe
+from auglib.core.exception import _check_exception_decorator
 from auglib.core.utils import to_samples
 
 
 SUPPORTED_FILTER_DESIGNS = ['butter']
 SUPPORTED_TONE_SHAPES = ['sine', 'square', 'triangle', 'sawtooth']
+
+
+class Base(audobject.Object):
+    r"""Base class for transforms applied to an :class:`auglib.AudioBuffer`.
+
+    Args:
+        bypass_prob: probability to bypass the transformation
+
+    """
+    def __init__(self, bypass_prob: Union[float, observe.Base] = None):
+        self.bypass_prob = bypass_prob
+
+    def _call(self, buf: AudioBuffer):
+        r"""Transform an :class:`auglib.AudioBuffer`.
+
+        Args:
+            buf: audio buffer
+
+        Raises:
+            NotImplementedError: raised if not overwritten in child class
+
+        """
+        raise NotImplementedError()
+
+    @_check_exception_decorator
+    def __call__(self, buf: AudioBuffer) -> AudioBuffer:
+        bypass_prob = observe.observe(self.bypass_prob)
+        if bypass_prob is None or np.random.random_sample() >= bypass_prob:
+            self._call(buf)
+        return buf
 
 
 def _check_data_decorator(func):
@@ -41,7 +71,7 @@ def _check_data_decorator(func):
     return inner
 
 
-class Compose(Transform):
+class Compose(Base):
     r"""Compose several transforms together.
 
     Args:
@@ -56,7 +86,7 @@ class Compose(Transform):
         array([[1., 1., 1., 1., 1.]], dtype=float32)
 
     """
-    def __init__(self, transforms: Sequence[Transform], *,
+    def __init__(self, transforms: Sequence[Base], *,
                  bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.transforms = transforms
@@ -67,7 +97,7 @@ class Compose(Transform):
         return buf
 
 
-class Select(Transform):
+class Select(Base):
     r"""Randomly select from a pool of transforms.
 
     Args:
@@ -75,7 +105,7 @@ class Select(Transform):
         bypass_prob: probability to bypass the transformation
 
     """
-    def __init__(self, transforms: Sequence[Transform],
+    def __init__(self, transforms: Sequence[Base],
                  bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.transforms = transforms
@@ -86,7 +116,7 @@ class Select(Transform):
         return buf
 
 
-class Mix(Transform):
+class Mix(Base):
     r"""Mix the audio buffer (base) with another buffer (auxiliary) by
     adding the auxiliary buffer to the base buffer.
 
@@ -156,7 +186,7 @@ class Mix(Transform):
             extend_base: Union[bool, observe.Base] = False,
             num_repeat: Union[int, observe.Base] = 1,
             unit='seconds',
-            transform: Transform = None,
+            transform: Base = None,
             bypass_prob: Union[float, observe.Base] = None,
     ):
 
@@ -229,7 +259,7 @@ class Mix(Transform):
         return buf
 
 
-class Append(Transform):
+class Append(Base):
     r"""Append an auxiliary buffer at the end of the base buffer.
 
     Base and auxiliary buffer may differ in length but must have the
@@ -262,7 +292,7 @@ class Append(Transform):
                  read_pos_aux: Union[int, float, observe.Base] = 0.0,
                  read_dur_aux: Union[int, float, observe.Base] = 0.0,
                  unit: str = 'seconds',
-                 transform: Transform = None,
+                 transform: Base = None,
                  bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.aux = aux
@@ -297,7 +327,7 @@ class Append(Transform):
         return buf
 
 
-class AppendValue(Transform):
+class AppendValue(Base):
     r"""Expand base buffer with a constant value.
 
     Args:
@@ -332,7 +362,7 @@ class AppendValue(Transform):
         return buf
 
 
-class Trim(Transform):
+class Trim(Base):
     r"""Trims base buffer to desired duration, given a desired starting point.
 
     Args:
@@ -383,7 +413,7 @@ class Trim(Transform):
         return buf
 
 
-class Clip(Transform):
+class Clip(Base):
     r"""Hard/soft-clip the audio buffer.
 
     ``threshold`` sets the amplitude level in decibels to which the
@@ -418,7 +448,7 @@ class Clip(Transform):
         return buf
 
 
-class ClipByRatio(Transform):
+class ClipByRatio(Base):
     r"""Hard/soft-clip a certain fraction of the audio buffer.
 
     Rather than receiving a specific amplitude threshold, this function is
@@ -456,7 +486,7 @@ class ClipByRatio(Transform):
         return buf
 
 
-class NormalizeByPeak(Transform):
+class NormalizeByPeak(Base):
     r"""Peak-normalize the audio buffer to a desired level.
 
     Args:
@@ -480,7 +510,7 @@ class NormalizeByPeak(Transform):
         return buf
 
 
-class GainStage(Transform):
+class GainStage(Base):
     r"""Scale the buffer by the linear factor that corresponds
     to ``gain_dB`` (in decibels).
 
@@ -522,7 +552,7 @@ class GainStage(Transform):
         return buf
 
 
-class FFTConvolve(Transform):
+class FFTConvolve(Base):
     r"""Convolve the audio buffer (base) with another buffer (auxiliary)
     using an impulse response (FFT-based approach).
 
@@ -537,7 +567,7 @@ class FFTConvolve(Transform):
     """
     def __init__(self, aux: Union[str, observe.Base, Source, AudioBuffer], *,
                  keep_tail: Union[bool, observe.Base] = True,
-                 transform: Transform = None,
+                 transform: Base = None,
                  bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.aux = aux
@@ -564,7 +594,7 @@ class FFTConvolve(Transform):
         return buf
 
 
-class LowPass(Transform):
+class LowPass(Base):
     r"""Run audio buffer through a low-pass filter.
 
     Args:
@@ -602,7 +632,7 @@ class LowPass(Transform):
         return buf
 
 
-class HighPass(Transform):
+class HighPass(Base):
     r"""Run audio buffer through a high-pass filter.
 
     Args:
@@ -640,7 +670,7 @@ class HighPass(Transform):
         return buf
 
 
-class BandPass(Transform):
+class BandPass(Base):
     r"""Run audio buffer through a band-pass filter.
 
     Args:
@@ -683,7 +713,7 @@ class BandPass(Transform):
         return buf
 
 
-class BandStop(Transform):
+class BandStop(Base):
     r"""Run audio buffer through a band-stop filter.
 
     Args:
@@ -726,7 +756,7 @@ class BandStop(Transform):
         return buf
 
 
-class WhiteNoiseUniform(Transform):
+class WhiteNoiseUniform(Base):
     r"""Adds uniform white noise.
 
     Args:
@@ -746,7 +776,7 @@ class WhiteNoiseUniform(Transform):
         return buf
 
 
-class WhiteNoiseGaussian(Transform):
+class WhiteNoiseGaussian(Base):
     r"""Adds Gaussian white noise.
 
     Args:
@@ -770,7 +800,7 @@ class WhiteNoiseGaussian(Transform):
         return buf
 
 
-class PinkNoise(Transform):
+class PinkNoise(Base):
     r"""Adds pink noise.
 
     Args:
@@ -790,7 +820,7 @@ class PinkNoise(Transform):
         return buf
 
 
-class Tone(Transform):
+class Tone(Base):
     r"""Adds basic waveform.
 
     Args:
@@ -852,7 +882,7 @@ class Tone(Transform):
         return buf
 
 
-class CompressDynamicRange(Transform):
+class CompressDynamicRange(Base):
     r"""Compress the dynamic range of the buffer by attenuating any sample
     whose amplitude exceeds a certain ``threshold_db``.
     The intensity of the attenuation is determined by the ``ratio`` parameter
@@ -928,7 +958,7 @@ class CompressDynamicRange(Transform):
         return buf
 
 
-class AMRNB(Transform):
+class AMRNB(Base):
     r"""Encode-decode the buffer using Adaptive Multi-Rate (AMR) lossy codec
     (Narrow Band version).
 
@@ -961,7 +991,7 @@ class AMRNB(Transform):
         return buf
 
 
-class Function(Transform):
+class Function(Base):
     r"""Apply a custom function to the buffer.
 
     The function gets as input a :class:`numpy.ndarray`

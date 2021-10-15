@@ -12,10 +12,8 @@ from audinterface.core.utils import preprocess_signal
 import audiofile
 import audobject
 
-from auglib.core.buffer import (
-    AudioBuffer,
-    Transform,
-)
+from auglib.core import transform
+from auglib.core.buffer import AudioBuffer
 from auglib.core.config import config
 
 
@@ -46,7 +44,7 @@ class NumpyTransform:
 
     """
 
-    def __init__(self, transform: Transform, sampling_rate: int):
+    def __init__(self, transform: transform.Base, sampling_rate: int):
         self.transform = transform
         self.sampling_rate = sampling_rate
 
@@ -138,7 +136,7 @@ class Augment(audinterface.Process, audobject.Object):
     )
     def __init__(
             self,
-            transform: Transform,
+            transform: transform.Base,
             *,
             sampling_rate: int = None,
             resample: bool = False,

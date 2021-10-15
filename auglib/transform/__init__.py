@@ -1,4 +1,5 @@
 from auglib.core.transform import (
+    Base,
     AMRNB,
     Append,
     AppendValue,

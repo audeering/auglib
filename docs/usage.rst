@@ -213,7 +213,7 @@ Serialize
 ~~~~~~~~~
 
 It's possible to serialize a
-:class:`auglib.Transform` object
+:class:`auglib.transform.Transform` object
 to YAML.
 
 .. jupyter-execute::

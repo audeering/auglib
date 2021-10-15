@@ -71,9 +71,3 @@ Source
 
 .. autoclass:: Source
     :members:
-
-Transform
----------
-
-.. autoclass:: Transform
-    :members:

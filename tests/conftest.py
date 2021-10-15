@@ -5,7 +5,7 @@ import audb
 import auglib
 
 
-class Ones(auglib.Transform):
+class Ones(auglib.transform.Base):
     def _call(self, buf: auglib.AudioBuffer):
         buf._data.fill(1)
 

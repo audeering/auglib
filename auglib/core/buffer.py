@@ -13,7 +13,6 @@ from auglib.core.utils import (
     assert_non_negative_number,
     to_samples,
 )
-from auglib.core.exception import _check_exception_decorator
 
 
 class AudioBuffer:
@@ -260,37 +259,6 @@ class Source(audobject.Object):
 
     def __call__(self) -> AudioBuffer:
         return self.call()
-
-
-class Transform(audobject.Object):
-    r"""Base class for objects applying some sort of transformation to an
-    :class:`auglib.AudioBuffer`.
-
-    Args:
-        bypass_prob: probability to bypass the transformation
-
-    """
-    def __init__(self, bypass_prob: Union[float, observe.Base] = None):
-        self.bypass_prob = bypass_prob
-
-    def _call(self, buf: AudioBuffer):
-        r"""Transforms an :class:`auglib.AudioBuffer`.
-
-        Args:
-            buf: audio buffer
-
-        Raises:
-            NotImplementedError: raised if not overwritten in child class
-
-        """
-        raise NotImplementedError()
-
-    @_check_exception_decorator
-    def __call__(self, buf: AudioBuffer) -> AudioBuffer:
-        bypass_prob = observe.observe(self.bypass_prob)
-        if bypass_prob is None or np.random.random_sample() >= bypass_prob:
-            self._call(buf)
-        return buf
 
 
 class Sink(audobject.Object):
