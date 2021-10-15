@@ -18,6 +18,9 @@ from auglib.core import observe
 from auglib.core.utils import to_samples
 
 
+SUPPORTED_TONE_SHAPES = ['sine', 'square', 'triangle', 'sawtooth']
+
+
 def _check_data_decorator(func):
     # Preserve docstring, see:
     # https://docs.python.org/3.6/library/functools.html#functools.wraps
@@ -757,51 +760,65 @@ class PinkNoise(Transform):
         return buf
 
 
-class ToneShape(IntEnum):
-    r"""
-    * `SINE`: sine wave
-    * `SQUARE`: square wave
-    * `TRIANGLE`: triangle wave
-    * `SAWTOOTH`: sawtooth wave
-    """
-    SINE = 0
-    SQUARE = 1
-    TRIANGLE = 2
-    SAWTOOTH = 3
-
-
 class Tone(Transform):
     r"""Adds basic waveform.
 
     Args:
         freq: fundamental frequency in Hz
         gain_db: gain in decibels
-        shape: tone shape (see :class:`ToneShape`)
+        shape: tone shape,
+            one of ``'sine'``,
+            ``'square'``,
+            ``'triangle'``,
+            ``'sawtooth'``
         lfo_rate: modulation rate of Low Frequency Oscillator
         lfo_range: modulation range of Low Frequency Oscillator
         bypass_prob: probability to bypass the transformation
 
+    Raises:
+        ValueError: if ``shape`` contains a non-supported value
+
     """
     def __init__(self, freq: Union[float, observe.Base],
                  *, gain_db: Union[float, observe.Base] = 0.0,
-                 shape: ToneShape = ToneShape.SINE,
+                 shape: str = 'sine',
                  lfo_rate: Union[float, observe.Base] = 0.0,
                  lfo_range: Union[float, observe.Base] = 0.0,
                  bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)
         self.freq = freq
         self.gain_db = gain_db
-        self.shape = shape
         self.lfo_rate = lfo_rate
         self.lfo_range = lfo_range
+        if shape not in SUPPORTED_TONE_SHAPES:
+            raise ValueError(
+                f"Unknown tone shape '{shape}'. "
+                "Supported shapes are: "
+                f"{', '.join(SUPPORTED_TONE_SHAPES)}."
+            )
+        self.shape = shape
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
         freq = observe.observe(self.freq)
         gain_db = observe.observe(self.gain_db)
         lfo_rate = observe.observe(self.lfo_rate)
         lfo_range = observe.observe(self.lfo_range)
-        lib.AudioBuffer_addTone(buf._obj, freq, gain_db, self.shape.value,
-                                lfo_rate, lfo_range)
+        if self.shape == 'sine':
+            shape_value = 0
+        elif self.shape == 'square':
+            shape_value = 1
+        elif self.shape == 'triangle':
+            shape_value = 2
+        elif self.shape == 'sawtooth':
+            shape_value = 3
+        lib.AudioBuffer_addTone(
+            buf._obj,
+            freq,
+            gain_db,
+            shape_value,
+            lfo_rate,
+            lfo_range,
+        )
         return buf
 
 

@@ -123,12 +123,6 @@ Tone
 .. autoclass:: Tone
     :members:
 
-ToneShape
----------
-
-.. autoclass:: ToneShape
-    :members:
-
 Trim
 ---------
 

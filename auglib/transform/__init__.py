@@ -19,7 +19,6 @@ from auglib.core.transform import (
     PinkNoise,
     Select,
     Tone,
-    ToneShape,
     Trim,
     WhiteNoiseGaussian,
     WhiteNoiseUniform
