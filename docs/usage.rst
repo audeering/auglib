@@ -81,6 +81,13 @@ with :class:`auglib.Augment`.
     )
     augment = auglib.Augment(transform)
 
+Check how to include :ref:`external solutions <external>`
+and look at the :ref:`examples <examples>`
+for further inspiration.
+Or continue reading here,
+to see how to apply the augmentations
+to different inputs.
+
 
 Augment a signal
 ~~~~~~~~~~~~~~~~
