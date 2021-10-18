@@ -1,23 +1,22 @@
-from typing import Union
 import random
-import os
+import typing
 
-import humanfriendly as hf
 import numpy as np
 
 import audeer
 
-from auglib.core import observe
 from auglib.core.api import lib
+from auglib.core import observe
+from auglib.core import time
 
 
-def assert_non_negative_number(value: Union[int, float]):
+def assert_non_negative_number(value: typing.Union[int, float]):
     if value < 0:
         raise ValueError('A variable that is supposed to be non-negative was '
                          'found negative.')
 
 
-def from_db(x_db: Union[float, observe.Base]) -> float:
+def from_db(x_db: typing.Union[float, observe.Base]) -> float:
     r"""Convert decibels (dB) to gain.
 
     Args:
@@ -51,7 +50,7 @@ def random_seed(seed: int):
     lib.auglib_random_seed(seed)
 
 
-def to_db(x: Union[float, observe.Base]) -> float:
+def to_db(x: typing.Union[float, observe.Base]) -> float:
     r"""Convert gain to decibels (dB).
 
     Args:
@@ -71,13 +70,15 @@ def to_db(x: Union[float, observe.Base]) -> float:
     return x_db
 
 
-def to_samples(value: Union[int, float, observe.Base],
-               sampling_rate: int,
-               *,
-               length: int = 0,
-               unit: str = 'seconds',
-               allow_negative: bool = False) -> int:
-    r"""Express duration in samples.
+def to_samples(
+        value: typing.Union[int, float, observe.Base, time.Time],
+        sampling_rate: int,
+        *,
+        length: int = 0,
+        unit: str = 'seconds',
+        allow_negative: bool = False,
+) -> int:
+    r"""Express timestamp or timespan in samples.
 
     Examples for a ``sampling_rate`` of 8000,
     highlighting the influence of ``unit``:
@@ -94,40 +95,34 @@ def to_samples(value: Union[int, float, observe.Base],
     =======  ===========  =======  ====================
 
     Args:
-        value: duration or portion (see description)
+        value: timestamp or timespan
         sampling_rate: sampling rate in Hz
         length: reference point if unit is ``relative`` (in number of samples)
         unit: literal specifying the format
+            (ignored if ``value`` has type :class:`auglib.Time`)
         allow_negative: allow negative values
 
     Returns:
-        duration in samples
+        number of samples
 
     Raises:
-        ValueError: if ``allow_negative`` is False and computed value is
-            negative
+        ValueError: if ``allow_negative`` is ``False``
+            and computed value is negative
+        ValueError: if time format is not supported
 
     Example:
-        >>> to_samples(0.25, 4000)
-        1000
+        >>> to_samples(0.5, 10)
+        5
+        >>> to_samples(0.5, 10, length=20, unit='relative')
+        10
+        >>> to_samples(time.Time(1500, unit='ms'), 10)
+        15
 
     """
-    value = observe.observe(value)
-    unit = unit.strip()
-    if unit == 'samples':
-        num_samples = int(value)
-    elif unit == 'relative':
-        if not 0.0 <= value <= 1.0:
-            raise ValueError('relative value {} not in range ['
-                             '0...1]'.format(value))
-        num_samples = int(length * value)
-    else:
-        try:
-            num_samples = int(
-                hf.parse_timespan(str(value) + unit) * sampling_rate
-            )
-        except hf.InvalidTimespan as ex:
-            raise ValueError(str(ex))
-    if not allow_negative:
-        assert_non_negative_number(num_samples)
-    return num_samples
+    if not isinstance(value, time.Time):
+        value = time.Time(value, unit)
+    return value(
+        sampling_rate,
+        length=length,
+        allow_negative=allow_negative,
+    )

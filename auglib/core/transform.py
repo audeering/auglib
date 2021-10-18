@@ -2,7 +2,6 @@ import typing
 from typing import Callable, Optional, Sequence, Union
 from functools import wraps
 import ctypes
-from enum import Enum, IntEnum
 
 import numpy as np
 
@@ -12,6 +11,7 @@ from auglib.core.api import lib
 from auglib.core.buffer import AudioBuffer
 from auglib.core import observe
 from auglib.core.exception import _check_exception_decorator
+from auglib.core.time import Time
 from auglib.core.utils import to_samples
 
 
@@ -175,9 +175,9 @@ class Mix(Base):
             *,
             gain_base_db: Union[float, observe.Base] = 0.0,
             gain_aux_db: Union[float, observe.Base] = 0.0,
-            write_pos_base: Union[int, float, observe.Base] = 0.0,
-            read_pos_aux: Union[int, float, observe.Base] = 0.0,
-            read_dur_aux: Union[int, float, observe.Base] = None,
+            write_pos_base: Union[int, float, observe.Base, Time] = 0.0,
+            read_pos_aux: Union[int, float, observe.Base, Time] = 0.0,
+            read_dur_aux: Union[int, float, observe.Base, Time] = None,
             clip_mix: Union[bool, observe.Base] = False,
             loop_aux: Union[bool, observe.Base] = False,
             extend_base: Union[bool, observe.Base] = False,
@@ -283,8 +283,8 @@ class Append(Base):
 
     """
     def __init__(self, aux: Union[str, observe.Base, AudioBuffer], *,
-                 read_pos_aux: Union[int, float, observe.Base] = 0.0,
-                 read_dur_aux: Union[int, float, observe.Base] = 0.0,
+                 read_pos_aux: Union[int, float, observe.Base, Time] = 0.0,
+                 read_dur_aux: Union[int, float, observe.Base, Time] = 0.0,
                  unit: str = 'seconds',
                  transform: Base = None,
                  bypass_prob: Union[float, observe.Base] = None):
@@ -335,7 +335,7 @@ class AppendValue(Base):
         array([[0., 0., 0., ..., 1., 1., 1.]], dtype=float32)
 
     """
-    def __init__(self, duration: Union[int, float, observe.Base],
+    def __init__(self, duration: Union[int, float, observe.Base, Time],
                  value: Union[float, observe.Base] = 0, *,
                  unit: str = 'seconds',
                  bypass_prob: Union[float, observe.Base] = None):
@@ -377,8 +377,8 @@ class Trim(Base):
     """
     def __init__(self,
                  *,
-                 start_pos: Union[int, float, observe.Base] = 0,
-                 duration: Union[int, float, observe.Base] = None,
+                 start_pos: Union[int, float, observe.Base, Time] = 0,
+                 duration: Union[int, float, observe.Base, Time] = None,
                  unit: str = 'seconds',
                  bypass_prob: Union[float, observe.Base] = None):
         super().__init__(bypass_prob)

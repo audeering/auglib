@@ -1,8 +1,8 @@
+from auglib import observe
 from auglib import sink
 from auglib import source
 from auglib import transform
 from auglib import utils
-from auglib import observe
 from auglib.core.buffer import (
     AudioBuffer,
     Sink,
@@ -30,6 +30,7 @@ from auglib.core.observe_legacy import (
     StrList,
 )
 from auglib.core.seed import seed
+from auglib.core.time import Time
 
 
 __all__ = []

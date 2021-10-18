@@ -42,3 +42,11 @@ set_exception_handling
 ----------------------
 
 .. autofunction:: set_exception_handling
+
+Time
+----
+
+.. autoclass:: Time
+    :members:
+    :inherited-members: Object
+    :special-members: __call__

@@ -13,6 +13,7 @@ from auglib.utils import to_samples, to_db, from_db
         (1 / 60, 0, 8000, 'm', 8000),
         (1 / 3600, 0, 8000, 'hour', 8000),
         (0.5, 16000, 8000, 'relative', 8000),
+        (1.5, 16000, 8000, 'relative', 24000),
         pytest.param(
             -1.0, 0.8, 8000, 'seconds', None,
             marks=pytest.mark.xfail(raises=ValueError),
@@ -23,14 +24,6 @@ from auglib.utils import to_samples, to_db, from_db
         ),
         pytest.param(
             0.5, -1000, 8000, 'relative', None,
-            marks=pytest.mark.xfail(raises=ValueError)
-        ),
-        pytest.param(
-            1.5, 1000, 8000, 'relative', None,
-            marks=pytest.mark.xfail(raises=ValueError)
-        ),
-        pytest.param(
-            -1.5, 1000, 8000, 'relative', None,
             marks=pytest.mark.xfail(raises=ValueError)
         ),
     ]
