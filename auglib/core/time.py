@@ -18,23 +18,23 @@ class Time(audobject.Object):
     Args:
         value: timestamp or timespan
         unit: literal specifying the format
+            (see :meth:`auglib.utils.to_samples`)
 
     Example:
-        >>> sr = 8  # sampling rate in Hz
-        >>> Time(0.5, 'seconds')(sr)
+        >>> Time(0.5, 'seconds')(sampling_rate=8)
         4
-        >>> Time(1000, 'ms')(sr)
+        >>> Time(1000, 'ms')(sampling_rate=8)
         8
-        >>> Time(16, 'samples')(sr)
+        >>> Time(16, 'samples')()
         16
-        >>> Time(0.5, 'relative')(sr, length=64)
+        >>> Time(0.5, 'relative')(length=64)
         32
         >>> # generate randomized values
         >>> seed(0)
         >>> t = Time(observe.FloatUni(0.25, 0.75), 'relative')
-        >>> t(sr, length=64)
+        >>> t(length=64)
         33
-        >>> t(sr, length=64)
+        >>> t(length=64)
         38
 
     """
@@ -49,12 +49,18 @@ class Time(audobject.Object):
 
     def __call__(
             self,
-            sampling_rate: int,
             *,
-            length: int = 0,
+            sampling_rate: int = None,
+            length: int = None,
             allow_negative: bool = False,
     ) -> int:
         r"""Convert timestamp or timespan to number of samples.
+
+        If ``unit`` is set to ``'samples'``,
+        no argument is required.
+        In case of ``'relative'``,
+        ``length`` has to be provided.
+        Or ``sampling_rate`` in any other case.
 
         Args:
             sampling_rate: sampling rate in Hz
@@ -69,6 +75,10 @@ class Time(audobject.Object):
             ValueError: if ``allow_negative`` is ``False``
                 and computed value is negative
             ValueError: if time format is not supported
+            ValueError: if ``length`` is not provided,
+                but ``unit`` is ``'samples'``
+            ValueError: if  ``sampling_rate`` is not provided,
+                but ``unit`` is not not ``'samples'`` or ``'relative'``
 
         """
 
@@ -77,8 +87,18 @@ class Time(audobject.Object):
         if self.unit == 'samples':
             num_samples = int(value)
         elif self.unit == 'relative':
+            if length is None:
+                raise ValueError(
+                    "Unit is set to 'relative', "
+                    "but not value is provided for 'length'."
+                )
             num_samples = int(length * value)
         else:
+            if sampling_rate is None:
+                raise ValueError(
+                    f"Unit is set to '{self.unit}', "
+                    f"but not value is provided for 'length'."
+                )
             try:
                 value = hf.parse_timespan(str(value) + self.unit)
                 num_samples = int(value * sampling_rate)

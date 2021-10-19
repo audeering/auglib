@@ -205,19 +205,19 @@ class Mix(Base):
     def _mix(self, base: AudioBuffer, aux: AudioBuffer):
         write_pos_base = to_samples(
             self.write_pos_base,
-            base.sampling_rate,
+            sampling_rate=base.sampling_rate,
             unit=self.unit,
             length=len(base),
         )
         read_pos_aux = to_samples(
             self.read_pos_aux,
-            aux.sampling_rate,
+            sampling_rate=aux.sampling_rate,
             unit=self.unit,
             length=len(aux),
         )
         read_dur_aux = to_samples(
             self.read_dur_aux,
-            aux.sampling_rate,
+            sampling_rate=aux.sampling_rate,
             unit=self.unit,
             length=len(aux),
         )
@@ -298,10 +298,10 @@ class Append(Base):
     @_check_data_decorator
     def _append(self, base: AudioBuffer, aux: AudioBuffer):
         read_pos_aux = to_samples(self.read_pos_aux,
-                                  aux.sampling_rate,
+                                  sampling_rate=aux.sampling_rate,
                                   unit=self.unit)
         read_dur_aux = to_samples(self.read_dur_aux,
-                                  aux.sampling_rate,
+                                  sampling_rate=aux.sampling_rate,
                                   unit=self.unit)
         if self.transform:
             self.transform(aux)
@@ -390,13 +390,13 @@ class Trim(Base):
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
         start_pos = to_samples(
             observe.observe(self.start_pos),
-            buf.sampling_rate,
+            sampling_rate=buf.sampling_rate,
             unit=self.unit,
             length=len(buf),
         )
         duration = to_samples(
             observe.observe(self.duration),
-            buf.sampling_rate,
+            sampling_rate=buf.sampling_rate,
             unit=self.unit,
             length=len(buf),
         )

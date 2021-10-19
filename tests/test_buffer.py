@@ -13,7 +13,7 @@ from auglib.utils import to_samples
 def test_init(dur, sr, unit):
 
     unit = unit or 'seconds'
-    n = to_samples(dur, sr, unit=unit)
+    n = to_samples(dur, sampling_rate=sr, unit=unit)
     with AudioBuffer(dur, sr, unit=unit) as buf:
         assert len(buf) == n
         np.testing.assert_equal(buf._data, np.zeros(n))
@@ -30,7 +30,7 @@ def test_init(dur, sr, unit):
 def test_file(dur, sr):
 
     path = './test.wav'
-    n = to_samples(dur, sr)
+    n = to_samples(dur, sampling_rate=sr)
     x = np.random.random(n).astype(np.float32)
 
     with AudioBuffer.from_array(x, sr) as buf:

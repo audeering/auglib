@@ -54,7 +54,7 @@ class AudioBuffer:
     ):
         assert_non_negative_number(sampling_rate)
 
-        length = to_samples(duration, sampling_rate, unit=unit)
+        length = to_samples(duration, sampling_rate=sampling_rate, unit=unit)
         self._obj = lib.AudioBuffer_new(length, sampling_rate)
         self._data = np.ctypeslib.as_array(
             lib.AudioBuffer_data(self._obj),

@@ -20,8 +20,8 @@ from auglib.utils import to_samples, to_db, from_db
 def test_mix(base_dur, aux_dur, sr, unit):
 
     unit = unit or 'seconds'
-    n_base = to_samples(base_dur, sr, unit=unit)
-    n_aux = to_samples(aux_dur, sr, unit=unit)
+    n_base = to_samples(base_dur, sampling_rate=sr, unit=unit)
+    n_aux = to_samples(aux_dur, sampling_rate=sr, unit=unit)
 
     n_min = min(n_base, n_aux)
     n_max = max(n_base, n_aux)
@@ -100,8 +100,8 @@ def test_mix(base_dur, aux_dur, sr, unit):
 def test_append(base_dur, aux_dur, sr, unit):
 
     unit = unit or 'seconds'
-    n_base = to_samples(base_dur, sr, unit=unit)
-    n_aux = to_samples(aux_dur, sr, unit=unit)
+    n_base = to_samples(base_dur, sampling_rate=sr, unit=unit)
+    n_aux = to_samples(aux_dur, sampling_rate=sr, unit=unit)
 
     aux = AudioBuffer(aux_dur, sr, unit=unit, value=1.0)
 

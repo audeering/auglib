@@ -29,7 +29,7 @@ from auglib.utils import to_samples, to_db, from_db
     ]
 )
 def test_duration(dur, length, sr, unit, n):
-    assert to_samples(dur, sr, length=length, unit=unit) == n
+    assert to_samples(dur, sampling_rate=sr, length=length, unit=unit) == n
 
 
 @pytest.mark.parametrize('gain', [1.0, 10.0])

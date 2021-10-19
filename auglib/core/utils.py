@@ -72,13 +72,19 @@ def to_db(x: typing.Union[float, observe.Base]) -> float:
 
 def to_samples(
         value: typing.Union[int, float, observe.Base, time.Time],
-        sampling_rate: int,
         *,
-        length: int = 0,
+        sampling_rate: int = None,
+        length: int = None,
         unit: str = 'seconds',
         allow_negative: bool = False,
 ) -> int:
     r"""Express timestamp or timespan in samples.
+
+    If ``unit`` is set to ``'samples'``,
+    no argument is required.
+    In case of ``'relative'``,
+    ``length`` has to be provided.
+    Or ``sampling_rate`` in any other case.
 
     Examples for a ``sampling_rate`` of 8000,
     highlighting the influence of ``unit``:
@@ -109,20 +115,24 @@ def to_samples(
         ValueError: if ``allow_negative`` is ``False``
             and computed value is negative
         ValueError: if time format is not supported
+        ValueError: if ``length`` is not provided,
+            but ``unit`` is ``'samples'``
+        ValueError: if  ``sampling_rate`` is not provided,
+            but ``unit`` is not not ``'samples'`` or ``'relative'``
 
     Example:
-        >>> to_samples(0.5, 10)
+        >>> to_samples(0.5, sampling_rate=10)
         5
-        >>> to_samples(0.5, 10, length=20, unit='relative')
+        >>> to_samples(0.5, length=20, unit='relative')
         10
-        >>> to_samples(time.Time(1500, unit='ms'), 10)
+        >>> to_samples(time.Time(1500, unit='ms'), sampling_rate=10)
         15
 
     """
     if not isinstance(value, time.Time):
         value = time.Time(value, unit)
     return value(
-        sampling_rate,
+        sampling_rate=sampling_rate,
         length=length,
         allow_negative=allow_negative,
     )
