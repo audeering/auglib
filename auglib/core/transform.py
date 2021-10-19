@@ -13,6 +13,7 @@ from auglib.core import observe
 from auglib.core.exception import _check_exception_decorator
 from auglib.core.time import Time
 from auglib.core.utils import to_samples
+from auglib.core.seed import seed
 
 
 SUPPORTED_FILL_STRATEGIES = ['none', 'zeros', 'loop']
@@ -77,11 +78,10 @@ class Compose(Base):
         bypass_prob: probability to bypass the transformation
 
     Example:
-
-        >>> t = Compose([GainStage(12.0), Clip()])
-        >>> with AudioBuffer(5, 16000, value=0.5, unit='samples') as buf:
-        ...     t(buf)
-        array([[1., 1., 1., 1., 1.]], dtype=float32)
+        >>> transform = Compose([GainStage(12.0), Clip()])
+        >>> with AudioBuffer(4, 16000, value=0.5, unit='samples') as buf:
+        ...     transform(buf)
+        array([[1., 1., 1., 1.]], dtype=float32)
 
     """
     def __init__(self, transforms: Sequence[Base], *,
@@ -101,6 +101,13 @@ class Select(Base):
     Args:
         transforms: list of transforms to choose from
         bypass_prob: probability to bypass the transformation
+
+    Example:
+        >>> seed(0)
+        >>> transform = Select([GainStage(12.0), Clip()])
+        >>> with AudioBuffer(4, 16000, value=0.5, unit='samples') as buf:
+        ...     transform(buf)
+        array([[1.9905359, 1.9905359, 1.9905359, 1.9905359]], dtype=float32)
 
     """
     def __init__(self, transforms: Sequence[Base],
@@ -163,11 +170,11 @@ class Mix(Base):
         bypass_prob: probability to bypass the transformation
 
     Example:
-
-        >>> with AudioBuffer(1.0, 8000) as base:
-        ...     with AudioBuffer(1.0, 8000, value=1.0) as aux:
-        ...         Mix(aux, num_repeat=2)(base)
-        array([[2., 2., 2., ..., 2., 2., 2.]], dtype=float32)
+        >>> with AudioBuffer(4, 8000, unit='samples', value=1.0) as aux:
+        ...     transform = Mix(aux, num_repeat=2)
+        ...     with AudioBuffer(4, 8000, unit='samples') as buf:
+        ...         transform(buf)
+        array([[2., 2., 2., 2.]], dtype=float32)
 
     """
     def __init__(
@@ -276,11 +283,11 @@ class Append(Base):
         bypass_prob: probability to bypass the transformation
 
     Example:
-
-        >>> with AudioBuffer(1.0, 8000) as base:
-        ...     with AudioBuffer(1.0, 8000, value=1.0) as aux:
-        ...         Append(aux)(base)
-        array([[0., 0., 0., ..., 1., 1., 1.]], dtype=float32)
+        >>> with AudioBuffer(2, 8000, unit='samples', value=1.0) as aux:
+        ...     transform = Append(aux)
+        ...     with AudioBuffer(2, 8000, unit='samples') as buf:
+        ...         transform(buf)
+        array([[0., 0., 1., 1.]], dtype=float32)
 
     """
     def __init__(self, aux: Union[str, observe.Base, AudioBuffer], *,
@@ -330,10 +337,10 @@ class AppendValue(Base):
         bypass_prob: probability to bypass the transformation
 
     Example:
-
-        >>> with AudioBuffer(1.0, 8000) as base:
-        ...     AppendValue(1.0, value=1.0)(base)
-        array([[0., 0., 0., ..., 1., 1., 1.]], dtype=float32)
+        >>> transform = AppendValue(2, unit='samples', value=1.0)
+        >>> with AudioBuffer(2, 8000, unit='samples') as buf:
+        ...     transform(buf)
+        array([[0., 0., 1., 1.]], dtype=float32)
 
     """
     def __init__(self, duration: Union[int, float, observe.Base, Time],
@@ -377,30 +384,34 @@ class Trim(Base):
         ValueError: if ``fill`` contains a non-supported value
 
     Example:
-
+        >>> transform = Trim(start_pos=0.75)
         >>> with AudioBuffer(1.0, 4, value=1.0) as buf:
         ...     AppendValue(0.5, value=2.0)(buf)
-        ...     Trim(start_pos=0.75)(buf)
+        ...     transform(buf)
         array([[1., 1., 1., 1., 2., 2.]], dtype=float32)
         array([[1., 2., 2.]], dtype=float32)
+        >>> transform = Trim(start_pos=0.75, duration=0.5)
         >>> with AudioBuffer(1.0, 4, value=1.0) as buf:
         ...     AppendValue(0.5, value=2.0)(buf)
-        ...     Trim(start_pos=0.75, duration=0.5)(buf)
+        ...     transform(buf)
         array([[1., 1., 1., 1., 2., 2.]], dtype=float32)
         array([[1., 2.]], dtype=float32)
+        >>> transform = Trim(start_pos=0.75, duration=2.5, fill='none')
         >>> with AudioBuffer(1.0, 4, value=1.0) as buf:
         ...     AppendValue(0.5, value=2.0)(buf)
-        ...     Trim(start_pos=0.75, duration=2.5, fill='none')(buf)
+        ...     transform(buf)
         array([[1., 1., 1., 1., 2., 2.]], dtype=float32)
         array([[1., 2., 2.]], dtype=float32)
+        >>> transform = Trim(start_pos=0.75, duration=2.5, fill='zeros')
         >>> with AudioBuffer(1.0, 4, value=1.0) as buf:
         ...     AppendValue(0.5, value=2.0)(buf)
-        ...     Trim(start_pos=0.75, duration=2.5, fill='zeros')(buf)
+        ...     transform(buf)
         array([[1., 1., 1., 1., 2., 2.]], dtype=float32)
         array([[1., 2., 2., 0., 0., 0., 0., 0., 0., 0.]], dtype=float32)
+        >>> transform = Trim(start_pos=0.75, duration=2.5, fill='loop')
         >>> with AudioBuffer(1.0, 4, value=1.0) as buf:
         ...     AppendValue(0.5, value=2.0)(buf)
-        ...     Trim(start_pos=0.75, duration=2.5, fill='loop')(buf)
+        ...     transform(buf)
         array([[1., 1., 1., 1., 2., 2.]], dtype=float32)
         array([[1., 2., 2., 1., 1., 1., 1., 2., 2., 1.]], dtype=float32)
 
@@ -480,6 +491,14 @@ class Clip(Base):
         normalize: after clipping normalize buffer to 0 decibels
         bypass_prob: probability to bypass the transformation
 
+    Example:
+        >>> transform = Clip(threshold=-6)
+        >>> with AudioBuffer(2, 8000, unit='samples') as buf:
+        ...     AppendValue(2, unit='samples', value=0.7)(buf)
+        ...     transform(buf)
+        array([[0. , 0. , 0.7, 0.7]], dtype=float32)
+        array([[0.       , 0.       , 0.5011872, 0.5011872]], dtype=float32)
+
     """
     def __init__(self, *,
                  threshold: Union[float, observe.Base] = 0.0,
@@ -519,6 +538,16 @@ class ClipByRatio(Base):
         normalize: after clipping normalize buffer to 0 decibels
         bypass_prob: probability to bypass the transformation
 
+    Example:
+        >>> transform = ClipByRatio(0.3)
+        >>> with AudioBuffer(1, 8000, unit='samples') as buf:
+        ...     AppendValue(1, unit='samples', value=0.3)(buf)
+        ...     AppendValue(1, unit='samples', value=0.7)(buf)
+        ...     transform(buf)
+        array([[0. , 0.3]], dtype=float32)
+        array([[0. , 0.3, 0.7]], dtype=float32)
+        array([[0.        , 0.3       , 0.30000004]], dtype=float32)
+
     """
     def __init__(self, ratio: Union[float, observe.Base], *,
                  soft: Union[bool, observe.Base] = False,
@@ -544,6 +573,16 @@ class NormalizeByPeak(Base):
         peak_db: desired peak value in decibels
         clip: clip sample values to the interval [-1.0, 1.0]
         bypass_prob: probability to bypass the transformation
+
+    Example:
+        >>> transform = NormalizeByPeak()
+        >>> with AudioBuffer(2, 8000, unit='samples', value=0.5) as buf:
+        ...     transform(buf)
+        array([[1., 1.]], dtype=float32)
+        >>> transform = NormalizeByPeak(peak_db=-3)
+        >>> with AudioBuffer(2, 8000, unit='samples', value=0.5) as buf:
+        ...     transform(buf)
+        array([[0.7079458, 0.7079458]], dtype=float32)
 
     """
     def __init__(self, *,
@@ -580,6 +619,12 @@ class GainStage(Base):
         clip: clip sample values to the interval [-1.0, 1.0]
         bypass_prob: probability to bypass the transformation
 
+    Example:
+        >>> transform = GainStage(3)
+        >>> with AudioBuffer(2, 8000, unit='samples', value=0.5) as buf:
+        ...     transform(buf)
+        array([[0.7062688, 0.7062688]], dtype=float32)
+
     """
     def __init__(self, gain_db: Union[float, observe.Base], *,
                  max_peak_db: Union[float, observe.Base] = None,
@@ -614,6 +659,18 @@ class FFTConvolve(Base):
             original length of the input)
         transform: transformation applied to the auxiliary buffer
         bypass_prob: probability to bypass the transformation
+
+    Example:
+        >>> with AudioBuffer(2, 8000, unit='samples', value=1) as ir:
+        ...     transform = FFTConvolve(ir)
+        ...     with AudioBuffer(2, 8000, unit='samples', value=0.5) as buf:
+        ...         transform(buf)
+        array([[0.5, 1. , 0.5]], dtype=float32)
+        >>> with AudioBuffer(2, 8000, unit='samples', value=1) as ir:
+        ...     transform = FFTConvolve(ir, keep_tail=False)
+        ...     with AudioBuffer(2, 8000, unit='samples', value=0.5) as buf:
+        ...         transform(buf)
+        array([[0.5, 1. ]], dtype=float32)
 
     """
     def __init__(self, aux: Union[str, observe.Base, AudioBuffer], *,
@@ -656,6 +713,12 @@ class LowPass(Base):
     Raises:
         ValueError: if ``design`` contains a non-supported value
 
+    Example:
+        >>> transform = LowPass(100)
+        >>> with AudioBuffer(2, 8000, unit='samples', value=0.5) as buf:
+        ...     transform(buf)
+        array([[0.01890238, 0.05527793]], dtype=float32)
+
     """
     def __init__(self, cutoff: Union[float, observe.Base], *,
                  order: Union[int, observe.Base] = 1,
@@ -693,6 +756,12 @@ class HighPass(Base):
 
     Raises:
         ValueError: if ``design`` contains a non-supported value
+
+    Example:
+        >>> transform = HighPass(3500, order=4)
+        >>> with AudioBuffer(2, 8000, unit='samples', value=0.5) as buf:
+        ...     transform(buf)
+        array([[ 0.00046675, -0.00278969]], dtype=float32)
 
     """
     def __init__(self, cutoff: Union[float, observe.Base], *,
@@ -732,6 +801,12 @@ class BandPass(Base):
 
     Raises:
         ValueError: if ``design`` contains a non-supported value
+
+    Example:
+        >>> transform = BandPass(2000, 1000)
+        >>> with AudioBuffer(2, 8000, unit='samples', value=0.5) as buf:
+        ...     transform(buf)
+        array([[0.1464466 , 0.14644662]], dtype=float32)
 
     """
     def __init__(self, center: Union[float, observe.Base],
@@ -776,6 +851,12 @@ class BandStop(Base):
     Raises:
         ValueError: if ``design`` contains a non-supported value
 
+    Example:
+        >>> transform = BandStop(2000, 1000)
+        >>> with AudioBuffer(2, 8000, unit='samples', value=0.5) as buf:
+        ...     transform(buf)
+        array([[0.35355338, 0.35355338]], dtype=float32)
+
     """
     def __init__(self, center: Union[float, observe.Base],
                  bandwidth: Union[float, observe.Base], *,
@@ -811,6 +892,13 @@ class WhiteNoiseUniform(Base):
         gain_db: gain in decibels
         bypass_prob: probability to bypass the transformation
 
+    Example:
+        >>> seed(0)
+        >>> transform = WhiteNoiseUniform()
+        >>> with AudioBuffer(2, 8000, unit='samples', value=0) as buf:
+        ...     transform(buf)
+        array([[-0.796302  ,  0.89579505]], dtype=float32)
+
     """
     def __init__(self, *,
                  gain_db: Union[float, observe.Base] = 0.0,
@@ -831,6 +919,13 @@ class WhiteNoiseGaussian(Base):
         gain_db: gain in decibels
         stddev: standard deviation
         bypass_prob: probability to bypass the transformation
+
+    Example:
+        >>> seed(0)
+        >>> transform = WhiteNoiseGaussian()
+        >>> with AudioBuffer(2, 8000, unit='samples', value=0) as buf:
+        ...     transform(buf)
+        array([[-0.12818003,  0.33024564]], dtype=float32)
 
     """
     def __init__(self, *,
@@ -854,6 +949,13 @@ class PinkNoise(Base):
     Args:
         gain_db: gain in decibels
         bypass_prob: probability to bypass the transformation
+
+    Example:
+        >>> seed(0)
+        >>> transform = PinkNoise()
+        >>> with AudioBuffer(2, 8000, unit='samples', value=0) as buf:
+        ...     transform(buf)
+        array([[0.06546371, 0.06188003]], dtype=float32)
 
     """
     def __init__(self, *,
@@ -885,6 +987,12 @@ class Tone(Base):
 
     Raises:
         ValueError: if ``shape`` contains a non-supported value
+
+    Example:
+        >>> transform = Tone(4000, shape='sawtooth')
+        >>> with AudioBuffer(4, 8000, unit='samples', value=0) as buf:
+        ...     transform(buf)
+        array([[-1.,  0.,  1.,  0.]], dtype=float32)
 
     """
     def __init__(self, freq: Union[float, observe.Base],
@@ -965,6 +1073,12 @@ class CompressDynamicRange(Base):
         clip: clip signal
         bypass_prob: probability to bypass the transformation
 
+    Example:
+        >>> transform = CompressDynamicRange(-6, 0.5)
+        >>> with AudioBuffer(2, 8000, unit='samples', value=0.5) as buf:
+        ...     transform(buf)
+        array([[0.56034607,  0.56034607]], dtype=float32)
+
     """
     def __init__(self,
                  threshold_db: Union[float, observe.Base],
@@ -1021,6 +1135,12 @@ class AMRNB(Base):
         bit_rate: target bit rate of the encoded stream (in bits per second)
         dtx: enable discontinuous transmission (DTX)
         bypass_prob: probability to bypass the transformation
+
+    Example:
+        >>> transform = AMRNB(7400)
+        >>> with AudioBuffer(0.5, 8000, unit='seconds', value=0.5) as buf:
+        ...     transform(buf).peak
+        0.02783203125
 
     """
     def __init__(self,
@@ -1086,13 +1206,16 @@ class Function(Base):
         array([[0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]], dtype=float32)
         >>> def plus_c(x, sr, c):
         ...     x += c
-        >>> Function(plus_c, {'c': 1})(buf)
+        >>> transform = Function(plus_c, {'c': 1})
+        >>> transform(buf)
         array([[1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]], dtype=float32)
         >>> def halve(x, sr):
         ...     return x[:, ::2]
-        >>> Function(halve)(buf)
+        >>> transform = Function(halve)
+        >>> transform(buf)
         array([[1., 1., 1., 1., 1.]], dtype=float32)
-        >>> Function(lambda x, sr: x * 2)(buf)
+        >>> transform = Function(lambda x, sr: x * 2)
+        >>> transform(buf)
         array([[2., 2., 2., 2., 2.]], dtype=float32)
         >>> buf.free()
 
