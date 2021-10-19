@@ -439,3 +439,49 @@ which :class:`auglib.Augment` can take care of.
 |
 
 .. _Vu et al. 2019: http://www.apsipa.org/proceedings/2019/pdfs/216.pdf
+
+
+.. _examples-random-crop:
+
+Random Crop
+-----------
+
+To target machine learning models
+with a fixed signal input length,
+random cropping of the signals
+is often used.
+The following example
+uses :class:`auglib.transform.Trim`
+to randomly crop the input to a length of 0.5 s.
+If you are training with :mod:`torch`
+and you want to apply the transform
+during every epoch
+you might also consider
+using :class:`audtorch.transforms.RandomCrop` instead.
+
+.. jupyter-execute::
+
+    auglib.seed(0)
+
+    transform = auglib.transform.Trim(
+        start_pos=auglib.Time(auglib.observe.FloatUni(0, 1), unit='relative'),
+        duration=0.5,
+        fill='loop',
+        unit='seconds',
+    )
+    augment = auglib.Augment(transform)
+    signal_augmented = augment(signal, sampling_rate)
+
+.. jupyter-execute::
+    :hide-code:
+
+    plot(signal_augmented, green, 'Random\nCrop')
+
+.. jupyter-execute::
+    :hide-code:
+
+    Audio(signal_augmented, rate=sampling_rate)
+
+.. empty line for some extra space
+
+|

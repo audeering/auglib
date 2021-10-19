@@ -43,9 +43,11 @@ intersphinx_mapping = {
     'audformat': ('https://audeering.github.io/audformat/', None),
     'audobject': ('https://audeering.github.io/audobject', None),
     'audresample': ('https://audeering.github.io/audresample/', None),
+    'audtorch': ('https://audeering.github.io/audtorch/', None),
     'numpy': ('https://docs.scipy.org/doc/numpy/', None),
     'python': ('https://docs.python.org/3/', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
+    'torch': ('https://pytorch.org/docs/stable/', None),
 }
 
 
