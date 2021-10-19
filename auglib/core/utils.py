@@ -81,10 +81,11 @@ def to_samples(
     r"""Express timestamp or timespan in samples.
 
     If ``unit`` is set to ``'samples'``,
-    no argument is required.
+    no argument must be given.
     In case of ``'relative'``,
-    ``length`` has to be provided.
-    Or ``sampling_rate`` in any other case.
+    a value for ``length`` has to be provided.
+    In any other case,
+    a value for ``sampling_rate`` is required.
 
     Examples for a ``sampling_rate`` of 8000,
     highlighting the influence of ``unit``:
@@ -118,7 +119,7 @@ def to_samples(
         ValueError: if ``length`` is not provided,
             but ``unit`` is ``'samples'``
         ValueError: if  ``sampling_rate`` is not provided,
-            but ``unit`` is not not ``'samples'`` or ``'relative'``
+            but ``unit`` is not ``'samples'`` or ``'relative'``
 
     Example:
         >>> to_samples(0.5, sampling_rate=10)

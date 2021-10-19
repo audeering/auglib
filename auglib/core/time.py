@@ -57,10 +57,11 @@ class Time(audobject.Object):
         r"""Convert timestamp or timespan to number of samples.
 
         If ``unit`` is set to ``'samples'``,
-        no argument is required.
+        no argument must be given.
         In case of ``'relative'``,
-        ``length`` has to be provided.
-        Or ``sampling_rate`` in any other case.
+        a value for ``length`` has to be provided.
+        In any other case,
+        a value for ``sampling_rate`` is required.
 
         Args:
             sampling_rate: sampling rate in Hz
@@ -78,7 +79,7 @@ class Time(audobject.Object):
             ValueError: if ``length`` is not provided,
                 but ``unit`` is ``'samples'``
             ValueError: if  ``sampling_rate`` is not provided,
-                but ``unit`` is not not ``'samples'`` or ``'relative'``
+                but ``unit`` is not ``'samples'`` or ``'relative'``
 
         """
 
@@ -90,14 +91,14 @@ class Time(audobject.Object):
             if length is None:
                 raise ValueError(
                     "Unit is set to 'relative', "
-                    "but not value is provided for 'length'."
+                    "but no value is provided for 'length'."
                 )
             num_samples = int(length * value)
         else:
             if sampling_rate is None:
                 raise ValueError(
                     f"Unit is set to '{self.unit}', "
-                    f"but not value is provided for 'length'."
+                    f"but no value is provided for 'sampling_rate'."
                 )
             try:
                 value = hf.parse_timespan(str(value) + self.unit)
