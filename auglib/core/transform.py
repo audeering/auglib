@@ -11,9 +11,9 @@ from auglib.core.api import lib
 from auglib.core.buffer import AudioBuffer
 from auglib.core import observe
 from auglib.core.exception import _check_exception_decorator
+from auglib.core.seed import seed
 from auglib.core.time import Time
 from auglib.core.utils import to_samples
-from auglib.core.seed import seed
 
 
 SUPPORTED_FILL_STRATEGIES = ['none', 'zeros', 'loop']
@@ -414,6 +414,18 @@ class Trim(Base):
         ...     transform(buf)
         array([[1., 1., 1., 1., 2., 2.]], dtype=float32)
         array([[1., 2., 2., 1., 1., 1., 1., 2., 2., 1.]], dtype=float32)
+        >>> # use random values and combine different time units
+        >>> seed(0)
+        >>> start_pos = Time(observe.FloatUni(0.0, 0.5), 'relative')
+        >>> duration = Time(observe.FloatUni(1.0, 1.5), 'seconds')
+        >>> transform = Trim(start_pos=start_pos, duration=duration)
+        >>> with AudioBuffer(1.0, 4, value=1.0) as buf:
+        ...     AppendValue(0.5, value=2.0)(buf)
+        ...     transform(buf)
+        ...     transform(buf)
+        array([[1., 1., 1., 1., 2., 2.]], dtype=float32)
+        array([[1., 1., 1., 2., 2.]], dtype=float32)
+        array([[1., 1., 2., 2.]], dtype=float32)
 
     """
     def __init__(
@@ -421,7 +433,7 @@ class Trim(Base):
             *,
             start_pos: Union[int, float, observe.Base, Time] = 0,
             duration: Union[int, float, observe.Base, Time] = None,
-            fill: bool = 'none',
+            fill: str = 'none',
             unit: str = 'seconds',
             bypass_prob: Union[float, observe.Base] = None,
     ):
