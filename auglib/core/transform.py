@@ -15,6 +15,7 @@ from auglib.core.time import Time
 from auglib.core.utils import to_samples
 
 
+SUPPORTED_FILL_STRATEGIES = ['none', 'zeros', 'loop']
 SUPPORTED_FILTER_DESIGNS = ['butter']
 SUPPORTED_TONE_SHAPES = ['sine', 'square', 'triangle', 'sawtooth']
 
@@ -354,7 +355,7 @@ class AppendValue(Base):
 
 
 class Trim(Base):
-    r"""Trims base buffer to desired duration, given a desired starting point.
+    r"""Trim base buffer to desired duration, given a desired starting point.
 
     Args:
         start_pos: Starting point of the trimmed region, relative to the input
@@ -362,32 +363,72 @@ class Trim(Base):
         duration: Target duration of the resulting buffer (see ``unit``). If
             set to None, the selected section extends until the end of the
             original buffer.
+        fill: Fill up strategy if the end point of the trimmed region
+            exceeds the buffer.
+            Three strategies are available:
+            ``'none'`` the signal is not extended,
+            ``'zeros'`` the signal is filled up with 0s,
+            ``'loop'`` the signal is repeated.
         unit: Literal specifying the format of ``start`` and ``duration`` (see
             :meth:`auglib.utils.to_samples`).
         bypass_prob: Probability to bypass the transformation.
 
+    Raises:
+        ValueError: if ``fill`` contains a non-supported value
+
     Example:
 
-        >>> with AudioBuffer(0.5, 8000) as buf:
-        ...     AppendValue(0.5, value=1.0)(buf)
-        ...     Trim(start_pos=0.5)(buf)
-        array([[0., 0., 0., ..., 1., 1., 1.]], dtype=float32)
-        array([[1., 1., 1., ..., 1., 1., 1.]], dtype=float32)
+        >>> with AudioBuffer(1.0, 4, value=1.0) as buf:
+        ...     AppendValue(0.5, value=2.0)(buf)
+        ...     Trim(start_pos=0.75)(buf)
+        array([[1., 1., 1., 1., 2., 2.]], dtype=float32)
+        array([[1., 2., 2.]], dtype=float32)
+        >>> with AudioBuffer(1.0, 4, value=1.0) as buf:
+        ...     AppendValue(0.5, value=2.0)(buf)
+        ...     Trim(start_pos=0.75, duration=0.5)(buf)
+        array([[1., 1., 1., 1., 2., 2.]], dtype=float32)
+        array([[1., 2.]], dtype=float32)
+        >>> with AudioBuffer(1.0, 4, value=1.0) as buf:
+        ...     AppendValue(0.5, value=2.0)(buf)
+        ...     Trim(start_pos=0.75, duration=2.5, fill='none')(buf)
+        array([[1., 1., 1., 1., 2., 2.]], dtype=float32)
+        array([[1., 2., 2.]], dtype=float32)
+        >>> with AudioBuffer(1.0, 4, value=1.0) as buf:
+        ...     AppendValue(0.5, value=2.0)(buf)
+        ...     Trim(start_pos=0.75, duration=2.5, fill='zeros')(buf)
+        array([[1., 1., 1., 1., 2., 2.]], dtype=float32)
+        array([[1., 2., 2., 0., 0., 0., 0., 0., 0., 0.]], dtype=float32)
+        >>> with AudioBuffer(1.0, 4, value=1.0) as buf:
+        ...     AppendValue(0.5, value=2.0)(buf)
+        ...     Trim(start_pos=0.75, duration=2.5, fill='loop')(buf)
+        array([[1., 1., 1., 1., 2., 2.]], dtype=float32)
+        array([[1., 2., 2., 1., 1., 1., 1., 2., 2., 1.]], dtype=float32)
 
     """
-    def __init__(self,
-                 *,
-                 start_pos: Union[int, float, observe.Base, Time] = 0,
-                 duration: Union[int, float, observe.Base, Time] = None,
-                 unit: str = 'seconds',
-                 bypass_prob: Union[float, observe.Base] = None):
+    def __init__(
+            self,
+            *,
+            start_pos: Union[int, float, observe.Base, Time] = 0,
+            duration: Union[int, float, observe.Base, Time] = None,
+            fill: bool = 'none',
+            unit: str = 'seconds',
+            bypass_prob: Union[float, observe.Base] = None,
+    ):
         super().__init__(bypass_prob)
         self.start_pos = start_pos
         self.duration = duration or 0
+        if fill not in SUPPORTED_FILL_STRATEGIES:
+            raise ValueError(
+                f"Unknown fill strategy '{fill}'. "
+                "Supported strategies are: "
+                f"{', '.join(SUPPORTED_FILL_STRATEGIES)}."
+            )
+        self.fill = fill
         self.unit = unit
 
     @_check_data_decorator
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
+
         start_pos = to_samples(
             observe.observe(self.start_pos),
             sampling_rate=buf.sampling_rate,
@@ -400,7 +441,26 @@ class Trim(Base):
             unit=self.unit,
             length=len(buf),
         )
+        missing = (start_pos + duration) - len(buf)
+
+        if missing > 0:
+            if self.fill == 'zeros':
+                AppendValue(missing, unit='samples')(buf)
+            elif self.fill == 'loop':
+                with AudioBuffer.from_array(
+                    buf.to_array(copy=False),
+                    buf.sampling_rate,
+                ) as aux:
+                    AppendValue(missing, unit='samples')(buf)
+                    Mix(
+                        aux,
+                        write_pos_base=len(aux),
+                        unit='samples',
+                        loop_aux=True,
+                    )(buf)
+
         lib.AudioBuffer_trim(buf._obj, start_pos, duration)
+
         return buf
 
 
@@ -589,7 +649,7 @@ class LowPass(Base):
         cutoff: cutoff frequency in Hz
         order: filter order
         design: filter design,
-            at the moment only `'butter'` is available
+            at the moment only ``'butter'`` is available
             corresponding to a Butterworth filter
         bypass_prob: probability to bypass the transformation
 
@@ -627,7 +687,7 @@ class HighPass(Base):
         cutoff: cutoff frequency in Hz
         order: filter order
         design: filter design,
-            at the moment only `'butter'` is available
+            at the moment only ``'butter'`` is available
             corresponding to a Butterworth filter
         bypass_prob: probability to bypass the transformation
 
@@ -666,7 +726,7 @@ class BandPass(Base):
         bandwidth: bandwidth frequency in Hz
         order: filter order
         design: filter design,
-            at the moment only `'butter'` is available
+            at the moment only ``'butter'`` is available
             corresponding to a Butterworth filter
         bypass_prob: probability to bypass the transformation
 
@@ -709,7 +769,7 @@ class BandStop(Base):
         bandwidth: bandwidth frequency in Hz
         order: filter order
         design: filter design,
-            at the moment only `'butter'` is available
+            at the moment only ``'butter'`` is available
             corresponding to a Butterworth filter
         bypass_prob: probability to bypass the transformation
 

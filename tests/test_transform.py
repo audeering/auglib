@@ -367,6 +367,11 @@ def test_tone_errors():
         Tone(440, shape='non-supported')
 
 
+def test_trim_errors():
+    with pytest.raises(ValueError):
+        Trim(fill='non-supported')
+
+
 @pytest.mark.parametrize(
     'dur,sr',
     [
