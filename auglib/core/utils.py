@@ -23,6 +23,9 @@ def from_db(x_db: Union[float, observe.Base]) -> float:
     Args:
         x_db: input gain in decibels
 
+    Returns:
+        input gain
+
     Example:
         >>> from_db(-3)
         0.7079457843841379
@@ -54,6 +57,9 @@ def to_db(x: Union[float, observe.Base]) -> float:
     Args:
         x: input gain
 
+    Returns:
+        input gain in dB
+
     Example:
         >>> to_db(2)
         6.020599913279624
@@ -73,12 +79,13 @@ def to_samples(value: Union[int, float, observe.Base],
                allow_negative: bool = False) -> int:
     r"""Express duration in samples.
 
-    Examples (``sample_rate==8000``):
+    Examples for a ``sampling_rate`` of 8000,
+    highlighting the influence of ``unit``:
 
     =======  ===========  =======  ====================
     value    unit         length   result (in samples)
     =======  ===========  =======  ====================
-    1.0                            8000
+    1.0      'seconds'             8000
     8000     'samples'             8000
     2/3600   'hour'                16000
     500      'ms'                  4000
@@ -92,6 +99,9 @@ def to_samples(value: Union[int, float, observe.Base],
         length: reference point if unit is ``relative`` (in number of samples)
         unit: literal specifying the format
         allow_negative: allow negative values
+
+    Returns:
+        duration in samples
 
     Raises:
         ValueError: if ``allow_negative`` is False and computed value is
