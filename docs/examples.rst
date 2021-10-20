@@ -30,17 +30,19 @@ Examples
     )
 
 
-    def plot(signal, color, text):
+    def plot(signal, color, text, length=None):
         signal = np.atleast_2d(signal)[0, :]
+        if length is None:
+            length = len(signal)
         g = sns.lineplot(data=signal, color=color, linewidth=2.5)
         # Remove all axis
         sns.despine(left=True, bottom=True)
         g.tick_params(left=False, bottom=False)
         _ = g.set(xticklabels=[], yticklabels=[])
-        _ = plt.xlim([-0.15 * len(signal), len(signal)])
+        _ = plt.xlim([-0.15 * length, length])
         _ = plt.ylim([-1, 1])
         _ = plt.text(
-            -0.02 * len(signal),
+            -0.02 * length,
             0,
             text,
             fontsize='large',
@@ -475,7 +477,7 @@ using :class:`audtorch.transforms.RandomCrop` instead.
 .. jupyter-execute::
     :hide-code:
 
-    plot(signal_augmented, green, 'Random\nCrop')
+    plot(signal_augmented, green, 'Random\nCrop', signal.shape[1])
 
 .. jupyter-execute::
     :hide-code:
