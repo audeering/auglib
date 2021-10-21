@@ -14,6 +14,7 @@ from auglib.core.transform import (
     GainStage,
     HighPass,
     LowPass,
+    Mask,
     Mix,
     NormalizeByPeak,
     PinkNoise,

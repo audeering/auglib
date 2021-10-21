@@ -93,6 +93,12 @@ LowPass
 .. autoclass:: LowPass
     :members:
 
+Mask
+----
+
+.. autoclass:: Mask
+    :members:
+
 Mix
 ---
 

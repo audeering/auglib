@@ -9,7 +9,7 @@ from auglib.core.exception import LibraryException
 from auglib.transform import Mix, Append, AppendValue, Trim, NormalizeByPeak, \
     Clip, ClipByRatio, GainStage, FFTConvolve, LowPass, HighPass, BandPass, \
     BandStop, WhiteNoiseUniform, WhiteNoiseGaussian, PinkNoise, Tone, \
-    CompressDynamicRange, AMRNB, Function
+    CompressDynamicRange, AMRNB, Function, Mask
 from auglib.utils import to_samples, to_db, from_db
 
 
@@ -459,3 +459,52 @@ def test_function():
             buffer._data,
             np.ones(20, dtype=np.float32) * 2,
         )
+
+
+@pytest.mark.parametrize(
+    'signal, sampling_rate, transform',
+    [
+        (
+            np.zeros((1, 10)),
+            8000,
+            Function(lambda x, sr: x + 1),
+        )
+    ]
+)
+@pytest.mark.parametrize(
+    'start_pos, duration, step, invert, expected',
+    [
+        (0, None, None, False, np.zeros((1, 10))),
+        (0, None, None, True, np.ones((1, 10))),
+        (0, 5, None, False, [[0, 0, 0, 0, 0, 1, 1, 1, 1, 1]]),
+        (0, 5, None, True, [[1, 1, 1, 1, 1, 0, 0, 0, 0, 0]]),
+        (3, 5, None, False, [[1, 1, 1, 0, 0, 0, 0, 0, 1, 1]]),
+        (3, 5, None, True, [[0, 0, 0, 1, 1, 1, 1, 1, 0, 0]]),
+        (3, None, None, False, [[1, 1, 1, 0, 0, 0, 0, 0, 0, 0]]),
+        (3, None, None, True, [[0, 0, 0, 1, 1, 1, 1, 1, 1, 1]]),
+        (0, None, 2, False, [[0, 0, 1, 1, 0, 0, 1, 1, 0, 0]]),
+        (0, None, 2, True, [[1, 1, 0, 0, 1, 1, 0, 0, 1, 1]]),
+        (3, 5, 2, False, [[1, 1, 1, 0, 0, 1, 1, 0, 1, 1]]),
+        (3, 5, 2, True, [[0, 0, 0, 1, 1, 0, 0, 1, 0, 0]]),
+        (0, None, (1, 3), False, [[0, 1, 1, 1, 0, 1, 1, 1, 0, 1]]),
+        (0, None, (1, 3), True, [[1, 0, 0, 0, 1, 0, 0, 0, 1, 0]]),
+        (3, 5, (1, 3), False, [[1, 1, 1, 0, 1, 1, 1, 0, 1, 1]]),
+        (3, 5, (1, 3), True, [[0, 0, 0, 1, 0, 0, 0, 1, 0, 0]]),
+    ]
+)
+def test_mask(signal, sampling_rate, transform, start_pos,
+              duration, step, invert, expected):
+
+    mask = Mask(
+        transform,
+        start_pos=start_pos,
+        duration=duration,
+        step=step,
+        invert=invert,
+        unit='samples',
+    )
+
+    with AudioBuffer.from_array(signal, sampling_rate) as buf:
+        mask(buf)
+        augmented_signal = buf.to_array()
+        np.testing.assert_equal(augmented_signal, expected)

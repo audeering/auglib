@@ -3,6 +3,7 @@ from typing import Callable, Optional, Sequence, Union
 from functools import wraps
 import ctypes
 
+import audeer
 import numpy as np
 
 import audobject
@@ -1279,3 +1280,193 @@ class Function(Base):
                 )(buf)
             # copy result to buffer
             buf._data[:] = y
+
+        return buf
+
+
+class Mask(Base):
+    r"""Masked transformation.
+
+    Usually a transformation is applied on the whole buffer.
+    With :class:`auglib.transform.Mask` it is possible
+    to mask the transformation within specific region(s).
+    By default,
+    regions outside the mask are augmented.
+    If ``invert`` is set to ``True``,
+    regions that fall inside the mask are augmented.
+
+    Args:
+        transform: transform object
+        start_pos: start masking at this point (see ``unit``).
+        duration: apply masking for this duration (see ``unit``). If
+            set to ``None`` masking is applied until the end of the buffer
+        step: if not ``None``,
+            alternate between masked and non-masked regions
+            by the given step duration.
+            If two steps are given,
+            the first value defines the length of masked regions,
+            and the second value the steps between masked regions
+            (see ``unit``)
+        invert: if set to ``True`` augment the masked regions
+        unit: literal specifying the format of ``step``,
+            ``start_pos`` and ``duration``
+            (see :meth:`auglib.utils.to_samples`)
+        bypass_prob: probability to bypass the transformation
+
+    Example:
+        >>> seed(0)
+        >>> transform = PinkNoise()
+        >>> mask = Mask(
+        ...     transform,
+        ...     start_pos=2,
+        ...     duration=5,
+        ...     unit='samples',
+        ... )
+        >>> with AudioBuffer(10, 8000, unit='samples') as buf:
+        ...     buf
+        ...     mask(buf)
+        array([[0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]], dtype=float32)
+        array([[0.06546371, 0.06188003, 0.        , 0.        , 0.        ,
+                0.        , 0.        , 0.08830794, 0.06062159, 0.05176624]],
+              dtype=float32)
+        >>> mask = Mask(
+        ...     transform,
+        ...     start_pos=2,
+        ...     duration=5,
+        ...     unit='samples',
+        ...     invert=True,
+        ... )
+        >>> with AudioBuffer(10, 8000, unit='samples') as buf:
+        ...     buf
+        ...     mask(buf)
+        array([[0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]], dtype=float32)
+        array([[ 0.        ,  0.        ,  0.01598198,  0.03308425, -0.06080385,
+                -0.02503852,  0.00453029,  0.        ,  0.        ,  0.        ]],
+              dtype=float32)
+        >>> mask = Mask(
+        ...     transform,
+        ...     step=2,
+        ...     unit='samples',
+        ... )
+        >>> with AudioBuffer(10, 8000, unit='samples') as buf:
+        ...     buf
+        ...     mask(buf)
+        array([[0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]], dtype=float32)
+        array([[ 0.        ,  0.        ,  0.00247238,  0.03062965,  0.        ,
+                 0.        , -0.04145017, -0.01247866,  0.        ,  0.        ]],
+              dtype=float32)
+        >>> mask = Mask(
+        ...     transform,
+        ...     step=(3, 1),
+        ...     unit='samples',
+        ... )
+        >>> with AudioBuffer(10, 8000, unit='samples') as buf:
+        ...     buf
+        ...     mask(buf)
+        array([[0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]], dtype=float32)
+        array([[ 0.        ,  0.        ,  0.        ,  0.00095713,  0.        ,
+                 0.        ,  0.        , -0.00333027,  0.        ,  0.        ]],
+              dtype=float32)
+
+    """  # noqa: E501
+    @audobject.init_decorator(
+        resolvers={
+            'step': audobject.resolver.Tuple,
+        }
+    )
+    def __init__(
+            self,
+            transform: Base,
+            *,
+            start_pos: typing.Union[int, float, observe.Base, Time] = 0,
+            duration: typing.Union[int, float, observe.Base, Time] = None,
+            step: typing.Union[
+                int, float, observe.Base, Time,
+                typing.Tuple[
+                    Union[int, float, observe.Base, Time],
+                    Union[int, float, observe.Base, Time],
+                ],
+            ] = None,
+            invert: typing.Union[bool, observe.Base] = False,
+            unit: str = 'seconds',
+            bypass_prob: typing.Union[float, observe.Base] = None,
+    ):
+        if step is not None:
+            step = audeer.to_list(step)
+            if len(step) == 1:
+                step = step * 2
+            step = tuple(step)
+
+        super().__init__(bypass_prob)
+        self.transform = transform
+        self.start_pos = start_pos
+        self.duration = duration
+        self.step = step
+        self.invert = invert
+        self.unit = unit
+
+    def _call(self, buf: AudioBuffer):
+
+        # store original signal, then apply transformation
+        org_signal = buf.to_array(copy=True).squeeze()
+        self.transform(buf)
+        aug_signal = buf.to_array(copy=False).squeeze()
+        num_samples = min(org_signal.size, aug_signal.size)
+
+        # figure start and end position of mask
+        start_pos = to_samples(
+            self.start_pos,
+            length=num_samples,
+            sampling_rate=buf.sampling_rate,
+            unit=self.unit,
+        )
+        if self.duration is None:
+            end_pos = num_samples
+        else:
+            end_pos = start_pos + to_samples(
+                self.duration,
+                length=num_samples,
+                sampling_rate=buf.sampling_rate,
+                unit=self.unit,
+            )
+            end_pos = min(end_pos, num_samples)
+
+        # create mask
+        mask = np.zeros(num_samples, dtype=bool)
+        mask[:start_pos] = True
+        mask[end_pos:] = True
+
+        # apply steps
+        if self.step is not None:
+            masked_region = True
+            while start_pos < end_pos:
+                # switch between the two frequencies
+                # freq[0] -> mask
+                # freq[1] -> no mask
+                # and calculate next step
+                if masked_region:
+                    step = self.step[0]
+                else:
+                    step = self.step[1]
+                step = to_samples(
+                    step,
+                    length=num_samples,
+                    sampling_rate=buf.sampling_rate,
+                    unit=self.unit,
+                )
+                step = min(step, end_pos - start_pos)
+                # if we are not in a masked region, revert changes
+                if not masked_region and step > 0:
+                    mask[start_pos:start_pos + step] = True
+                # increment position and switch condition
+                start_pos += step
+                masked_region = not masked_region
+
+        # apply mask
+        # invert = False -> remove augmentation within mask
+        # invert = True -> keep augmentation within mask
+        if not observe.observe(self.invert):
+            mask = ~mask
+        aug_signal[:num_samples][mask] = org_signal[:num_samples][mask]
+
+        return buf
