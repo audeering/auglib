@@ -85,7 +85,9 @@ def to_samples(
     In case of ``'relative'``,
     a value for ``length`` has to be provided.
     In any other case,
-    a value for ``sampling_rate`` is required.
+    a value for ``sampling_rate`` is required
+    and ``unit`` must be supported by
+    :func:`pandas.to_timedelta`.
 
     Examples for a ``sampling_rate`` of 8000,
     highlighting the influence of ``unit``:
@@ -115,7 +117,7 @@ def to_samples(
     Raises:
         ValueError: if ``allow_negative`` is ``False``
             and computed value is negative
-        ValueError: if time format is not supported
+        ValueError: if ``unit`` is not supported
         ValueError: if ``length`` is not provided,
             but ``unit`` is ``'samples'``
         ValueError: if  ``sampling_rate`` is not provided,

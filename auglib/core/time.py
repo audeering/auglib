@@ -1,6 +1,6 @@
 import typing
 
-import humanfriendly as hf
+import pandas as pd
 
 import audobject
 
@@ -19,6 +19,9 @@ class Time(audobject.Object):
         value: timestamp or timespan
         unit: literal specifying the format
             (see :meth:`auglib.utils.to_samples`)
+
+    Raises:
+        ValueError: if ``unit`` is not supported
 
     Example:
         >>> Time(0.5, 'seconds')(sampling_rate=8)
@@ -46,6 +49,10 @@ class Time(audobject.Object):
 
         self.value = value
         self.unit = unit.strip()
+
+        if self.unit not in ('samples', 'relative'):
+            # raises ValueError if unit is not supported
+            pd.to_timedelta(0, unit=self.unit)
 
     def __call__(
             self,
@@ -75,7 +82,6 @@ class Time(audobject.Object):
         Raises:
             ValueError: if ``allow_negative`` is ``False``
                 and computed value is negative
-            ValueError: if time format is not supported
             ValueError: if ``length`` is not provided,
                 but ``unit`` is ``'samples'``
             ValueError: if  ``sampling_rate`` is not provided,
@@ -100,19 +106,13 @@ class Time(audobject.Object):
                     f"Unit is set to '{self.unit}', "
                     f"but no value is provided for 'sampling_rate'."
                 )
-            try:
-                value = hf.parse_timespan(str(value) + self.unit)
-                num_samples = int(value * sampling_rate)
-            except hf.InvalidTimespan:
-                raise ValueError(
-                    f"Unknown time format "
-                    f"'{self.unit}'."
-                )
+            value = pd.to_timedelta(value, unit=self.unit).total_seconds()
+            num_samples = int(value * sampling_rate)
 
         if num_samples < 0 and not allow_negative:
             raise ValueError(
                 f"Number of samples takes on negative value "
-                f"'{num_samples}'."
+                f"'{num_samples}'. "
                 f"If this is expected, "
                 f"set 'allow_negative=True' "
                 f"to avoid this error.",
