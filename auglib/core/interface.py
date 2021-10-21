@@ -15,6 +15,7 @@ import audobject
 from auglib.core import transform
 from auglib.core.buffer import AudioBuffer
 from auglib.core.config import config
+from auglib.core.seed import seed as seed_func
 
 
 def _remove(path: str):  # pragma: no cover
@@ -86,9 +87,13 @@ class Augment(audinterface.Process, audobject.Object):
         df = augment.augment(df)
 
     :class:`auglib.Augment` inherits from :class:`audobject.Object`,
-    which means you can seralize to
+    which means you can serialize to
     and instantiate the class
     from a YAML file.
+    By setting a ``seed``,
+    you can further ensure
+    that re-running the augmentation loaded form a YAML file
+    will create the same output.
     Have a look at :class:`audobject.Object`
     to see all available methods.
     The following arguments are not serialized:
@@ -114,8 +119,13 @@ class Augment(audinterface.Process, audobject.Object):
             processing. If ``None`` will be set to the number of
             processors on the machine multiplied by 5 in case of
             multithreading and number of processors in case of
-            multiprocessing
+            multiprocessing.
+            If ``seed`` is not ``None``,
+            the value is always set to 1
         multiprocessing: use multiprocessing instead of multithreading
+        seed: if not ``None`` calls :func:`auglib.seed` with the
+            given value when object is constructed.
+            This will automatically set ``num_workers`` to 1
         verbose: show debug messages
 
     Raises:
@@ -149,7 +159,7 @@ class Augment(audinterface.Process, audobject.Object):
         >>> file = augmented_column.index[0][0]
         >>> file = file.replace(audeer.safe_path('.'), '.')  # remove absolute path
         >>> file, label
-        ('./cache/0482e0f5-3013-2222-dad7-481251925619/0/audio/006.wav', 'unhappy')
+        ('./cache/f42aee69-183c-932d-b7a0-45a1decdec83/0/audio/006.wav', 'unhappy')
 
     """  # noqa: E501
     @audobject.init_decorator(
@@ -171,8 +181,15 @@ class Augment(audinterface.Process, audobject.Object):
             keep_nat: bool = False,
             num_workers: typing.Optional[int] = 1,
             multiprocessing: bool = False,
+            seed: int = None,
             verbose: bool = False,
     ):
+        if seed is not None:
+            seed_func(seed)
+            num_workers = 1
+
+        self.seed = seed
+        r"""Random seed to initialize the random number generator."""
         self.transform = transform
         r"""The transformation object."""
 

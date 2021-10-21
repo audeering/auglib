@@ -7,6 +7,7 @@ import pytest
 import audeer
 import audformat
 import audiofile as af
+import audobject
 
 import auglib
 
@@ -236,3 +237,41 @@ def test_cache_root(tmpdir):
 
     auglib.clear_default_cache_root()
     assert os.path.exists(auglib.default_cache_root())
+
+
+def test_augment_seed():
+
+    sr = 8000
+    x = np.zeros((1, 8))
+    transform = auglib.transform.PinkNoise()
+
+    for seed in [None, 1]:
+
+        auglib.seed(0)
+
+        augment = auglib.Augment(transform, seed=seed, num_workers=5)
+        augment_yaml = augment.to_yaml_s()
+        y = augment(x, sr)
+
+        augment_2 = audobject.from_yaml_s(augment_yaml)
+        y_2 = augment_2(x, sr)  # matches y if seed == 1
+
+        augment_3 = audobject.from_yaml_s(augment_yaml, seed=0)
+        y_3 = augment_3(x, sr)  # matches y if seed == None
+
+        augment_4 = audobject.from_yaml_s(augment_yaml, seed=None)
+        y_4 = augment_4(x, sr)  # never matches y
+
+        if seed is None:
+            assert augment.num_workers == 5
+            with pytest.raises(AssertionError):
+                np.testing.assert_equal(y, y_2)
+            np.testing.assert_equal(y, y_3)
+        else:
+            assert augment.num_workers == 1
+            np.testing.assert_equal(y, y_2)
+            with pytest.raises(AssertionError):
+                np.testing.assert_equal(y, y_3)
+
+        with pytest.raises(AssertionError):
+            np.testing.assert_equal(y, y_4)

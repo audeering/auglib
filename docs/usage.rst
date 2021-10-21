@@ -227,34 +227,56 @@ Serialize
 ~~~~~~~~~
 
 It's possible to serialize a
-:class:`auglib.transform.Transform` object
+:class:`auglib.Augment` object
 to YAML.
 
 .. jupyter-execute::
 
-    print(transform.to_yaml_s())
+    print(augment.to_yaml_s())
 
-And we can save it to a file and re-instantiate it from there.
+We can save it to a file
+and re-instantiate it from there.
 
 .. jupyter-execute::
 
     import audobject
 
     file = 'transform.yaml'
-    transform.to_yaml(file)
-    transform_from_yaml = audobject.from_yaml(file)
+    augment.to_yaml(file)
+    augment_from_yaml = audobject.from_yaml(file)
+    augment_from_yaml(signal, sampling_rate)
 
-We can prove that (with the same random seed)
-the new object will give the same result.
+The new object creates the exact same augmentation.
+To make an augmentation reproducible
+that includes random behavior
+we have to set the ``seed`` argument.
 
 .. jupyter-execute::
 
-    import numpy as np
+    transform = auglib.transform.PinkNoise(gain_db=-5)
+    augment = auglib.Augment(transform, seed=0)
+    augment(signal, sampling_rate)
 
-    augment_from_yaml = auglib.Augment(transform_from_yaml)
-    signal_augmented_from_yaml = augment_from_yaml(signal, sampling_rate)
+When we serialize the object,
+the seed will be stored to YAML
+and used to re-initialize the
+random number generator when
+the object is loaded.
 
-    np.testing.assert_equal(signal_augmented, signal_augmented_from_yaml)
+.. jupyter-execute::
+
+    augment.to_yaml(file)
+    augment_from_yaml = audobject.from_yaml(file)
+    augment_from_yaml(signal, sampling_rate)
+
+If we wanted a different random seed
+we can also overwrite the value.
+
+.. jupyter-execute::
+
+    augment_other_seed = audobject.from_yaml(file, seed=1)
+    augment_other_seed(signal, sampling_rate)
+
 
 .. Remove stored YAML file
 .. jupyter-execute::
