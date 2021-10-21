@@ -487,3 +487,67 @@ using :class:`audtorch.transforms.RandomCrop` instead.
 .. empty line for some extra space
 
 |
+
+
+.. _examples-gated-noise:
+
+Gated Noise
+-----------
+
+You might want to add temporarily changing background noise
+to your signal.
+The direct approach
+is to simply switch the noise on and off
+and generate gated background noise.
+In the example,
+we select a single noise file
+from the `noise` table of musan_,
+which includes 930 different files.
+In a real application
+you should augment with all of them.
+A combination
+of :class:`auglib.transform.Mask`
+and :class:`auglib.transform.Mix`
+reads the noise
+starting from a random position,
+and adds it every 0.5 s
+to the target signal.
+
+.. jupyter-execute::
+
+    auglib.seed(0)
+
+    db = audb.load(
+        'musan',
+        tables='noise',
+        media='noise/free-sound/noise-free-sound-0003.wav',
+        version='1.0.0',
+        verbose=False,
+    )
+
+    transform = auglib.transform.Mask(
+        auglib.transform.Mix(
+            auglib.observe.List(db.files),
+            gain_aux_db=auglib.observe.IntUni(-15, 0),
+            read_pos_aux=auglib.observe.FloatUni(0, 1),
+            unit='relative',
+            loop_aux=True,
+        ),
+        step=0.5,
+    )
+    augment = auglib.Augment(transform)
+    signal_augmented = augment(signal, sampling_rate)
+
+.. jupyter-execute::
+    :hide-code:
+
+    plot(signal_augmented, green, 'Gated\nNoise')
+
+.. jupyter-execute::
+    :hide-code:
+
+    Audio(signal_augmented, rate=sampling_rate)
+
+.. empty line for some extra space
+
+|
