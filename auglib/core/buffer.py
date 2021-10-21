@@ -114,6 +114,9 @@ class AudioBuffer:
             self._data = None
             self._obj = None
 
+    @audeer.deprecated(
+        removal_version='1.0.0',
+    )
     def play(self, wait: bool = True):
         r"""Play back buffer.
 
