@@ -19,7 +19,7 @@ _exception_handling = ExceptionHandling.EXCEPTION
 
 
 def set_exception_handling(strategy: str):
-    r"""Set strategy how to handle exceptions thrown by the c library.
+    r"""Set strategy how to handle exceptions thrown by the `C library`_.
 
     * ``'silent'``: ignore (shows no message)
     * ``'warning'``: show warning message
@@ -28,6 +28,8 @@ def set_exception_handling(strategy: str):
 
     Args:
         strategy: exception handling strategy
+
+    .. _`C library`: https://gitlab.audeering.com/tools/auglib
 
     """
     global _exception_handling

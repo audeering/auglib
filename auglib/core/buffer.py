@@ -24,10 +24,10 @@ class AudioBuffer:
         Consider to use a ``with`` statement if possible.
 
     Args:
-        duration: buffer duration (see ``unit``)
+        duration: buffer duration
         sampling_rate: sampling rate in Hz
-        value: initialize buffer with a value or from a `numpy.ndarray` or
-            (otherwise initialized with zeros)
+        value: initialize buffer with given value,
+            if ``None`` initialize with zeros
         unit: literal specifying the format of ``duration``
             (see :meth:`auglib.utils.to_samples`)
 
@@ -199,7 +199,7 @@ class AudioBuffer:
             root: optional root directory
             bit_depth: bit depth of written file in bit, can be 8, 16,
                 24 for WAV and FLAC files, and in addition 32 for WAV files
-            normalize (bool, optional): normalize audio data before writing
+            normalize: normalize audio data before writing
 
         """
         path = safe_path(path, root=root)
