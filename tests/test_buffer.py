@@ -1,6 +1,9 @@
+import os
+
 import numpy as np
 import pytest
 
+import audiofile
 import auglib
 
 
@@ -58,6 +61,25 @@ def test_init(dur, sr, unit):
         np.testing.assert_equal(buf._data, np.ones(n))
     assert buf._obj is None
     assert buf._data is None
+
+
+def test_shape_error(tmpdir):
+
+    signal = np.zeros((2, 8))
+    sampling_rate = 8000
+    path = os.path.join(tmpdir, 'stereo.wav')
+    audiofile.write(path, signal, sampling_rate)
+
+    with pytest.raises(ValueError):
+        auglib.AudioBuffer.from_array(signal, sampling_rate)
+
+    with pytest.raises(ValueError):
+        auglib.AudioBuffer.read(path)
+
+    transform = auglib.transform.PinkNoise()
+    augment = auglib.Augment(transform)
+    with pytest.raises(ValueError):
+        augment(signal, sampling_rate)
 
 
 def test_str():

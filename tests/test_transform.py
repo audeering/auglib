@@ -247,6 +247,7 @@ def test_clip(n, sr):
 
     x = np.c_[np.random.uniform(-1.5, 1.0, n // 2),
               np.random.uniform(1.0, 1.5, n - (n // 2))]
+    x = x.flatten()
     np.random.shuffle(x)
 
     with AudioBuffer.from_array(x, sr) as buf:

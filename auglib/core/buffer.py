@@ -212,11 +212,17 @@ class AudioBuffer:
                    sampling_rate: int) -> 'AudioBuffer':
         r"""Create buffer from an array.
 
-        .. note:: The input array will be flatten and converted to ``float32``.
+        Only mono audio is supported,
+        i.e. the shape of the array has to be ``(N, )`` or ``(1, N)``.
+        If necessary,
+        the values will be converted to ``float32``.
 
         Args:
-            x: array with audio samples
+            x: array with audio samples with shape ``(N, )`` or ``(1, N)``
             sampling_rate: sampling rate in Hz
+
+        Raises:
+            ValueError: if signal has a wrong shape
 
         Example:
             >>> with AudioBuffer.from_array([1] * 5, 8000) as buf:
@@ -226,6 +232,14 @@ class AudioBuffer:
         """
         if not isinstance(x, np.ndarray):
             x = np.array(x)
+        x = np.atleast_2d(x)
+        if x.shape[0] != 1:
+            raise ValueError(
+                f'Only signals with '
+                f'shape (N, ) or (1, N) '
+                f'are currently supported. '
+                f'Input has shape {x.shape}.'
+            )
         buf = AudioBuffer(x.size, sampling_rate, unit='samples')
         np.copyto(buf._data, x.flatten())  # takes care of data type
         return buf
@@ -238,21 +252,23 @@ class AudioBuffer:
 
         Uses soundfile for WAV, FLAC, and OGG files. All other audio files are
         first converted to WAV by sox or ffmpeg.
-
-        .. note:: Audio will be converted to mono with sample type ``float32``.
+        Only mono files are supported.
 
         Args:
-            path: path to file
+            path: path to file (has to be mono)
             root: optional root directory
             duration: return only a specified duration in seconds
-            offset: start reading at offset in seconds.
+            offset: start reading at offset in seconds
+
+        Raises:
+            ValueError: if input file is not mono
 
         """
         path = safe_path(path, root=root)
         duration = observe.observe(duration)
         offset = observe.observe(offset)
         x, sr = af.read(path, duration=duration, offset=offset, always_2d=True)
-        return AudioBuffer.from_array(x[0, :], sr)
+        return AudioBuffer.from_array(x, sr)
 
 
 # @audeer.deprecated(
