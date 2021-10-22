@@ -182,6 +182,69 @@ def test_augment_empty(tmpdir):
 
 
 @pytest.mark.parametrize(
+    'signal',
+    [
+        np.array(
+            [
+                [1., 1., 1., 1.],
+                [2., 2., 2., 2.],
+                [3., 3., 3., 3.],
+            ],
+            dtype='float32',
+        )
+    ]
+)
+@pytest.mark.parametrize(
+    'transform, expected',
+    [
+        (
+            auglib.transform.Function(lambda x, _: x + 1),
+            np.array(
+                [
+                    [2., 2., 2., 2.],
+                    [3., 3., 3., 3.],
+                    [4., 4., 4., 4.],
+                ],
+                dtype='float32',
+            )
+        ),
+        (
+            auglib.transform.AppendValue(
+                duration=2,
+                unit='samples',
+            ),
+            np.array(
+                [
+                    [1., 1., 1., 1., 0., 0.],
+                    [2., 2., 2., 2., 0., 0.],
+                    [3., 3., 3., 3., 0., 0.],
+                ],
+                dtype='float32',
+            )
+        ),
+        (
+            auglib.transform.Trim(
+                duration=auglib.observe.List([3, 2, 1]),
+                unit='samples',
+            ),
+            np.array(
+                [
+                    [1., 1., 1.],
+                    [2., 2., 0.],
+                    [3., 0., 0.],
+                ],
+                dtype='float32',
+            )
+        )
+    ]
+)
+def test_augment_multichannel(signal, transform, expected):
+    augment = auglib.Augment(transform)
+    signal_augmented = augment(signal, 8000)
+    np.testing.assert_equal(signal_augmented, expected)
+
+
+@pytest.mark.parametrize(
     'remove_root',
     [
         None,

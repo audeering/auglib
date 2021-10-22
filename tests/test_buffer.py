@@ -76,11 +76,6 @@ def test_shape_error(tmpdir):
     with pytest.raises(ValueError):
         auglib.AudioBuffer.read(path)
 
-    transform = auglib.transform.PinkNoise()
-    augment = auglib.Augment(transform)
-    with pytest.raises(ValueError):
-        augment(signal, sampling_rate)
-
 
 def test_str():
 

@@ -65,6 +65,10 @@ class Augment(audinterface.Process, audobject.Object):
     on a signal,
     file(s)
     and an audformat_ database.
+    If input has multiple channels,
+    each channel is augmented individually.
+    I.e. in case randomized arguments are used,
+    the augmentation can be different for each channel.
     More details are discussed under :ref:`usage`.
 
     .. code-block:: python
@@ -501,12 +505,31 @@ class Augment(audinterface.Process, audobject.Object):
         return out_files
 
     @staticmethod
-    def _process_func(x, sr, transform):
+    def _process_func(signal, sampling_rate, transform):
         r"""Internal processing function: creates audio buffer
         and runs it through the transformation object."""
-        with AudioBuffer.from_array(x.copy(), sr) as buf:
-            transform(buf)
-            return np.atleast_2d(buf._data.copy())
+
+        signal = np.atleast_2d(signal)
+        max_samples = 0
+        buffers = []
+
+        # augment each channel individually
+        for channel in signal:
+            buffer = AudioBuffer.from_array(channel.copy(), sampling_rate)
+            transform(buffer)
+            max_samples = max(max_samples, len(buffer))
+            buffers.append(buffer)
+
+        # combine into single output array and fill short channels with zeros
+        augmented_signal = np.zeros(
+            (signal.shape[0], max_samples),
+            dtype=np.float32,
+        )
+        for idx, buffer in enumerate(buffers):
+            augmented_signal[idx, :len(buffer)] = buffer.to_array(copy=False)
+            buffer.free()
+
+        return augmented_signal
 
 
 def clear_default_cache_root(augment: Augment = None):
