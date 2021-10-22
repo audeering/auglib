@@ -82,6 +82,11 @@ class AudioBuffer:
         return str(self.to_array(copy=False))
 
     @property
+    def duration(self) -> float:
+        r"""Buffer duration in seconds."""
+        return len(self) / self.sampling_rate
+
+    @property
     def peak(self) -> float:
         r"""Buffer peak."""
         if self._obj:

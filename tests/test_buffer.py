@@ -52,6 +52,7 @@ def test_init(dur, sr, unit):
     n = auglib.utils.to_samples(dur, sampling_rate=sr, unit=unit)
     with auglib.AudioBuffer(dur, sr, unit=unit) as buf:
         assert len(buf) == n
+        assert buf.duration == n / sr
         np.testing.assert_equal(buf._data, np.zeros(n))
         buf._data += 1
         np.testing.assert_equal(buf._data, np.ones(n))
