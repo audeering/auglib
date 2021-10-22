@@ -32,7 +32,7 @@ class Base(audobject.Object):
     def __init__(self, bypass_prob: Union[float, observe.Base] = None):
         self.bypass_prob = bypass_prob
 
-    def _call(self, buf: AudioBuffer):
+    def _call(self, buf: AudioBuffer):  # pragma: no cover
         r"""Transform an :class:`auglib.AudioBuffer`.
 
         Args:
@@ -1002,12 +1002,26 @@ class Tone(Base):
         ValueError: if ``shape`` contains a non-supported value
 
     Example:
-        >>> transform = Tone(4000, shape='sawtooth')
-        >>> with AudioBuffer(4, 8000, unit='samples', value=0) as buf:
+        >>> transform = Tone(2000, shape='sine')
+        >>> with AudioBuffer(8, 8000, unit='samples', value=0) as buf:
         ...     transform(buf)
-        array([[-1.,  0.,  1.,  0.]], dtype=float32)
+        array([[ 0.0000000e+00,  1.0000000e+00, -8.7422777e-08, -1.0000000e+00,
+                 1.7484555e-07,  1.0000000e+00, -2.3849761e-08, -1.0000000e+00]],
+              dtype=float32)
+        >>> transform = Tone(2000, shape='square')
+        >>> with AudioBuffer(8, 8000, unit='samples', value=0) as buf:
+        ...     transform(buf)
+        array([[-1., -1.,  0.,  1.,  1., -1.,  0.,  1.]], dtype=float32)
+        >>> transform = Tone(2000, shape='sawtooth')
+        >>> with AudioBuffer(8, 8000, unit='samples', value=0) as buf:
+        ...     transform(buf)
+        array([[-1. , -0.5,  0. ,  0.5,  1. , -0.5,  0. ,  0.5]], dtype=float32)
+        >>> transform = Tone(2000, shape='triangle')
+        >>> with AudioBuffer(8, 8000, unit='samples', value=0) as buf:
+        ...     transform(buf)
+        array([[ 1.,  0., -1.,  0.,  1.,  0., -1.,  0.]], dtype=float32)
 
-    """
+    """  # noqa: E501
     def __init__(self, freq: Union[float, observe.Base],
                  *, gain_db: Union[float, observe.Base] = 0.0,
                  shape: str = 'sine',

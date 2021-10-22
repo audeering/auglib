@@ -7,14 +7,6 @@ import ctypes
 from auglib.core.api import lib
 
 
-class LibraryExceptionWarning(UserWarning):
-    pass
-
-
-class LibraryException(Exception):
-    pass
-
-
 class ExceptionHandling:
     r"""Exception handling strategies"""
     SILENT = 'silent'
@@ -46,19 +38,20 @@ def _check_exception(max_msg_len: int = 2048):
     buffer = ctypes.create_string_buffer(max_msg_len)
     if lib.auglib_check_exception(buffer, max_msg_len):
         msg = buffer.value.decode('ascii')
+        msg = f'Exception from external C library: {msg}'
         global _exception_handling
         if _exception_handling == ExceptionHandling.EXCEPTION:
             lib.auglib_release_exception()
-            raise LibraryException(msg)
+            raise RuntimeError(msg)
         else:
             if _exception_handling == ExceptionHandling.SILENT:
                 pass
             elif _exception_handling == ExceptionHandling.WARNING:
-                warnings.warn(LibraryExceptionWarning(msg))
+                warnings.warn(RuntimeWarning(msg))
             elif _exception_handling == ExceptionHandling.STACKTRACE:
                 print('Traceback (most recent call last):', file=sys.stderr)
                 traceback.print_stack()
-                warnings.warn(LibraryExceptionWarning(msg))
+                warnings.warn(RuntimeWarning(msg))
             lib.auglib_release_exception()
 
 

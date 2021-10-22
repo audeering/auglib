@@ -1,20 +1,56 @@
-import os
 import numpy as np
 import pytest
 
-from auglib import AudioBuffer
-from auglib.utils import to_samples
+import auglib
 
 
-@pytest.mark.parametrize('dur,sr,unit',
-                         [(1.0, 8000, None),
-                          (8000, 1600, 'samples'),
-                          (1000, 44100, 'milliseconds')])
+@pytest.mark.parametrize(
+    'dur,sr',
+    [
+        (1.0, 8000),
+        (1.0, 1600),
+        (1.0, 44100),
+    ],
+)
+def test_file(tmpdir, dur, sr):
+
+    path = 'test.wav'
+    n = auglib.utils.to_samples(dur, sampling_rate=sr)
+    x = np.random.random(n).astype(np.float32)
+
+    with auglib.AudioBuffer.from_array(x, sr) as buf:
+        buf.write(path, root=tmpdir)
+    with auglib.AudioBuffer.read(path, root=tmpdir) as buf:
+        np.testing.assert_almost_equal(buf._data, x, decimal=3)
+
+
+@pytest.mark.parametrize(
+    'n,sr',
+    [
+        (10, 8000),
+        (10, 44100),
+    ],
+)
+def test_from_array(n, sr):
+
+    x = np.random.random(n).astype(np.float32)
+    with auglib.AudioBuffer.from_array(x, sr) as buf:
+        np.testing.assert_equal(x, buf._data)
+
+
+@pytest.mark.parametrize(
+    'dur,sr,unit',
+    [
+        (1.0, 8000, None),
+        (8000, 1600, 'samples'),
+        (1000, 44100, 'milliseconds'),
+    ],
+)
 def test_init(dur, sr, unit):
 
     unit = unit or 'seconds'
-    n = to_samples(dur, sampling_rate=sr, unit=unit)
-    with AudioBuffer(dur, sr, unit=unit) as buf:
+    n = auglib.utils.to_samples(dur, sampling_rate=sr, unit=unit)
+    with auglib.AudioBuffer(dur, sr, unit=unit) as buf:
         assert len(buf) == n
         np.testing.assert_equal(buf._data, np.zeros(n))
         buf._data += 1
@@ -23,29 +59,7 @@ def test_init(dur, sr, unit):
     assert buf._data is None
 
 
-@pytest.mark.parametrize('dur,sr',
-                         [(1.0, 8000),
-                          (1.0, 1600),
-                          (1.0, 44100)])
-def test_file(dur, sr):
+def test_str():
 
-    path = './test.wav'
-    n = to_samples(dur, sampling_rate=sr)
-    x = np.random.random(n).astype(np.float32)
-
-    with AudioBuffer.from_array(x, sr) as buf:
-        buf.write(path)
-    with AudioBuffer.read(path) as buf:
-        np.testing.assert_almost_equal(buf._data, x, decimal=3)
-
-    os.remove(path)
-
-
-@pytest.mark.parametrize('n,sr',
-                         [(10, 8000),
-                          (10, 44100)])
-def test_from_array(n, sr):
-
-    x = np.random.random(n).astype(np.float32)
-    with AudioBuffer.from_array(x, sr) as buf:
-        np.testing.assert_equal(x, buf._data)
+    with auglib.AudioBuffer(4, -8000, unit='samples') as buf:
+        assert str(buf) == str(buf.to_array())

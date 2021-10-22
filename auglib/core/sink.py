@@ -13,7 +13,7 @@ from auglib.core.buffer import (
     removal_version='1.0.0',
     alternative='auglib.AudioBuffer.write',
 )
-class Write(Sink):
+class Write(Sink):  # pragma: no cover
     r"""Write buffer to file.
 
     Args:
@@ -41,7 +41,7 @@ class Write(Sink):
     removal_version='1.0.0',
     alternative='auglib.AudioBuffer.play',
 )
-class Play(Sink):
+class Play(Sink):  # pragma: no cover
     r"""Play back buffer.
 
     """

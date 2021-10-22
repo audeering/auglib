@@ -7,5 +7,5 @@ from auglib.core import transform
     removal_version='1.0.0',
     alternative='auglib.transform.Base',
 )
-class Transform(transform.Base):
+class Transform(transform.Base):  # pragma: no cover
     pass

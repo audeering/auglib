@@ -33,7 +33,7 @@ def _make_tree(files: typing.Sequence[str]):  # pragma: no cover
 
 
 @audeer.deprecated(removal_version='1.0.0', alternative='auglib.Augment')
-class NumpyTransform:
+class NumpyTransform:  # pragma: no cover
     r"""Interface for data augmentation on numpy arrays.
 
     Wraps a :class:`auglib.Transform` under a ``Callable``

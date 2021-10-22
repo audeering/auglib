@@ -10,10 +10,7 @@ import audobject
 
 from auglib.core import observe
 from auglib.core.api import lib
-from auglib.core.utils import (
-    assert_non_negative_number,
-    to_samples,
-)
+from auglib.core.utils import to_samples
 
 
 class AudioBuffer:
@@ -52,8 +49,6 @@ class AudioBuffer:
             *,
             unit: str = 'seconds',
     ):
-        assert_non_negative_number(sampling_rate)
-
         length = to_samples(duration, sampling_rate=sampling_rate, unit=unit)
         self._obj = lib.AudioBuffer_new(length, sampling_rate)
         self._data = np.ctypeslib.as_array(
@@ -98,7 +93,15 @@ class AudioBuffer:
         if self._obj:
             return lib.AudioBuffer_getPeakDecibels(self._obj)
 
-    def dump(self):
+    # Exclude the following function
+    # from code coverage
+    # as it is not trivial
+    # to capture stdout from
+    # a library.
+    # For a discussion and possible solution see
+    # https://stackoverflow.com/questions/24277488/
+    # in-python-how-to-capture-the-stdout-from-a-c-shared-library-to-a-variable
+    def dump(self):  # pragma: no cover
         r"""Dump audio buffer to stdout."""
         lib.AudioBuffer_dump(self._obj)
 
@@ -117,7 +120,7 @@ class AudioBuffer:
     @audeer.deprecated(
         removal_version='1.0.0',
     )
-    def play(self, wait: bool = True):
+    def play(self, wait: bool = True):  # pragma: no cover
         r"""Play back buffer.
 
         Args:
@@ -256,7 +259,7 @@ class AudioBuffer:
 # ->
 # as a workaround we raise the deprecation warning in __init__
 # This happens when deriving from this class.
-class Source(audobject.Object):
+class Source(audobject.Object):  # pragma: no cover
     r"""Base class for objects that create an
     :class:`auglib.AudioBuffer`.
 
@@ -290,7 +293,7 @@ class Source(audobject.Object):
 # ->
 # as a workaround we raise the deprecation warning in __init__
 # This happens when deriving from this class.
-class Sink(audobject.Object):
+class Sink(audobject.Object):  # pragma: no cover
     r"""Base class for objects that consume an
     :class:`auglib.AudioBuffer`.
 

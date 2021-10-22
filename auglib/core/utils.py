@@ -10,12 +10,6 @@ from auglib.core import observe
 from auglib.core import time
 
 
-def assert_non_negative_number(value: typing.Union[int, float]):
-    if value < 0:
-        raise ValueError('A variable that is supposed to be non-negative was '
-                         'found negative.')
-
-
 def from_db(x_db: typing.Union[float, observe.Base]) -> float:
     r"""Convert decibels (dB) to gain.
 
@@ -36,7 +30,7 @@ def from_db(x_db: typing.Union[float, observe.Base]) -> float:
 
 
 @audeer.deprecated(removal_version='1.0.0', alternative='auglib.seed')
-def random_seed(seed: int):
+def random_seed(seed: int):  # pragma: no cover
     r"""(Re-)initialize random generator.
 
     The random generator is shared among all audio classes.

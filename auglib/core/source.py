@@ -18,7 +18,7 @@ from auglib.core.buffer import (
     removal_version='1.0.0',
     alternative='auglib.AudioBuffer.from_array',
 )
-class FromArray(Source):
+class FromArray(Source):  # pragma: no cover
     r"""Create buffer from an array.
 
     .. note:: Input array will be copied and flatten.
@@ -46,7 +46,7 @@ class FromArray(Source):
     removal_version='1.0.0',
     alternative='auglib.AudioBuffer.read',
 )
-class Read(Source):
+class Read(Source):  # pragma: no cover
     r"""Create :class:`auglib.AudioBuffer` from an audio file.
 
     Uses soundfile for WAV, FLAC, and OGG files. All other audio files are

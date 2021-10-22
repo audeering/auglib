@@ -1,11 +1,12 @@
+import os
+
 import numpy as np
-from scipy import signal
 import pytest
+from scipy import signal
 
 import auglib
 from auglib import AudioBuffer
 from auglib.core.buffer import lib
-from auglib.core.exception import LibraryException
 from auglib.transform import Mix, Append, AppendValue, Trim, NormalizeByPeak, \
     Clip, ClipByRatio, GainStage, FFTConvolve, LowPass, HighPass, BandPass, \
     BandStop, WhiteNoiseUniform, WhiteNoiseGaussian, PinkNoise, Tone, \
@@ -13,11 +14,15 @@ from auglib.transform import Mix, Append, AppendValue, Trim, NormalizeByPeak, \
 from auglib.utils import to_samples, to_db, from_db
 
 
-@pytest.mark.parametrize('base_dur,aux_dur,sr,unit',
-                         [(1.0, 1.0, 8000, None),
-                          (16000, 8000, 16000, 'samples'),
-                          (500, 1000, 44100, 'ms')])
-def test_mix(base_dur, aux_dur, sr, unit):
+@pytest.mark.parametrize(
+    'base_dur,aux_dur,sr,unit',
+    [
+        (1.0, 1.0, 8000, None),
+        (16000, 8000, 16000, 'samples'),
+        (500, 1000, 44100, 'ms'),
+    ],
+)
+def test_mix(tmpdir, base_dur, aux_dur, sr, unit):
 
     unit = unit or 'seconds'
     n_base = to_samples(base_dur, sampling_rate=sr, unit=unit)
@@ -28,7 +33,7 @@ def test_mix(base_dur, aux_dur, sr, unit):
 
     # init auxiliary buffer
 
-    aux = AudioBuffer(aux_dur, sr, value=1.0, unit=unit)
+    aux = AudioBuffer(aux_dur, sr, value=0.0, unit=unit)
     aux_012345 = AudioBuffer.from_array(list(range(5)), sr)
 
     # default mix
@@ -37,6 +42,27 @@ def test_mix(base_dur, aux_dur, sr, unit):
         Mix(aux)(base)
         assert np.sum(np.abs(base._data[n_min:])) == 0
         np.testing.assert_equal(base._data[:n_min], aux._data[:n_min])
+
+    # with transform
+
+    transform = Function(lambda x, _: x + 1)
+    with AudioBuffer(base_dur, sr, unit=unit) as base:
+        Mix(aux, transform=transform)(base)
+        assert np.sum(np.abs(base._data[n_min:])) == 0
+        np.testing.assert_equal(base._data[:n_min], aux._data[:n_min])
+
+    # from file
+
+    path = os.path.join(tmpdir, 'test.wav')
+    aux.write(path)
+    with AudioBuffer(base_dur, sr, unit=unit) as base:
+        Mix(path)(base)
+        assert np.sum(np.abs(base._data[n_min:])) == 0
+        with AudioBuffer.read(path) as aux_from_file:
+            np.testing.assert_equal(
+                base._data[:n_min],
+                aux_from_file._data[:n_min],
+            )
 
     # loop auxiliary
 
@@ -93,11 +119,15 @@ def test_mix(base_dur, aux_dur, sr, unit):
     aux_012345.free()
 
 
-@pytest.mark.parametrize('base_dur,aux_dur,sr,unit',
-                         [(1.0, 1.0, 8000, None),
-                          (16000, 8000, 16000, 'samples'),
-                          (500, 1000, 44100, 'ms')])
-def test_append(base_dur, aux_dur, sr, unit):
+@pytest.mark.parametrize(
+    'base_dur,aux_dur,sr,unit',
+    [
+        (1.0, 1.0, 8000, None),
+        (16000, 8000, 16000, 'samples'),
+        (500, 1000, 44100, 'ms'),
+    ],
+)
+def test_append(tmpdir, base_dur, aux_dur, sr, unit):
 
     unit = unit or 'seconds'
     n_base = to_samples(base_dur, sampling_rate=sr, unit=unit)
@@ -121,6 +151,27 @@ def test_append(base_dur, aux_dur, sr, unit):
         np.testing.assert_equal(base._data[:n_base], np.zeros(n_base))
         assert len(base._data) == n_base + 1
         assert base._data[-1] == 1
+
+    # with transform
+
+    transform = Function(lambda x, _: x + 1)
+    with AudioBuffer(base_dur, sr, unit=unit) as base:
+        Append(aux, transform=transform)(base)
+        np.testing.assert_equal(base._data[:n_base], np.zeros(n_base))
+        np.testing.assert_equal(base._data[n_base:], np.ones(n_aux) * 2)
+
+    # from file
+
+    path = os.path.join(tmpdir, 'test.wav')
+    aux.write(path)
+    with AudioBuffer(base_dur, sr, unit=unit) as base:
+        Append(path)(base)
+        np.testing.assert_equal(base._data[:n_base], np.zeros(n_base))
+        with AudioBuffer.read(path) as aux_from_file:
+            np.testing.assert_equal(
+                base._data[n_base:],
+                aux_from_file._data,
+            )
 
     aux.free()
 
@@ -148,7 +199,7 @@ def test_append(base_dur, aux_dur, sr, unit):
         ),  # negative duration -> error from pyauglib
         pytest.param(
             42.0, 0.5, 8000, 'seconds',
-            marks=pytest.mark.xfail(raises=LibraryException)
+            marks=pytest.mark.xfail(raises=RuntimeError)
         ),  # start > buffer length -> error from auglib (C++ side)
     ]
 )
@@ -241,16 +292,40 @@ def test_gain_stage(n, sr, gain, max_peak, clip):
                               from_db(gain) * np.abs(x).max())
 
 
-@pytest.mark.parametrize('n,sr',
-                         [(10, 8000),
-                          (10, 44100)])
-def test_fft_convolve(n, sr):
+@pytest.mark.parametrize(
+    'n,sr',
+    [
+        (10, 8000),
+        (10, 44100),
+    ],
+)
+def test_fft_convolve(tmpdir, n, sr):
 
     with AudioBuffer(n, sr, unit='samples') as base:
         with AudioBuffer(n, sr, unit='samples', value=1.0) as aux:
             base._data[0] = 1
             FFTConvolve(aux, keep_tail=False)(base)
             np.testing.assert_equal(base._data, np.ones(len(base)))
+
+    # with transform
+
+    transform = Function(lambda x, _: x + 1)
+    with AudioBuffer(n, sr, unit='samples') as base:
+        with AudioBuffer(n, sr, unit='samples', value=0.0) as aux:
+            base._data[0] = 1
+            FFTConvolve(aux, transform=transform, keep_tail=False)(base)
+            np.testing.assert_equal(base._data, np.ones(len(base)))
+
+    # from file
+
+    path = os.path.join(tmpdir, 'test.wav')
+    with AudioBuffer(n, sr, unit='samples', value=1.0) as aux:
+        aux.write(path)
+        with AudioBuffer(n, sr, unit='samples') as base:
+            base._data[0] = 1
+            FFTConvolve(path, keep_tail=False)(base)
+            with AudioBuffer.read(path) as aux_from_file:
+                np.testing.assert_equal(base._data, aux_from_file._data)
 
 
 @pytest.mark.parametrize('n,sr',

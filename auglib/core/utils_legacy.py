@@ -16,7 +16,7 @@ def safe_path(
         path: typing.Union[str, observe.Base],
         *,
         root: str = None,
-) -> str:
+) -> str:  # pragma: no cover
     r"""Turns ``path`` into an absolute path.
 
     Args:

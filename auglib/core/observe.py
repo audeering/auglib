@@ -12,7 +12,7 @@ class Base(audobject.Object):
     An observable object only reveals its value when it is called.
 
     """
-    def __call__(self) -> typing.Any:
+    def __call__(self) -> typing.Any:  # pragma: no cover
         r"""Observe next value.
 
         Returns:
