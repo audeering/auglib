@@ -163,7 +163,7 @@ class Augment(audinterface.Process, audobject.Object):
         >>> file = augmented_column.index[0][0]
         >>> file = file.replace(audeer.safe_path('.'), '.')  # remove absolute path
         >>> file, label
-        ('./cache/f42aee69-183c-932d-b7a0-45a1decdec83/0/audio/006.wav', 'unhappy')
+        ('./cache/decdec83/0/audio/006.wav', 'unhappy')
 
     """  # noqa: E501
     @audobject.init_decorator(
@@ -209,6 +209,16 @@ class Augment(audinterface.Process, audobject.Object):
             multiprocessing=multiprocessing,
             verbose=verbose,
         )
+
+    @property
+    def short_id(
+            self,
+    ) -> str:
+        r"""Short flavor ID.
+        This just truncates the ID
+        to its last eight characters.
+        """
+        return self.id[-8:]
 
     @audeer.deprecated_keyword_argument(
         deprecated_argument='channel',
@@ -285,7 +295,7 @@ class Augment(audinterface.Process, audobject.Object):
             cache_root = default_cache_root(self)
         else:
             cache_root = audeer.safe_path(
-                os.path.join(cache_root, self.id)
+                os.path.join(cache_root, self.short_id)
             )
 
         # save yaml of transform to cache
@@ -577,5 +587,5 @@ def default_cache_root(augment: Augment = None) -> str:
         or config.CACHE_ROOT
     )
     if augment is not None:
-        root = os.path.join(root, augment.id)
+        root = os.path.join(root, augment.short_id)
     return audeer.safe_path(root)

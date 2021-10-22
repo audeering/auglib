@@ -94,7 +94,7 @@ def test_augment(tmpdir, sampling_rate, resample, modified_only,
         for idx in range(num_variants):
 
             cache_root_idx = os.path.join(
-                tmpdir, process.id, str(idx),
+                tmpdir, process.short_id, str(idx),
             )
             segmented = audformat.utils.to_segmented_index(data)
             index = segmented.index
@@ -286,7 +286,7 @@ def test_cache_root(tmpdir):
     process = auglib.Augment(
         transform=transform,
     )
-    process_root = os.path.join(tmpdir, process.id)
+    process_root = os.path.join(tmpdir, process.short_id)
     result = process.augment(pytest.DATA_FILES)
     result[0][0].startswith(str(tmpdir))
 
