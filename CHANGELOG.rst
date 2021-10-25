@@ -6,6 +6,65 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
+Version 0.9.0 (2021-10-25)
+--------------------------
+
+* Added: ``auglib.transform.Function``
+* Added: Examples section to Getting Started part of the documentation
+* Added: External Solutions section
+  to Getting Started part of the documentation
+* Added: ``auglib.observe.Base``
+* Added: ``auglib.observe.Bool``
+* Added: ``auglib.observe.FloatNorm``
+* Added: ``auglib.observe.FloatUni``
+* Added: ``auglib.observe.IntUni``
+* Added: ``auglib.observe.List``
+* Added: ``auglib.observe.observe``
+* Added: ``num_repeat`` argument to ``auglib.transform.Mix``
+* Added: ``auglib.seed()``
+* Added: ``auglib.transform.Base``
+* Added: ``auglib.Time``
+* Added: ``fill`` argument to ``auglib.transform.Trim``
+* Added: ``auglib.transform.Mask``
+* Added: ``seed`` argument to ``auglib.Augment``
+* Added: documentation on how to implement a transform
+  under ``auglib.transform``
+* Added: documentation on how to implement an observable
+  under ``auglib.observe``
+* Added: ``auglib.AudioBuffer.duration``
+* Added: multi-channel support for ``auglib.Augment``
+* Changed: ``auglib.AudioBuffer.to_array()`` returns 2d array
+* Changed: hide ``AudioBuffer.data`` and ``AudioBuffer.obj``
+* Changed: make ``sampling_rate`` a keyword argument
+  in ``auglib.utils.to_samples()``
+* Changed: increase code coverage to 100%
+* Changed: use short ID for flavor folders in cache
+* Deprecated: ``auglib.Int``
+* Deprecated: ``auglib.IntList``
+* Deprecated: ``auglib.Float``
+* Deprecated: ``auglib.FloatList``
+* Deprecated: ``auglib.Number``
+* Deprecated: ``auglib.Str``
+* Deprecated: ``auglib.StrList``
+* Deprecated: ``auglib.NumpyTransform``
+* Deprecated: ``auglib.utils.random_seed()``
+* Deprecated: ``auglib.Transform``
+* Deprecated: ``auglib.Source``
+* Deprecated: ``auglib.source.FromArray``
+* Deprecated: ``auglib.source.Read``
+* Deprecated: ``auglib.Sink``
+* Deprecated: ``auglib.sink.Play``
+* Deprecated: ``auglib.sink.Write``
+* Deprecated: ``auglib.AudioBuffer.play()``
+* Removed: ``scipy`` dependency
+* Removed: ``humanfriendly`` dependency
+* Removed: ``auglib.transform.FilterDesign``
+* Removed: ``auglib.transform.ToneShape``
+* Removed: ``auglib.ExceptionHandling``
+* Removed: ``auglib.LibraryException``
+* Removed: ``auglib.LibraryExceptionWarning``
+
+
 Version 0.8.4 (2021-08-04)
 --------------------------
 
