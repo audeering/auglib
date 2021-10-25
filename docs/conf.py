@@ -1,17 +1,15 @@
+import datetime
 from subprocess import check_output
+
+import audeer
 
 
 # Project -----------------------------------------------------------------
 
 project = 'auglib'
-copyright = '2019-2020 audEERING GmbH'
-author = ('Johannes Wagner')
-# The x.y.z version read from tags
-try:
-    version = check_output(['git', 'describe', '--tags', '--always'])
-    version = version.decode().strip()
-except Exception:
-    version = '<unknown>'
+copyright = f'2019-{datetime.date.today().year} audEERING GmbH'
+author = 'Johannes Wagner, Hagen Wierstorf'
+version = audeer.git_repo_version()
 title = '{} Documentation'.format(project)
 
 
