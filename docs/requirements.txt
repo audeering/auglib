@@ -7,6 +7,6 @@ pydub  # required by audiomentations
 seaborn
 sox
 sphinx
-sphinx-audeering-theme
+sphinx-audeering-theme>=1.1.0
 sphinx-autodoc-typehints
 sphinx-copybutton
