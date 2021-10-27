@@ -274,7 +274,7 @@ we can also overwrite the value.
 
 .. jupyter-execute::
 
-    augment_other_seed = audobject.from_yaml(file, seed=1)
+    augment_other_seed = audobject.from_yaml(file, override_args={'seed': 1})
     augment_other_seed(signal, sampling_rate)
 
 
