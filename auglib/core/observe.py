@@ -222,7 +222,7 @@ class List(Base):
         if draw and shuffle:
             raise ValueError("Cannot draw and shuffle at the same time.")
 
-        self.elements = elements
+        self.elements = list(elements)
         self.shuffle = shuffle
         self.draw = draw
         self._counter = 0

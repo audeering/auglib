@@ -140,7 +140,7 @@ with :class:`auglib.observe.List`.
     transform = auglib.transform.Compose(
         [
             auglib.transform.FFTConvolve(
-                auglib.observe.List(list(db.files), draw=True),
+                auglib.observe.List(db.files, draw=True),
                 keep_tail=False,
             ),
             auglib.transform.NormalizeByPeak(),
@@ -288,7 +288,7 @@ and add it to the original input signal.
     )
 
     transform = auglib.transform.Mix(
-        auglib.observe.List(list(db.files), draw=True),
+        auglib.observe.List(db.files, draw=True),
         gain_aux_db=auglib.observe.IntUni(-15, -10),
         read_pos_aux=auglib.observe.FloatUni(0, 1),
         unit='relative',
@@ -354,7 +354,7 @@ and add each to the original input signal.
     )
 
     transform = auglib.transform.Mix(
-        auglib.observe.List(list(db.files), draw=True),
+        auglib.observe.List(db.files, draw=True),
         gain_aux_db=auglib.observe.IntUni(-20, -13),
         num_repeat=auglib.observe.IntUni(4, 7),
         read_pos_aux=auglib.observe.FloatUni(0, 1),
@@ -527,7 +527,7 @@ to the target signal.
 
     transform = auglib.transform.Mask(
         auglib.transform.Mix(
-            auglib.observe.List(list(db.files), draw=True),
+            auglib.observe.List(db.files, draw=True),
             gain_aux_db=auglib.observe.IntUni(-15, 0),
             read_pos_aux=auglib.observe.FloatUni(0, 1),
             unit='relative',
