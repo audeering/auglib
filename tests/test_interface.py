@@ -142,6 +142,7 @@ def test_augment(tmpdir, sampling_rate, resample, modified_only,
             expected.append(new_data)
 
         expected = pd.concat(expected, axis='index')
+
         if isinstance(result, pd.Series):
             pd.testing.assert_series_equal(expected, result)
         elif isinstance(result, pd.DataFrame):
@@ -157,13 +158,59 @@ def test_augment(tmpdir, sampling_rate, resample, modified_only,
         for start, end in result.loc[augmented_file].index:
             if pd.isna(end):
                 end = pd.to_timedelta(af.duration(augmented_file), 's')
-            start_i = int(start.total_seconds() * augmented_signal_sr)
-            end_i = int(end.total_seconds() * augmented_signal_sr) - 1
+            start_i = int(round(start.total_seconds() * augmented_signal_sr))
+            end_i = int(round(end.total_seconds() * augmented_signal_sr)) - 1
             np.testing.assert_almost_equal(
                 augmented_signal[start_i:end_i],
                 np.ones(end_i - start_i, dtype=np.float32),
                 decimal=4,
             )
+
+
+@pytest.mark.parametrize(
+    'data',
+    [
+        pytest.DATA_FILES,
+        pytest.DATA_COLUMN,
+        pytest.DATA_TABLE,
+    ]
+)
+@pytest.mark.parametrize(
+    'keep_nat',
+    [
+        True,
+        False,
+    ]
+)
+def test_augment_change_segment_length(tmpdir, data, keep_nat):
+
+    transform = auglib.transform.AppendValue(1.0)
+    process = auglib.Augment(transform, keep_nat=keep_nat)
+    y = process.augment(
+        data,
+        cache_root=tmpdir,
+    )
+    y_index = y if isinstance(y, pd.Index) else y.index
+    y_index = audformat.utils.to_segmented_index(
+        y_index,
+        allow_nat=False,
+    )
+    data_index = data if isinstance(data, pd.Index) else data.index
+    data_index = audformat.utils.to_segmented_index(
+        data_index,
+        allow_nat=False,
+    )
+    for file_processed, file_unprocessed in zip(
+            y_index.get_level_values('file').unique(),
+            data_index.get_level_values('file').unique(),
+    ):
+        processed = y_index[y_index.get_loc(file_processed)]
+        unprocessed = data_index[data_index.get_loc(file_unprocessed)]
+        delta = pd.to_timedelta('0s')
+        for idx in range(len(processed)):
+            assert processed[idx][1] - delta == unprocessed[idx][1]
+            delta += pd.to_timedelta('1s')
+            assert processed[idx][2] - delta == unprocessed[idx][2]
 
 
 def test_augment_empty(tmpdir):

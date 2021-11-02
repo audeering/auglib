@@ -286,8 +286,7 @@ class Augment(audinterface.Process, audobject.Object):
                     "to their default values."
                 )
 
-        data = audformat.utils.to_segmented_index(data)
-        if data.empty:
+        if len(data) == 0:
             return data
 
         modified = []
@@ -305,12 +304,21 @@ class Augment(audinterface.Process, audobject.Object):
         )
 
         if isinstance(data, pd.Index):
-            index = data
             data = data.to_series()
             return_index = True
         else:
-            index = data.index
             return_index = False
+
+        # if keep_nat == True remember position of NaT
+        # afterwards, replace NaT with file duration
+        if self.keep_nat:
+            data = audformat.utils.to_segmented_index(data, allow_nat=True)
+            nat_mask = data.index.get_level_values(
+                audformat.define.IndexField.END
+            ).isna()
+
+        data = audformat.utils.to_segmented_index(data, allow_nat=False)
+        index = data.index
 
         for idx in range(num_variants):
 
@@ -325,6 +333,11 @@ class Augment(audinterface.Process, audobject.Object):
             if not modified_only and idx == 0:
                 new_data = data.copy()
                 new_data.index = series.index
+                if self.keep_nat:
+                    new_data = _apply_nat_mask(
+                        new_data,
+                        nat_mask,
+                    )
                 modified.append(new_data)
 
             files = series.index.get_level_values(0).unique()
@@ -334,6 +347,12 @@ class Augment(audinterface.Process, audobject.Object):
             new_index = series.index.set_levels(new_level, level=0)
             new_data = data.copy()
             new_data.index = new_index
+
+            if self.keep_nat:
+                new_data = _apply_nat_mask(
+                    new_data,
+                    nat_mask,
+                )
             modified.append(new_data)
 
         result = pd.concat(modified, axis=0)
@@ -408,7 +427,6 @@ class Augment(audinterface.Process, audobject.Object):
             index = segments.index
             audeer.mkdir(os.path.dirname(out_file))
             audiofile.write(out_file, signal, sampling_rate)
-        index = self._correct_index(out_file, index)
 
         return pd.Series(
             out_file,
@@ -437,50 +455,67 @@ class Augment(audinterface.Process, audobject.Object):
             channels=self.channels,
             mixdown=self.mixdown,
         )
-        new_index = super().process_signal_from_index(
-            signal, sampling_rate, index,
+        y_processed = self.process_signal_from_index(
+            signal,
+            sampling_rate,
+            index,
         )
-        for (start, end), segment in new_index.items():
-            start_i = int(start.total_seconds() * sampling_rate)
-            end_i = start_i + segment.shape[1]
-            signal[:, start_i:end_i] = segment
-        return signal, sampling_rate, new_index
+        # Fix index in case augmentation has changed the segments
+        y_processed = _fix_segments(y_processed, sampling_rate)
 
-    def _correct_index(
-            self,
-            file: str,
-            index: pd.MultiIndex,
-    ):
-        r"""Replaces NaT in index."""
+        # if augmented segments match original segments
+        # we can replace processed segments in original signal
+        # otherwise, we have to create the augmented signal
+        # by concatenating unprocessed and augment segments
+        if y_processed.index.equals(index):
+            _insert_segments(y_processed, signal, sampling_rate)
+        else:
 
-        # check if index contains NaT
-        if -1 in index.codes[0] or -1 in index.codes[1]:
-
-            # replace NaT in start with 0
-            new_starts = index.get_level_values(0).map(
-                lambda x: pd.to_timedelta(0) if pd.isna(x) else x
+            # series with unprocessed segments
+            dur = pd.to_timedelta(
+                signal.shape[1] / sampling_rate,
+                unit='s',
+            )
+            y_unprocessed = audinterface.Process(
+                process_func=lambda x, sr: x,
+            ).process_signal_from_index(
+                signal,
+                sampling_rate,
+                _invert_index(index, dur),
             )
 
-            # if not keep_nat replace NaT in end with file duration
-            if not self.keep_nat:
-                new_ends = index.get_level_values(1).map(
-                    lambda x: pd.to_timedelta(
-                        audiofile.duration(file),
-                        unit='s',
-                    )
-                    if pd.isna(x)
-                    else pd.to_timedelta(x)
-                )
+            if y_unprocessed.empty:
+
+                # calculate new signal duration
+                new_dur = _index_duration(y_processed.index).sum()
+
+                # create empty signal and insert processed segments
+                num_samples = int(
+                    round(new_dur.total_seconds() * sampling_rate))
+                signal = np.zeros((1, num_samples))
+                _insert_segments(y_processed, signal, sampling_rate)
+
             else:
-                new_ends = index.get_level_values(1).map(
-                    lambda x: pd.to_timedelta(x, unit='s')
-                )
-            index = audinterface.utils.signal_index(
-                starts=new_starts,
-                ends=new_ends,
-            )
 
-        return index
+                # calculate new signal duration
+                # and fix index of unprocessed segments
+                new_dur = _index_duration(y_processed.index).sum() +\
+                    _index_duration(y_unprocessed.index).sum()
+                y_unprocessed.index = _invert_index(
+                    y_processed.index,
+                    new_dur,
+                )
+
+                # create empty signal and insert
+                # processed and unprocessed segments
+                num_samples = int(
+                    round(new_dur.total_seconds() * sampling_rate)
+                )
+                signal = np.zeros((1, num_samples))
+                _insert_segments(y_processed, signal, sampling_rate)
+                _insert_segments(y_unprocessed, signal, sampling_rate)
+
+        return signal, sampling_rate, y_processed
 
     @staticmethod
     def _out_files(
@@ -589,3 +624,108 @@ def default_cache_root(augment: Augment = None) -> str:
     if augment is not None:
         root = os.path.join(root, augment.short_id)
     return audeer.safe_path(root)
+
+
+def _apply_nat_mask(
+        obj: typing.Union[pd.Series, pd.DataFrame],
+        mask: np.ndarray,
+) -> pd.Index:
+    r"""Within mask set end level to NaT."""
+
+    index = obj.index
+
+    ends = index.get_level_values(
+        audformat.define.IndexField.END
+    ).to_series()
+    ends[mask] = pd.NaT
+    index = audformat.segmented_index(
+        index.get_level_values(
+            audformat.define.IndexField.FILE
+        ),
+        index.get_level_values(
+            audformat.define.IndexField.START
+        ),
+        ends,
+    )
+
+    obj.index = index
+
+    return obj
+
+
+def _fix_segments(
+        y: pd.Series,
+        sampling_rate: int,
+) -> pd.Series:
+    r"""Align index with signal samples."""
+
+    delta = pd.to_timedelta(0)
+    new_starts = []
+    new_ends = []
+
+    for (start, end), signal in y.items():
+        start_i = int(round(start.total_seconds() * sampling_rate))
+        end_i = int(round(end.total_seconds() * sampling_rate))
+        duration_i = end_i - start_i
+        new_starts.append(start + delta)
+        delta += pd.to_timedelta(
+            (signal.shape[1] - duration_i) / sampling_rate,
+            unit='s',
+        )
+        new_ends.append(end + delta)
+
+    y.index = audinterface.utils.signal_index(new_starts, new_ends)
+
+    return y
+
+
+def _index_duration(
+        index: pd.Index,
+) -> pd.TimedeltaIndex:
+    r"""Calculate segment duration."""
+
+    starts = index.get_level_values(audformat.define.IndexField.START)
+    ends = index.get_level_values(audformat.define.IndexField.END)
+
+    return ends - starts
+
+
+def _invert_index(
+        index: pd.Index,
+        duration: pd.Timedelta,
+) -> pd.MultiIndex:
+    r"""Invert an index with start and end timestamps."""
+
+    ends = index.get_level_values(audformat.define.IndexField.START)
+    starts = index.get_level_values(audformat.define.IndexField.END)
+
+    # if original index starts at 0
+    # skip first entry in ends
+    # otherwise prepend 0 to starts
+    if ends[0] == pd.to_timedelta(0):
+        ends = ends[1:]
+    else:
+        starts = starts.insert(0, pd.to_timedelta(0))
+
+    # if original index ends at duration
+    # skip last entry in starts
+    # otherwise append duration to ends
+    if starts[-1] == duration:
+        starts = starts[:-1]
+    else:
+        ends = ends.insert(len(ends), duration)
+
+    return audinterface.utils.signal_index(starts, ends)
+
+
+def _insert_segments(
+        y: pd.Series,
+        signal: np.ndarray,
+        sampling_rate: int,
+):
+    r"""Insert segments into signal"""
+
+    for (start, end), segment in y.items():
+        start_i = int(round(start.total_seconds() * sampling_rate))
+        end_i = start_i + segment.shape[1]
+        signal[:, start_i:end_i] = segment
