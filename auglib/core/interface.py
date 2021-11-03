@@ -422,6 +422,11 @@ class Augment(audinterface.Process, audobject.Object):
         r"""Augment 'file' and store result to 'out_file'.
         Return a series where every segment points to 'out_file'"""
 
+        # TODO: if file in cache, original index is returned,
+        #   this is not correct if augmentation changes the index,
+        #   possible solution is to cache the index,
+        #   see https://gitlab.audeering.com/tools/pyauglib/-/issues/65
+
         if force or not os.path.exists(out_file):
             signal, sampling_rate, segments = self._augment_file(file, index)
             index = segments.index

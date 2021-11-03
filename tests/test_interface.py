@@ -1,5 +1,7 @@
+import filecmp
 import os
 
+import audiofile
 import numpy as np
 import pandas as pd
 import pytest
@@ -12,205 +14,218 @@ import audobject
 import auglib
 
 
+def map_files(index, root):
+    if audformat.index_type(index) == audformat.define.IndexType.SEGMENTED:
+        files = index.levels[0]
+        files = [os.path.join(root, file) for file in files]
+        return index.set_levels(files, level=0)
+    else:
+        return index.map(lambda x: os.path.join(root, x))
+
+
 @pytest.mark.parametrize(
-    'sampling_rate, resample, modified_only',
+    'index, signal, sampling_rate, transform, keep_nat, '
+    'expected_index, expected_signal',
     [
+        # segment length unchanged
         (
-            None, False, True,
-        ),
-        (
-            8000, True, True,
-        ),
-        (
-            None, False, False,
-        ),
-        pytest.param(  # resampling with modified_only=False
-            8000, True, False,
-            marks=pytest.mark.xfail(raises=ValueError)
-        ),
-        pytest.param(  # sampling rate mismatch
-            8000, False, True,
-            marks=pytest.mark.xfail(raises=RuntimeError)
-        ),
-    ]
-)
-@pytest.mark.parametrize(
-    'keep_nat',
-    [
-        True, False,
-    ]
-)
-@pytest.mark.parametrize(
-    'num_workers',
-    [
-        1, 5,
-    ]
-)
-@pytest.mark.parametrize(
-    'data, num_variants',
-    [
-        (
-            pytest.DATA_FILES,
-            1,
+            audformat.filewise_index(
+                ['f1.wav', 'f2.wav'],
+            ),
+            np.zeros((1, 10)),
+            10,
+            auglib.transform.Function(lambda x, _: x + 1),
+            False,
+            audformat.segmented_index(
+                ['f1.wav', 'f2.wav'],
+                [0, 0],
+                ['1s', '1s'],
+            ),
+            np.ones((1, 10)),
         ),
         (
-            pytest.DATA_COLUMN,
-            1,
+            audformat.filewise_index(
+                ['f1.wav', 'f2.wav'],
+            ),
+            np.zeros((1, 10)),
+            10,
+            auglib.transform.Function(lambda x, _: x + 1),
+            True,
+            audformat.segmented_index(
+                ['f1.wav', 'f2.wav'],
+                [0, 0],
+                [pd.NaT, pd.NaT],
+            ),
+            np.ones((1, 10)),
         ),
         (
-            pytest.DATA_TABLE,
-            3,
+            audformat.segmented_index(
+                ['f1.wav', 'f1.wav'],
+                ['0.1s', '0.8s'],
+                ['0.2s', '0.9s'],
+            ),
+            np.zeros((1, 10)),
+            10,
+            auglib.transform.Function(lambda x, _: x + 1),
+            False,
+            audformat.segmented_index(
+                ['f1.wav', 'f1.wav'],
+                ['0.1s', '0.8s'],
+                ['0.2s', '0.9s'],
+            ),
+            np.array([[0., 1., 0., 0., 0., 0., 0., 0., 1., 0.]]),
         ),
-    ]
-)
-def test_augment(tmpdir, sampling_rate, resample, modified_only,
-                 keep_nat, num_workers, data, num_variants):
-
-    # create a transformation that sets buffer to 1
-    transform = pytest.TRANSFORM_ONES
-    process = auglib.Augment(
-        transform=transform,
-        sampling_rate=sampling_rate,
-        resample=resample,
-        keep_nat=keep_nat,
-        num_workers=num_workers,
-    )
-
-    for force in [False, True, False]:
-
-        result = process.augment(
-            data,
-            cache_root=tmpdir,
-            modified_only=modified_only,
-            num_variants=num_variants,
-            force=force,
-        )
-
-        expected = []
-
-        if isinstance(data, pd.Index):
-            data = data.to_series()
-
-        for idx in range(num_variants):
-
-            cache_root_idx = os.path.join(
-                tmpdir, process.short_id, str(idx),
-            )
-            segmented = audformat.utils.to_segmented_index(data)
-            index = segmented.index
-
-            if not modified_only and idx == 0:
-                if not keep_nat:
-                    files = index.get_level_values('file')
-                    starts = index.get_level_values('start')
-                    ends = index.get_level_values('end')
-                    ends = [
-                        pd.to_timedelta(af.duration(file), 's')
-                        if pd.isna(end) else end
-                        for file, end in zip(files, ends)
-                    ]
-                    new_index = audformat.segmented_index(
-                        files=files,
-                        starts=starts,
-                        ends=ends,
-                    )
-                    new_data = segmented.copy()
-                    new_data.index = new_index
-                    expected.append(new_data)
-                else:
-                    expected.append(segmented)
-
-            files = auglib.Augment._out_files(
-                index.get_level_values('file'),
-                cache_root_idx,
-            )
-            starts = index.get_level_values('start')
-            ends = index.get_level_values('end')
-            if not keep_nat:
-                ends = [
-                    pd.to_timedelta(af.duration(file), 's')
-                    if pd.isna(end) else end
-                    for file, end in zip(files, ends)
+        # expand segments
+        (
+            audformat.filewise_index(
+                ['f1.wav', 'f2.wav'],
+            ),
+            np.zeros((1, 5)),
+            10,
+            auglib.transform.Compose(
+                [
+                    auglib.transform.Function(lambda x, _: x + 1),
+                    auglib.transform.AppendValue(5, 2, unit='samples'),
                 ]
-            new_index = audformat.segmented_index(
-                files=files,
-                starts=starts,
-                ends=ends,
-            )
-            new_data = segmented.copy()
-            new_data.index = new_index
-            expected.append(new_data)
-
-        expected = pd.concat(expected, axis='index')
-
-        if isinstance(result, pd.Series):
-            pd.testing.assert_series_equal(expected, result)
-        elif isinstance(result, pd.DataFrame):
-            pd.testing.assert_frame_equal(expected, result)
-        else:
-            pd.testing.assert_index_equal(expected.index, result)
-
-        # load augmented file and test if segments are set to 1
-        if isinstance(result, pd.Index):
-            result = result.to_series()
-        augmented_file = result.index[-1][0]
-        augmented_signal, augmented_signal_sr = af.read(augmented_file)
-        for start, end in result.loc[augmented_file].index:
-            if pd.isna(end):
-                end = pd.to_timedelta(af.duration(augmented_file), 's')
-            start_i = int(round(start.total_seconds() * augmented_signal_sr))
-            end_i = int(round(end.total_seconds() * augmented_signal_sr)) - 1
-            np.testing.assert_almost_equal(
-                augmented_signal[start_i:end_i],
-                np.ones(end_i - start_i, dtype=np.float32),
-                decimal=4,
-            )
-
-
-@pytest.mark.parametrize(
-    'data',
-    [
-        pytest.DATA_FILES,
-        pytest.DATA_COLUMN,
-        pytest.DATA_TABLE,
+            ),
+            False,
+            audformat.segmented_index(
+                ['f1.wav', 'f2.wav'],
+                [0, 0],
+                ['1s', '1s'],
+            ),
+            np.array([[1., 1., 1., 1., 1., 2., 2., 2., 2., 2.]]),
+        ),
+        (
+            audformat.segmented_index(
+                ['f1.wav', 'f1.wav'],
+                ['0.1s', '0.8s'],
+                ['0.2s', '0.9s'],
+            ),
+            np.zeros((1, 10)),
+            10,
+            auglib.transform.Compose(
+                [
+                    auglib.transform.Function(lambda x, _: x + 1),
+                    auglib.transform.AppendValue(1, 2, unit='samples'),
+                ]
+            ),
+            False,
+            audformat.segmented_index(
+                ['f1.wav', 'f1.wav'],
+                ['0.1s', '0.9s'],
+                ['0.3s', '1.1s'],
+            ),
+            np.array([[0., 1., 2., 0., 0., 0., 0., 0., 0., 1., 2., 0.]]),
+        ),
+        # trim segments
+        (
+            audformat.filewise_index(
+                ['f1.wav', 'f2.wav'],
+            ),
+            np.zeros((1, 10)),
+            10,
+            auglib.transform.Compose(
+                [
+                    auglib.transform.Function(lambda x, _: x + 1),
+                    auglib.transform.Trim(duration=5, unit='samples'),
+                ]
+            ),
+            False,
+            audformat.segmented_index(
+                ['f1.wav', 'f2.wav'],
+                [0, 0],
+                ['0.5s', '0.5s'],
+            ),
+            np.ones((1, 5)),
+        ),
+        (
+            audformat.segmented_index(
+                ['f1.wav', 'f1.wav'],
+                ['0.1s', '0.6s'],
+                ['0.4s', '0.9s'],
+            ),
+            np.zeros((1, 10)),
+            10,
+            auglib.transform.Compose(
+                [
+                    auglib.transform.Function(lambda x, _: x + 1),
+                    auglib.transform.Trim(duration=2, unit='samples'),
+                ]
+            ),
+            False,
+            audformat.segmented_index(
+                ['f1.wav', 'f1.wav'],
+                ['0.1s', '0.5s'],
+                ['0.3s', '0.7s'],
+            ),
+            np.array([[0., 1., 1., 0., 0., 1., 1., 0.]]),
+        ),
     ]
 )
-@pytest.mark.parametrize(
-    'keep_nat',
-    [
-        True,
-        False,
-    ]
-)
-def test_augment_change_segment_length(tmpdir, data, keep_nat):
+def test_augment_new(tmpdir, index, signal, sampling_rate, transform,
+                     keep_nat, expected_index, expected_signal):
 
-    transform = auglib.transform.AppendValue(1.0)
-    process = auglib.Augment(transform, keep_nat=keep_nat)
-    y = process.augment(
-        data,
-        cache_root=tmpdir,
+    # create interface
+
+    augment = auglib.Augment(
+        transform,
+        sampling_rate=sampling_rate,
+        keep_nat=keep_nat,
     )
-    y_index = y if isinstance(y, pd.Index) else y.index
-    y_index = audformat.utils.to_segmented_index(
-        y_index,
-        allow_nat=False,
+
+    # create input files and expand path
+
+    root = os.path.join(tmpdir, 'input')
+    cache_root = os.path.join(tmpdir, 'cache')
+    expected_root = os.path.join(cache_root, augment.short_id, '0')
+
+    index = map_files(index, root)
+    files = index.get_level_values('file').unique()
+    for file in files:
+        audeer.mkdir(os.path.dirname(file))
+        audiofile.write(file, signal, sampling_rate)
+    expected_index = map_files(expected_index, expected_root)
+
+    # augment index
+
+    augmented_index = augment.augment(
+        index,
+        cache_root=cache_root,
+        remove_root=root,
+        force=True,
     )
-    data_index = data if isinstance(data, pd.Index) else data.index
-    data_index = audformat.utils.to_segmented_index(
-        data_index,
-        allow_nat=False,
+    pd.testing.assert_index_equal(augmented_index, expected_index)
+
+    expected_files = augmented_index.get_level_values('file').unique()
+    for file in expected_files:
+        tmp_file = os.path.join(tmpdir, 'tmp.wav')
+        audiofile.write(tmp_file, expected_signal, sampling_rate)
+        filecmp.cmp(file, tmp_file)
+
+    # augment series
+
+    y = pd.Series(0.0, index=index)
+    augmented_y = augment.augment(
+        y,
+        cache_root=cache_root,
+        remove_root=root,
+        force=True,
     )
-    for file_processed, file_unprocessed in zip(
-            y_index.get_level_values('file').unique(),
-            data_index.get_level_values('file').unique(),
-    ):
-        processed = y_index[y_index.get_loc(file_processed)]
-        unprocessed = data_index[data_index.get_loc(file_unprocessed)]
-        delta = pd.to_timedelta('0s')
-        for idx in range(len(processed)):
-            assert processed[idx][1] - delta == unprocessed[idx][1]
-            delta += pd.to_timedelta('1s')
-            assert processed[idx][2] - delta == unprocessed[idx][2]
+    expected_y = y.set_axis(expected_index)
+    pd.testing.assert_series_equal(augmented_y, expected_y)
+
+    # augment frame
+
+    df = pd.DataFrame({'a': 0.0, 'b': 1.0}, index=index)
+    augmented_df = augment.augment(
+        df,
+        cache_root=cache_root,
+        remove_root=root,
+        force=True,
+    )
+    expected_df = df.set_axis(expected_index)
+    pd.testing.assert_frame_equal(augmented_df, expected_df)
 
 
 def test_augment_empty(tmpdir):
@@ -291,6 +306,54 @@ def test_augment_multichannel(signal, transform, expected):
     np.testing.assert_equal(signal_augmented, expected)
 
 
+def test_augment_num_workers(tmpdir):
+
+    # create dummy signal and interface
+
+    files = [f'f{idx}.wav' for idx in range(15)]
+    index = audformat.filewise_index(files)
+    signal = np.zeros((1, 10))
+    sampling_rate = 10
+    transform = auglib.transform.Function(lambda x, _: x + 1)
+
+    # create input files
+
+    root = os.path.join(tmpdir, 'input')
+    cache_root = os.path.join(tmpdir, 'cache')
+
+    index = map_files(index, root)
+    files = index.get_level_values('file').unique()
+    for file in files:
+        audeer.mkdir(os.path.dirname(file))
+        audiofile.write(file, signal, sampling_rate)
+
+    # single thread
+
+    augment = auglib.Augment(
+        transform,
+        num_workers=1,
+    )
+    y_single = augment.augment(
+        index,
+        cache_root=cache_root,
+        force=True,
+    )
+
+    # multiple threads
+
+    augment = auglib.Augment(
+        transform,
+        num_workers=5,
+    )
+    y_multi = augment.augment(
+        index,
+        cache_root=cache_root,
+        force=True,
+    )
+
+    pd.testing.assert_index_equal(y_single, y_multi)
+
+
 @pytest.mark.parametrize(
     'remove_root',
     [
@@ -325,28 +388,64 @@ def test_augment_remove_root(tmpdir, remove_root):
         augmented_file.endswith(original_file.replace(remove_root, ''))
 
 
-def test_cache_root(tmpdir):
+@pytest.mark.parametrize(
+    'sampling_rate, target_rate, resample, modified_only',
+    [
+        (
+            10, 10, False, True,
+        ),
+        (
+            10, 20, True, True,
+        ),
+        (
+            10, 5, True, True,
+        ),
+        pytest.param(  # sampling rate mismatch
+            10, 20, False, True,
+            marks=pytest.mark.xfail(raises=RuntimeError)
+        ),
+        pytest.param(  # resampling with modified_only=False
+            10, 20, True, False,
+            marks=pytest.mark.xfail(raises=ValueError)
+        ),
+    ]
+)
+def test_augment_resample(tmpdir, sampling_rate, target_rate, resample,
+                          modified_only):
 
-    auglib.config.CACHE_ROOT = tmpdir
+    # create dummy signal and interface
 
-    transform = pytest.TRANSFORM_ONES
-    process = auglib.Augment(
-        transform=transform,
+    index = audformat.filewise_index(['f1.wav', 'f2.wav'])
+    signal = np.zeros((1, 10))
+    transform = auglib.transform.Function(lambda x, _: x + 1)
+    augment = auglib.Augment(
+        transform,
+        resample=resample,
+        sampling_rate=target_rate,
     )
-    process_root = os.path.join(tmpdir, process.short_id)
-    result = process.augment(pytest.DATA_FILES)
-    result[0][0].startswith(str(tmpdir))
 
-    assert auglib.default_cache_root() == tmpdir
-    assert auglib.default_cache_root(process) == process_root
-    assert len(audeer.list_file_names(process_root)) > 0
+    # create input files
 
-    auglib.clear_default_cache_root(process)
-    assert os.path.exists(auglib.default_cache_root())
-    assert not os.path.exists(process_root)
+    root = os.path.join(tmpdir, 'input')
+    cache_root = os.path.join(tmpdir, 'cache')
 
-    auglib.clear_default_cache_root()
-    assert os.path.exists(auglib.default_cache_root())
+    index = map_files(index, root)
+    files = index.get_level_values('file').unique()
+    for file in files:
+        audeer.mkdir(os.path.dirname(file))
+        audiofile.write(file, signal, sampling_rate)
+
+    # augment index
+
+    augmented_index = augment.augment(
+        index,
+        cache_root=cache_root,
+        modified_only=modified_only,
+        remove_root=root,
+    )
+    augmented_files = augmented_index.get_level_values('file').unique()
+    for augmented_file in augmented_files:
+        assert audiofile.sampling_rate(augmented_file) == target_rate
 
 
 def test_augment_seed():
@@ -385,3 +484,111 @@ def test_augment_seed():
 
         with pytest.raises(AssertionError):
             np.testing.assert_equal(y, y_4)
+
+
+@pytest.mark.parametrize(
+    'index, num_variants, modified_only, keep_nat',
+    [
+        (
+            audformat.filewise_index(['f1.wav', 'f2.wav']),
+            1,
+            True,
+            False,
+        ),
+        (
+            audformat.segmented_index(
+                ['f1.wav', 'f1.wav'],
+                ['0.1s', '0.8s'],
+                ['0.2s', '0.9s'],
+            ),
+            3,
+            True,
+            False,
+        ),
+        (
+            audformat.filewise_index(['f1.wav', 'f2.wav']),
+            3,
+            False,
+            False,
+        ),
+        (
+            audformat.filewise_index(['f1.wav', 'f2.wav']),
+            3,
+            False,
+            True,
+        ),
+    ]
+)
+def test_augment_variants(tmpdir, index, num_variants, modified_only,
+                          keep_nat):
+
+    # create dummy signal and interface
+
+    signal = np.zeros((1, 10))
+    sampling_rate = 10
+    transform = auglib.transform.Function(lambda x, _: x + 1)
+    augment = auglib.Augment(transform, keep_nat=keep_nat)
+
+    # list with expected files
+
+    root = os.path.join(tmpdir, 'input')
+    cache_root = os.path.join(tmpdir, 'cache')
+
+    files = index.get_level_values('file').unique()
+    expected_files = []
+    for idx in range(num_variants):
+        cache_root_idx = os.path.join(
+            cache_root,
+            augment.short_id,
+            str(idx),
+        )
+        for file in files:
+            expected_files.append(os.path.join(cache_root_idx, file))
+
+    # create input files
+
+    index = map_files(index, root)
+    files = index.get_level_values('file').unique()
+    for file in files:
+        audeer.mkdir(os.path.dirname(file))
+        audiofile.write(file, signal, sampling_rate)
+
+    if not modified_only:
+        expected_files = files.tolist() + expected_files
+
+    # augment index
+
+    augmented_index = augment.augment(
+        index,
+        cache_root=cache_root,
+        num_variants=num_variants,
+        modified_only=modified_only,
+        remove_root=root,
+    )
+
+    augmented_files = augmented_index.get_level_values('file').unique()
+    assert augmented_files.tolist() == expected_files
+
+
+def test_cache_root(tmpdir):
+
+    auglib.config.CACHE_ROOT = tmpdir
+
+    transform = pytest.TRANSFORM_ONES
+    process = auglib.Augment(
+        transform=transform,
+    )
+    process_root = os.path.join(tmpdir, process.short_id)
+    result = process.augment(pytest.DATA_FILES)
+    result[0][0].startswith(str(tmpdir))
+
+    assert auglib.default_cache_root() == tmpdir
+    assert auglib.default_cache_root(process) == process_root
+    assert len(audeer.list_file_names(process_root)) > 0
+
+    auglib.clear_default_cache_root(process)
+    assert os.path.exists(auglib.default_cache_root())
+    assert not os.path.exists(process_root)
+
+    auglib.clear_default_cache_root()
+    assert os.path.exists(auglib.default_cache_root())
