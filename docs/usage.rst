@@ -6,42 +6,24 @@
     import numpy as np
     import matplotlib.pyplot as plt
     import pandas as pd
-    import seaborn as sns
 
     import audb
+    import audplot
 
     blue = '#6649ff'
     green = '#55dbb1'
 
-    sns.set(
-        rc={
-            'axes.facecolor': (0, 0, 0, 0),
-            'figure.facecolor': (0, 0, 0, 0),
-            'axes.grid': False,
-            'figure.figsize': (8, 2.5),
-        },
-    )
-
 
     def plot(signal, color, text):
-        signal = np.atleast_2d(signal)[0, :]
-        g = sns.lineplot(data=signal, color=color, linewidth=2.5)
-        # Remove all axis
-        sns.despine(left=True, bottom=True)
-        g.tick_params(left=False, bottom=False)
-        _ = g.set(xticklabels=[], yticklabels=[])
-        _ = plt.xlim([-0.15 * len(signal), len(signal)])
-        _ = plt.ylim([-1, 1])
-        _ = plt.text(
-            -0.02 * len(signal),
-            0,
-            text,
-            fontsize='large',
-            fontweight='semibold',
+        signal = np.atleast_2d(signal)
+        signal = signal[0, :]
+        fig, ax = plt.subplots(1, figsize=(8, 1.5))
+        audplot.waveform(
+            signal,
+            text=text,
             color=color,
-            horizontalalignment='right',
-            verticalalignment='center',
-    )
+            ax=ax,
+        )
     
     
     def series_to_html(self):
