@@ -11,6 +11,7 @@ from audinterface.core.utils import preprocess_signal
 import audiofile
 import audobject
 
+import auglib
 from auglib.core import transform
 from auglib.core.buffer import AudioBuffer
 from auglib.core.seed import seed as seed_func
@@ -287,7 +288,8 @@ class Augment(audinterface.Process, audobject.Object):
         if len(data) == 0:
             return data
 
-        modified = []
+        # figure out cache root and save transform
+
         if cache_root is None:
             from auglib.core.cache import default_cache_root
             cache_root = default_cache_root(self)
@@ -295,84 +297,82 @@ class Augment(audinterface.Process, audobject.Object):
             cache_root = audeer.safe_path(
                 os.path.join(cache_root, self.short_id)
             )
-
-        # save yaml of transform to cache
         self.transform.to_yaml(
             os.path.join(cache_root, 'transform.yaml'),
             include_version=False,
         )
 
-        if isinstance(data, pd.Index):
-            data = data.to_series()
-            return_index = True
-        else:
-            return_index = False
+        # prepare index
 
-        # if keep_nat == True remember position of NaT
-        # afterwards, replace NaT with file duration
+        is_index = isinstance(data, pd.Index)
+        if is_index:
+            index = data
+        else:
+            index = data.index
+        original_index = index
+
         if self.keep_nat:
-            data = audformat.utils.to_segmented_index(data, allow_nat=True)
-            nat_mask = data.index.get_level_values(
+            # if keep_nat == True remember position of NaT
+            index = audformat.utils.to_segmented_index(index, allow_nat=True)
+            nat_mask = index.get_level_values(
                 audformat.define.IndexField.END
             ).isna()
 
-        data = audformat.utils.to_segmented_index(data, allow_nat=False)
-        index = data.index
+        index = audformat.utils.to_segmented_index(index, allow_nat=False)
+
+        # apply augmentation
+
+        if modified_only:
+            augmented_indices = []
+        else:
+            if self.keep_nat:
+                augmented_indices = [original_index]
+            else:
+                augmented_indices = [index]
 
         for idx in range(num_variants):
-
-            series = self._augment_index(
+            augmented_index = self._augment_index(
                 index,
                 os.path.join(cache_root, str(idx)),
                 remove_root,
                 force,
                 f'Augment ({idx+1} of {num_variants})',
             )
-
-            if not modified_only and idx == 0:
-                new_data = data.copy()
-                new_data.index = series.index
-                if self.keep_nat:
-                    new_data = _apply_nat_mask(
-                        new_data,
-                        nat_mask,
-                    )
-                modified.append(new_data)
-
-            files = series.index.get_level_values(0).unique()
-            new_level = [
-                series[file].values[0] for file in files
-            ]
-            new_index = series.index.set_levels(new_level, level=0)
-            new_data = data.copy()
-            new_data.index = new_index
-
             if self.keep_nat:
-                new_data = _apply_nat_mask(
-                    new_data,
+                augmented_index = _apply_nat_mask(
+                    augmented_index,
                     nat_mask,
                 )
-            modified.append(new_data)
+            augmented_indices.append(augmented_index)
 
-        result = pd.concat(modified, axis=0)
-        if return_index:
-            return result.index
+        # create augmented data
+
+        if is_index:
+            augmented_data = audformat.utils.union(augmented_indices)
         else:
-            return result
+            augmented_data = []
+            for augmented_index in augmented_indices:
+                augmented_data.append(data.set_axis(augmented_index))
+            augmented_data = audformat.utils.concat(augmented_data)
+
+        return augmented_data
 
     def _augment_index(
             self,
-            index: pd.MultiIndex,
+            index: pd.Index,
             cache_root: str,
             remove_root: str,
             force: bool,
             description: str,
-    ) -> pd.Series:
-        r"""Augment from a segmented index and store augmented files to disk.
-        Returns a series that points to the augmented files."""
+    ) -> pd.Index:
+        r"""Augment segments and store augmented files to cache."""
 
         files = index.get_level_values(0).unique()
-        out_files = Augment._out_files(files, cache_root, remove_root)
+        augmented_files = _augmented_files(
+            files,
+            cache_root,
+            remove_root,
+        )
         params = [
             (
                 (
@@ -384,11 +384,12 @@ class Augment(audinterface.Process, audobject.Object):
                     force),
                 {},
             )
-            for file, out_file in zip(files, out_files)
+            for file, out_file in zip(files, augmented_files)
         ]
+
         verbose = self.verbose
         self.verbose = False  # avoid nested progress bar
-        segments = audeer.run_tasks(
+        augmented_indices = audeer.run_tasks(
             self._augment_file_to_cache,
             params,
             num_workers=self.num_workers,
@@ -397,164 +398,166 @@ class Augment(audinterface.Process, audobject.Object):
             task_description=description,
         )
         self.verbose = verbose
-        return pd.concat(segments)
+
+        augmented_index = audformat.utils.union(augmented_indices)
+
+        return augmented_index
 
     def _augment_file(
             self,
             file: str,
-            index: pd.MultiIndex,
-    ) -> typing.Tuple[np.ndarray, int, pd.Series]:
-        r"""Augment file at every segment in index.
-        Returns the augmented signal, sampling rate and
-        a series with the augmented segments."""
+            index: pd.Index,
+    ) -> typing.Tuple[np.ndarray, int, pd.Index]:
+        r"""Augment file at every segment."""
 
         signal, sampling_rate = audiofile.read(file, always_2d=True)
-        return self._augment_signal(signal, sampling_rate, index)
+        augmented_signal, augmented_rate, augmented_index = \
+            self._augment_signal(signal, sampling_rate, index)
+
+        return augmented_signal, augmented_rate, augmented_index
 
     def _augment_file_to_cache(
             self,
             file: str,
-            out_file: str,
-            index: pd.MultiIndex,
+            augmented_file: str,
+            index: pd.Index,
             force: bool,
-    ) -> pd.Series:
-        r"""Augment 'file' and store result to 'out_file'.
-        Return a series where every segment points to 'out_file'"""
+    ) -> pd.Index:
+        r"""Augment file and store to cache."""
 
         # TODO: if file in cache, original index is returned,
         #   this is not correct if augmentation changes the index,
         #   possible solution is to cache the index,
         #   see https://gitlab.audeering.com/tools/pyauglib/-/issues/65
+        #   for now, we turn of caching...
 
-        if force or not os.path.exists(out_file):
-            signal, sampling_rate, segments = self._augment_file(file, index)
-            index = segments.index
-            audeer.mkdir(os.path.dirname(out_file))
-            audiofile.write(out_file, signal, sampling_rate)
+        # if force or not os.path.exists(out_file):
 
-        return pd.Series(
-            out_file,
-            index=pd.MultiIndex(
-                levels=[[file], index.levels[0], index.levels[1]],
-                codes=[[0] * len(index), index.codes[0], index.codes[1]],
-                names=['file', 'start', 'end'],
-            )
+        signal, sampling_rate, augmented_index = self._augment_file(
+            file,
+            index,
         )
+        audeer.mkdir(os.path.dirname(augmented_file))
+        audiofile.write(augmented_file, signal, sampling_rate)
+
+        # insert augmented file name at first level
+        augmented_index_with_file = pd.MultiIndex(
+            levels=[
+                [augmented_file],
+                augmented_index.levels[0],
+                augmented_index.levels[1]
+            ],
+            codes=[
+                [0] * len(index),
+                augmented_index.codes[0],
+                augmented_index.codes[1],
+            ],
+            names=[
+                audformat.define.IndexField.FILE,
+                audformat.define.IndexField.START,
+                audformat.define.IndexField.END
+            ],
+        )
+
+        return augmented_index_with_file
 
     def _augment_signal(
             self,
             signal: np.ndarray,
             sampling_rate: int,
-            index: pd.MultiIndex,
-    ) -> typing.Tuple[np.ndarray, int, pd.Series]:
-        r"""Augment signal at every segment in index.
-        Returns the augmented signal, sampling rate and
-        a series with the augmented segments."""
+            index: pd.Index,
+    ) -> typing.Tuple[np.ndarray, int, pd.Index]:
+        r"""Augment signal at every segment in index."""
 
-        signal, sampling_rate = preprocess_signal(
+        signal, augmented_rate = preprocess_signal(
             signal,
-            sampling_rate,
+            sampling_rate=sampling_rate,
             expected_rate=self.sampling_rate,
             resample=self.resample,
             channels=self.channels,
             mixdown=self.mixdown,
         )
-        y_processed = self.process_signal_from_index(
+        y_augmented = self.process_signal_from_index(
             signal,
-            sampling_rate,
+            augmented_rate,
             index,
         )
         # fix index in case augmentation has changed the segments
-        y_processed = _fix_segments(y_processed, sampling_rate)
+        y_augmented = _fix_segments(y_augmented, augmented_rate)
 
         # if augmented segments match original segments
         # we can replace processed segments in original signal
         # otherwise, we have to create the augmented signal
         # by concatenating unprocessed and augment segments
-        if y_processed.index.equals(index):
-            _insert_segments(y_processed, signal, sampling_rate)
+        if y_augmented.index.equals(index):
+            _insert_segments_into_signal(y_augmented, signal, augmented_rate)
+            augmented_signal = signal
         else:
 
             # series with unprocessed segments
             dur = pd.to_timedelta(
-                signal.shape[1] / sampling_rate,
+                signal.shape[1] / augmented_rate,
                 unit='s',
             )
             y_unprocessed = audinterface.Process(
                 process_func=lambda x, sr: x,
             ).process_signal_from_index(
                 signal,
-                sampling_rate,
+                augmented_rate,
                 _invert_index(index, dur),
             )
 
             if y_unprocessed.empty:
 
                 # calculate new signal duration
-                new_dur = _index_duration(y_processed.index).sum()
+                new_dur = _index_duration(y_augmented.index).sum()
 
                 # create empty signal and insert processed segments
                 num_samples = int(
-                    round(new_dur.total_seconds() * sampling_rate))
-                signal = np.zeros((1, num_samples))
-                _insert_segments(y_processed, signal, sampling_rate)
+                    round(new_dur.total_seconds() * augmented_rate))
+                augmented_signal = np.zeros((1, num_samples))
+                _insert_segments_into_signal(
+                    y_augmented,
+                    augmented_signal,
+                    augmented_rate,
+                )
 
             else:
 
                 # calculate new signal duration
                 # and fix index of unprocessed segments
-                new_dur = _index_duration(y_processed.index).sum() +\
+                new_dur = _index_duration(y_augmented.index).sum() +\
                     _index_duration(y_unprocessed.index).sum()
                 y_unprocessed.index = _invert_index(
-                    y_processed.index,
+                    y_augmented.index,
                     new_dur,
                 )
 
                 # create empty signal and insert
                 # processed and unprocessed segments
                 num_samples = int(
-                    round(new_dur.total_seconds() * sampling_rate)
+                    round(new_dur.total_seconds() * augmented_rate)
                 )
-                signal = np.zeros((1, num_samples))
-                _insert_segments(y_processed, signal, sampling_rate)
-                _insert_segments(y_unprocessed, signal, sampling_rate)
+                augmented_signal = np.zeros((1, num_samples))
+                _insert_segments_into_signal(
+                    y_augmented,
+                    augmented_signal,
+                    augmented_rate,
+                )
+                _insert_segments_into_signal(
+                    y_unprocessed,
+                    augmented_signal,
+                    augmented_rate,
+                )
 
-        return signal, sampling_rate, y_processed
+        return augmented_signal, augmented_rate, y_augmented.index
 
     @staticmethod
-    def _out_files(
-            files: typing.Sequence[str],
-            cache_root: str,
-            remove_root: str = None,
-    ) -> typing.Sequence[str]:
-        r"""Return cache file names by joining with the cache directory."""
-        files = [audeer.safe_path(file) for file in files]
-        cache_root = audeer.safe_path(cache_root)
-        if remove_root is None:
-            def join(path1: str, path2: str) -> str:
-                seps = os.sep + os.altsep if os.altsep else os.sep
-                return os.path.join(
-                    path1, os.path.splitdrive(path2)[1].lstrip(seps),
-                )
-            out_files = [
-                join(cache_root, file) for file in files
-            ]
-        else:
-            remove_root = audeer.safe_path(remove_root)
-            dirs = [os.path.dirname(file) for file in files]
-            common_root = audeer.common_directory(dirs)
-            if not audeer.common_directory(
-                [remove_root, common_root]
-            ) == remove_root:
-                raise RuntimeError(f"Cannot remove '{remove_root}' "
-                                   f"from '{common_root}'.")
-            out_files = [
-                file.replace(remove_root, cache_root, 1) for file in files
-            ]
-        return out_files
-
-    @staticmethod
-    def _process_func(signal, sampling_rate, transform):
+    def _process_func(
+            signal: np.ndarray,
+            sampling_rate: int,
+            transform: auglib.transform.Base,
+    ) -> np.ndarray:
         r"""Internal processing function: creates audio buffer
         and runs it through the transformation object."""
 
@@ -582,12 +585,10 @@ class Augment(audinterface.Process, audobject.Object):
 
 
 def _apply_nat_mask(
-        obj: typing.Union[pd.Series, pd.DataFrame],
+        index: pd.Index,
         mask: np.ndarray,
 ) -> pd.Index:
     r"""Within mask set end level to NaT."""
-
-    index = obj.index
 
     ends = index.get_level_values(
         audformat.define.IndexField.END
@@ -603,9 +604,40 @@ def _apply_nat_mask(
         ends,
     )
 
-    obj.index = index
+    return index
 
-    return obj
+
+def _augmented_files(
+        files: typing.Sequence[str],
+        cache_root: str,
+        remove_root: str = None,
+) -> typing.Sequence[str]:
+    r"""Return cache file names by joining with the cache directory"""
+
+    files = [audeer.safe_path(file) for file in files]
+    cache_root = audeer.safe_path(cache_root)
+    if remove_root is None:
+        def join(path1: str, path2: str) -> str:
+            seps = os.sep + os.altsep if os.altsep else os.sep
+            return os.path.join(
+                path1, os.path.splitdrive(path2)[1].lstrip(seps),
+            )
+        augmented_files = [
+            join(cache_root, file) for file in files
+        ]
+    else:
+        remove_root = audeer.safe_path(remove_root)
+        dirs = [os.path.dirname(file) for file in files]
+        common_root = audeer.common_directory(dirs)
+        if not audeer.common_directory(
+            [remove_root, common_root]
+        ) == remove_root:
+            raise RuntimeError(f"Cannot remove '{remove_root}' "
+                               f"from '{common_root}'.")
+        augmented_files = [
+            file.replace(remove_root, cache_root, 1) for file in files
+        ]
+    return augmented_files
 
 
 def _fix_segments(
@@ -648,7 +680,7 @@ def _index_duration(
 def _invert_index(
         index: pd.Index,
         duration: pd.Timedelta,
-) -> pd.MultiIndex:
+) -> pd.Index:
     r"""Invert an index with start and end timestamps."""
 
     ends = index.get_level_values(audformat.define.IndexField.START)
@@ -673,7 +705,7 @@ def _invert_index(
     return audinterface.utils.signal_index(starts, ends)
 
 
-def _insert_segments(
+def _insert_segments_into_signal(
         y: pd.Series,
         signal: np.ndarray,
         sampling_rate: int,

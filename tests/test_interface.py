@@ -565,6 +565,5 @@ def test_augment_variants(tmpdir, index, num_variants, modified_only,
         modified_only=modified_only,
         remove_root=root,
     )
-
     augmented_files = augmented_index.get_level_values('file').unique()
-    assert augmented_files.tolist() == expected_files
+    assert augmented_files.tolist() == sorted(expected_files)
