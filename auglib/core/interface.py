@@ -465,7 +465,7 @@ class Augment(audinterface.Process, audobject.Object):
             sampling_rate,
             index,
         )
-        # Fix index in case augmentation has changed the segments
+        # fix index in case augmentation has changed the segments
         y_processed = _fix_segments(y_processed, sampling_rate)
 
         # if augmented segments match original segments
