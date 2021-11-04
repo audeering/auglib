@@ -11,14 +11,16 @@ from auglib.core.buffer import (
 from auglib.core.buffer_legacy import (
     Transform,
 )
+from auglib.core.cache import (
+    default_cache_root,
+    clear_default_cache_root,
+)
 from auglib.core.config import config
 from auglib.core.exception import (
     set_exception_handling,
 )
 from auglib.core.interface import (
     Augment,
-    default_cache_root,
-    clear_default_cache_root,
     NumpyTransform,
 )
 from auglib.core.observe_legacy import (
