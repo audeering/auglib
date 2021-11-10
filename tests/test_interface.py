@@ -1,14 +1,13 @@
 import filecmp
 import os
 
-import audiofile
 import numpy as np
 import pandas as pd
 import pytest
 
 import audeer
 import audformat
-import audiofile as af
+import audiofile
 import audobject
 
 import auglib
@@ -85,7 +84,7 @@ def map_files(index, root):
             auglib.transform.Compose(
                 [
                     auglib.transform.Function(lambda x, _: x + 1),
-                    auglib.transform.AppendValue(5, 2, unit='samples'),
+                    auglib.transform.AppendValue(5, .5, unit='samples'),
                 ]
             ),
             False,
@@ -94,7 +93,7 @@ def map_files(index, root):
                 [0, 0],
                 ['1s', '1s'],
             ),
-            np.array([[1., 1., 1., 1., 1., 2., 2., 2., 2., 2.]]),
+            np.array([[1., 1., 1., 1., 1., .5, .5, .5, .5, .5]]),
         ),
         (
             audformat.segmented_index(
@@ -107,7 +106,7 @@ def map_files(index, root):
             auglib.transform.Compose(
                 [
                     auglib.transform.Function(lambda x, _: x + 1),
-                    auglib.transform.AppendValue(1, 2, unit='samples'),
+                    auglib.transform.AppendValue(1, .5, unit='samples'),
                 ]
             ),
             False,
@@ -116,7 +115,29 @@ def map_files(index, root):
                 ['0.1s', '0.9s'],
                 ['0.3s', '1.1s'],
             ),
-            np.array([[0., 1., 2., 0., 0., 0., 0., 0., 0., 1., 2., 0.]]),
+            np.array([[0., 1., .5, 0., 0., 0., 0., 0., 0., 1., .5, 0.]]),
+        ),
+        (
+            audformat.segmented_index(
+                ['f1.wav', 'f1.wav'],
+                ['0.1s', '0.5s'],
+                ['0.6s', '0.9s'],
+            ),
+            np.zeros((1, 10)),
+            10,
+            auglib.transform.Compose(
+                [
+                    auglib.transform.Function(lambda x, _: x + 1),
+                    auglib.transform.AppendValue(1, 0.5, unit='samples'),
+                ]
+            ),
+            False,
+            audformat.segmented_index(
+                ['f1.wav', 'f1.wav'],
+                ['0.1s', '0.6s'],
+                ['0.7s', '1.1s'],
+            ),
+            np.array([[0., 1., 1., 1., 1., 1., 1., 1., 1., 1., .5, 0.]]),
         ),
         # trim segments
         (
@@ -161,10 +182,42 @@ def map_files(index, root):
             ),
             np.array([[0., 1., 1., 0., 0., 1., 1., 0.]]),
         ),
+        (
+            audformat.segmented_index(
+                ['f1.wav', 'f1.wav'],
+                ['0.1s', '0.5s'],
+                ['0.6s', '0.9s'],
+            ),
+            np.zeros((1, 10)),
+            10,
+            auglib.transform.Compose(
+                [
+                    auglib.transform.Function(lambda x, _: x + 1),
+                    auglib.transform.Trim(duration=2, unit='samples'),
+                ]
+            ),
+            False,
+            audformat.segmented_index(
+                ['f1.wav', 'f1.wav'],
+                ['0.1s', '0.2s'],
+                ['0.3s', '0.4s'],
+            ),
+            np.array([[0., 1., 1., 1., 0.]]),
+        ),
+        pytest.param(  # out of border segment
+            audformat.segmented_index('f1.wav', '0.1s', '1.1s'),
+            np.zeros((1, 10)),
+            10,
+            auglib.transform.Function(lambda x, _: x + 1),
+            False,
+            audformat.segmented_index('f1.wav', '0.1s', '1.1s'),
+            None,
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
     ]
 )
-def test_augment_new(tmpdir, index, signal, sampling_rate, transform,
-                     keep_nat, expected_index, expected_signal):
+def test_augment(tmpdir, index, signal, sampling_rate, transform,
+                 keep_nat, expected_index, expected_signal):
 
     # create interface
 
@@ -201,7 +254,7 @@ def test_augment_new(tmpdir, index, signal, sampling_rate, transform,
     for file in expected_files:
         tmp_file = os.path.join(tmpdir, 'tmp.wav')
         audiofile.write(tmp_file, expected_signal, sampling_rate)
-        filecmp.cmp(file, tmp_file)
+        assert filecmp.cmp(file, tmp_file)
 
     # augment series
 
