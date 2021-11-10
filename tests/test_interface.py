@@ -306,7 +306,15 @@ def test_augment_multichannel(signal, transform, expected):
     np.testing.assert_equal(signal_augmented, expected)
 
 
-def test_augment_num_workers(tmpdir):
+@pytest.mark.parametrize(
+    'transform',
+    [
+        auglib.transform.Function(lambda x, _: x + 1),
+        auglib.transform.AppendValue(5, unit='samples'),
+        auglib.transform.Trim(duration=5, unit='samples'),
+    ]
+)
+def test_augment_num_workers(tmpdir, transform):
 
     # create dummy signal and interface
 
@@ -314,7 +322,6 @@ def test_augment_num_workers(tmpdir):
     index = audformat.filewise_index(files)
     signal = np.zeros((1, 10))
     sampling_rate = 10
-    transform = auglib.transform.Function(lambda x, _: x + 1)
 
     # create input files
 
