@@ -231,13 +231,22 @@ def test_augment(tmpdir, index, signal, sampling_rate, transform,
 
     root = os.path.join(tmpdir, 'input')
     cache_root = os.path.join(tmpdir, 'cache')
-    expected_root = os.path.join(cache_root, augment.short_id, '0')
 
     index = map_files(index, root)
     files = index.get_level_values('file').unique()
     for file in files:
         audeer.mkdir(os.path.dirname(file))
         audiofile.write(file, signal, sampling_rate)
+
+    index_hash = audformat.utils.hash(
+        audformat.utils.to_segmented_index(index, allow_nat=False),
+    )
+    expected_root = os.path.join(
+        cache_root,
+        augment.short_id,
+        index_hash,
+        str(0),
+    )
     expected_index = map_files(expected_index, expected_root)
 
     # augment index
@@ -279,6 +288,79 @@ def test_augment(tmpdir, index, signal, sampling_rate, transform,
     )
     expected_df = df.set_axis(expected_index)
     pd.testing.assert_frame_equal(augmented_df, expected_df)
+
+
+def test_augment_cache(tmpdir):
+
+    root = audeer.mkdir(os.path.join(tmpdir, 'input'))
+    cache_root = os.path.join(tmpdir, 'cache')
+    transform = auglib.transform.PinkNoise()
+    augment = auglib.Augment(transform, seed=0)
+
+    sampling_rate = 16000
+    signal = np.zeros((1, sampling_rate))
+    files_rel = ['f1.wav', 'f2.wav']
+    index_rel = audformat.filewise_index(files_rel)
+    files_abs = [os.path.join(root, file) for file in files_rel]
+    index_abs = audformat.filewise_index(files_abs)
+
+    # create input files
+    for file in files_abs:
+        audiofile.write(file, signal, sampling_rate)
+
+    # augment index with relative and absolute files names
+    # as filewise, segmented and segmented without NaT
+
+    augmented_indices = [
+        augment.augment(
+            index_rel,
+            cache_root=cache_root,
+            data_root=root,
+        ),
+        augment.augment(
+            audformat.utils.to_segmented_index(index_rel),
+            cache_root=cache_root,
+            data_root=root,
+        ),
+        augment.augment(
+            audformat.utils.to_segmented_index(
+                index_rel,
+                allow_nat=False,
+                root=root,
+            ),
+            cache_root=cache_root,
+            data_root=root,
+        ),
+        augment.augment(
+            index_abs,
+            cache_root=cache_root,
+            remove_root=root,
+        ),
+        augment.augment(
+            audformat.utils.to_segmented_index(index_abs),
+            cache_root=cache_root,
+            remove_root=root,
+        ),
+        augment.augment(
+            audformat.utils.to_segmented_index(
+                index_abs,
+                allow_nat=False,
+                root=root,
+            ),
+            cache_root=cache_root,
+            remove_root=root,
+        ),
+        augment.augment(
+            pd.Series(0, index_rel),
+            cache_root=cache_root,
+            data_root=root,
+        ).index,
+    ]
+
+    # assert augmented indices match
+
+    for augmented_index in augmented_indices[1:]:
+        pd.testing.assert_index_equal(augmented_indices[0], augmented_index)
 
 
 def test_augment_empty(tmpdir):
@@ -589,32 +671,37 @@ def test_augment_variants(tmpdir, index, num_variants, modified_only,
     transform = auglib.transform.Function(lambda x, _: x + 1)
     augment = auglib.Augment(transform, keep_nat=keep_nat)
 
-    # list with expected files
+    # create input files
 
     root = os.path.join(tmpdir, 'input')
-    cache_root = os.path.join(tmpdir, 'cache')
-
     files = index.get_level_values('file').unique()
+    for file in files:
+        file = os.path.join(root, file)
+        audeer.mkdir(os.path.dirname(file))
+        audiofile.write(file, signal, sampling_rate)
+
+    # list with expected files
+
+    index = map_files(index, root)
+    cache_root = os.path.join(tmpdir, 'cache')
     expected_files = []
     for idx in range(num_variants):
+        index_hash = audformat.utils.hash(
+            audformat.utils.to_segmented_index(index, allow_nat=False),
+        )
         cache_root_idx = os.path.join(
             cache_root,
             augment.short_id,
+            index_hash,
             str(idx),
         )
         for file in files:
             expected_files.append(os.path.join(cache_root_idx, file))
 
-    # create input files
-
-    index = map_files(index, root)
-    files = index.get_level_values('file').unique()
-    for file in files:
-        audeer.mkdir(os.path.dirname(file))
-        audiofile.write(file, signal, sampling_rate)
-
     if not modified_only:
-        expected_files = files.tolist() + expected_files
+        for file in files:
+            file = os.path.join(root, file)
+            expected_files.append(file)
 
     # augment index
 
@@ -625,5 +712,6 @@ def test_augment_variants(tmpdir, index, num_variants, modified_only,
         modified_only=modified_only,
         remove_root=root,
     )
+
     augmented_files = augmented_index.get_level_values('file').unique()
     assert augmented_files.tolist() == sorted(expected_files)

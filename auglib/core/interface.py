@@ -144,25 +144,27 @@ class Augment(audinterface.Process, audobject.Object):
         >>> db = audb.load(
         ...     'testdata',
         ...     version='1.5.0',
+        ...     full_path=False,
         ...     verbose=False,
         ... )
         >>> transform = auglib.transform.WhiteNoiseUniform()
         >>> augment = auglib.Augment(transform)
         >>> # Augment a numpy array
-        >>> signal, sampling_rate = audiofile.read(db.files[0])
+        >>> file = os.path.join(db.root, db.files[0])
+        >>> signal, sampling_rate = audiofile.read(file)
         >>> signal_augmented = augment(signal, sampling_rate)
         >>> # Augment (parts of) a database
         >>> column = db['emotion.test.gold']['emotion'].get()
         >>> augmented_column = augment.augment(
         ...     column,
         ...     cache_root='cache',
-        ...     remove_root=db.meta['audb']['root'],
+        ...     data_root=db.root,
         ... )
         >>> label = augmented_column[0]
         >>> file = augmented_column.index[0][0]
         >>> file = file.replace(audeer.safe_path('.'), '.')  # remove absolute path
-        >>> file, label
-        ('./cache/decdec83/0/audio/006.wav', 'unhappy')
+        >>> file, label  # doctest: +SKIP
+        ('./cache/decdec83/-6100627981361312836/0/audio/006.wav', 'unhappy')
 
     """  # noqa: E501
     @audobject.init_decorator(
@@ -228,6 +230,7 @@ class Augment(audinterface.Process, audobject.Object):
             data: typing.Union[pd.Index, pd.Series, pd.DataFrame],
             cache_root: str = None,
             *,
+            data_root: str = None,
             remove_root: str = None,
             modified_only: bool = True,
             num_variants: int = 1,
@@ -256,7 +259,9 @@ class Augment(audinterface.Process, audobject.Object):
             data: index, column or table conform to audformat
             cache_root: directory to cache augmented files,
                 if ``None`` defaults to ``auglib.config.CACHE_ROOT``
-            remove_root: set a path that should be removed from
+            data_root: if index contains relative files,
+                set to root directory where files are stored
+            remove_root: directory that should be removed from
                 the beginning of the original file path before joining with
                 ``cache_root``
             modified_only: return only modified segments, otherwise
@@ -288,21 +293,10 @@ class Augment(audinterface.Process, audobject.Object):
         if len(data) == 0:
             return data
 
-        # figure out cache root and save transform
-
-        if cache_root is None:
-            from auglib.core.cache import default_cache_root
-            cache_root = default_cache_root(self)
-        else:
-            cache_root = audeer.safe_path(
-                os.path.join(cache_root, self.short_id)
-            )
-        self.transform.to_yaml(
-            os.path.join(cache_root, 'transform.yaml'),
-            include_version=False,
-        )
-
-        # prepare index
+        # prepare index:
+        # 1. remember position of NaT
+        # 2. convert to absolute file names
+        # 3. convert to segment index and replace NaT with duration
 
         is_index = isinstance(data, pd.Index)
         if is_index:
@@ -312,13 +306,40 @@ class Augment(audinterface.Process, audobject.Object):
         original_index = index
 
         if self.keep_nat:
-            # if keep_nat == True remember position of NaT
-            index = audformat.utils.to_segmented_index(index, allow_nat=True)
+            index = audformat.utils.to_segmented_index(
+                index,
+                allow_nat=True,
+            )
             nat_mask = index.get_level_values(
                 audformat.define.IndexField.END
             ).isna()
 
-        index = audformat.utils.to_segmented_index(index, allow_nat=False)
+        if data_root is not None:
+            index = audformat.utils.expand_file_path(index, data_root)
+
+        index = audformat.utils.to_segmented_index(
+            index,
+            allow_nat=False,
+        )
+
+        index_hash = audformat.utils.hash(index)
+
+        # figure out cache root
+
+        if cache_root is None:
+            # Import here to avoid circular import
+            from auglib.core.cache import default_cache_root
+            cache_root = default_cache_root()
+        else:
+            cache_root = audeer.safe_path(cache_root)
+        cache_root = os.path.join(cache_root, self.short_id)
+
+        transform_path = os.path.join(cache_root, 'transform.yaml')
+        if not os.path.exists(transform_path):
+            self.transform.to_yaml(
+                transform_path,
+                include_version=False,
+            )
 
         # apply augmentation
 
@@ -331,13 +352,30 @@ class Augment(audinterface.Process, audobject.Object):
                 augmented_indices = [index]
 
         for idx in range(num_variants):
-            augmented_index = self._augment_index(
-                index,
-                os.path.join(cache_root, str(idx)),
-                remove_root,
-                force,
-                f'Augment ({idx+1} of {num_variants})',
+
+            cache_root_idx = os.path.join(
+                cache_root,
+                index_hash,
+                str(idx)
             )
+
+            index_cache_path = os.path.join(
+                cache_root_idx,
+                'index.pkl',
+            )
+            if not force and os.path.exists(index_cache_path):
+                augmented_index = pd.read_pickle(index_cache_path)
+            else:
+                augmented_index = self._augment_index(
+                    index,
+                    cache_root_idx,
+                    remove_root,
+                    f'Augment ({idx+1} of {num_variants})',
+                )
+                pd.to_pickle(
+                    augmented_index,
+                    index_cache_path,
+                )
             if self.keep_nat:
                 augmented_index = _apply_nat_mask(
                     augmented_index,
@@ -362,7 +400,6 @@ class Augment(audinterface.Process, audobject.Object):
             index: pd.Index,
             cache_root: str,
             remove_root: str,
-            force: bool,
             description: str,
     ) -> pd.Index:
         r"""Augment segments and store augmented files to cache."""
@@ -381,7 +418,7 @@ class Augment(audinterface.Process, audobject.Object):
                     index[
                         index.get_level_values(0) == file
                     ].droplevel(0),
-                    force),
+                ),
                 {},
             )
             for file, out_file in zip(files, augmented_files)
@@ -421,17 +458,8 @@ class Augment(audinterface.Process, audobject.Object):
             file: str,
             augmented_file: str,
             index: pd.Index,
-            force: bool,
     ) -> pd.Index:
         r"""Augment file and store to cache."""
-
-        # TODO: if file in cache, original index is returned,
-        #   this is not correct if augmentation changes the index,
-        #   possible solution is to cache the index,
-        #   see https://gitlab.audeering.com/tools/pyauglib/-/issues/65
-        #   for now, we turn of caching...
-
-        # if force or not os.path.exists(out_file):
 
         signal, sampling_rate, augmented_index = self._augment_file(
             file,
@@ -614,7 +642,6 @@ def _augmented_files(
 ) -> typing.Sequence[str]:
     r"""Return cache file names by joining with the cache directory"""
 
-    files = [audeer.safe_path(file) for file in files]
     cache_root = audeer.safe_path(cache_root)
     if remove_root is None:
         def join(path1: str, path2: str) -> str:
