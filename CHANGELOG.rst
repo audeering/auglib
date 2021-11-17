@@ -6,6 +6,15 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
+
+Version 0.10.0 (2021-11-17)
+---------------------------
+
+* Changed: ``Augment.augment()`` caches augmented index
+* Fixed: ``Augment.augment()`` supports transforms that change the segment length
+* Fixed: ``Augment.augment()`` supports index with relative file names
+
+
 Version 0.9.0 (2021-10-25)
 --------------------------
 
