@@ -7,6 +7,12 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.10.3 (2022-01-21)
+---------------------------
+
+* Fixed: Ci job for Python package publication
+
+
 Version 0.10.2 (2022-01-21)
 ---------------------------
 
