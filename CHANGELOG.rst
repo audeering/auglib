@@ -7,6 +7,12 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.10.2 (2022-01-21)
+---------------------------
+
+* Changed: use ``audinterface>=0.8.0``
+
+
 Version 0.10.1 (2021-12-30)
 ---------------------------
 
