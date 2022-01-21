@@ -200,7 +200,7 @@ class Augment(audinterface.Process, audobject.Object):
 
         super().__init__(
             process_func=Augment._process_func,
-            transform=transform,
+            process_func_args={'transform': transform},
             sampling_rate=sampling_rate,
             resample=resample,
             channels=channels,
