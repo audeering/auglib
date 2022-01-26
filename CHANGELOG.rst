@@ -7,6 +7,13 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.10.4 (2022-01-26)
+---------------------------
+
+* Changed: depend on ``audformat>=0.13.0``
+* Fixed: do not sort augmented index
+
+
 Version 0.10.3 (2022-01-21)
 ---------------------------
 
