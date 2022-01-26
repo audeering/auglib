@@ -685,6 +685,12 @@ def test_augment_variants(tmpdir, index, num_variants, modified_only,
     index = map_files(index, root)
     cache_root = os.path.join(tmpdir, 'cache')
     expected_files = []
+
+    if not modified_only:
+        for file in files:
+            file = os.path.join(root, file)
+            expected_files.append(file)
+
     for idx in range(num_variants):
         index_hash = audformat.utils.hash(
             audformat.utils.to_segmented_index(index, allow_nat=False),
@@ -698,11 +704,6 @@ def test_augment_variants(tmpdir, index, num_variants, modified_only,
         for file in files:
             expected_files.append(os.path.join(cache_root_idx, file))
 
-    if not modified_only:
-        for file in files:
-            file = os.path.join(root, file)
-            expected_files.append(file)
-
     # augment index
 
     augmented_index = augment.augment(
@@ -714,4 +715,4 @@ def test_augment_variants(tmpdir, index, num_variants, modified_only,
     )
 
     augmented_files = augmented_index.get_level_values('file').unique()
-    assert augmented_files.tolist() == sorted(expected_files)
+    assert augmented_files.tolist() == expected_files
