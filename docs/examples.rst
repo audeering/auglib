@@ -197,9 +197,8 @@ randomly from a normal distribution.
                     width=width,
                 ),
             ],
-            sample_rate=sampling_rate,
         )
-        return board(signal)
+        return board(signal, sampling_rate)
 
     random_params = auglib.observe.FloatNorm(
         mean=0.5,

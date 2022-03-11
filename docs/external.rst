@@ -126,9 +126,8 @@ with the help of the :class:`auglib.transform.Function` class.
                 pedalboard.Phaser(),
                 pedalboard.Reverb(room_size=0.25),
             ],
-            sample_rate=sampling_rate,
         )
-        return board(signal)
+        return board(signal, sampling_rate)
 
     transform = auglib.transform.Compose(
         [
