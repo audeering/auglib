@@ -593,3 +593,105 @@ and re-synthesises the audio signal.
 |
 
 .. _praat: http://www.praat.org/
+
+
+.. _examples-constant-pitch:
+
+Constant Pitch
+--------------
+
+You might want to equalize the pitch
+of the speakers in your database.
+We use again praat_ to achieve this
+as mentioned in :ref:`examples-pitch-shift`.
+
+The first approach calculates the average pitch
+of the input signal,
+and adjusts it to the desired pitch given as f0 in Hz
+by re-synthesizing the signal with a shifted pitch contour,
+which preserves the natural pitch fluctuations per speaker.
+
+.. jupyter-execute::
+
+    import numpy as np
+    import parselmouth
+    from parselmouth.praat import call as praat
+
+    def constant_pitch(signal, sampling_rate, desired_pitch):
+        sound = parselmouth.Sound(signal, sampling_rate)
+        # Estimate average pitch of signal
+        pitch = sound.to_pitch()
+        pitch = pitch.selected_array['frequency']
+        pitch[pitch == 0] = np.NaN
+        pitch = np.nanmean(pitch)
+        # Adjust signal to desired pitch
+        manipulation = praat(sound, 'To Manipulation', 0.01, 75, 600)
+        pitch_tier = praat(manipulation, 'Extract pitch tier')
+        factor = desired_pitch / pitch
+        praat(pitch_tier, 'Multiply frequencies', sound.xmin, sound.xmax, factor)
+        praat([pitch_tier, manipulation], 'Replace pitch tier')
+        sound_transposed = praat(manipulation, 'Get resynthesis (overlap-add)')
+        return sound_transposed.values.flatten()
+        
+    transform = auglib.transform.Function(
+        function=constant_pitch,
+        function_args={'desired_pitch': 100},
+    )
+    augment = auglib.Augment(transform)
+    signal_augmented = augment(signal, sampling_rate)
+
+.. jupyter-execute::
+    :hide-code:
+
+    plot(signal_augmented, green, 'Constant\nPitch')
+
+.. jupyter-execute::
+    :hide-code:
+
+    Audio(signal_augmented, rate=sampling_rate)
+
+.. empty line for some extra space
+
+|
+
+The second approach specifies a constant pitch contour
+representing the desired pitch,
+which removes any pitch fluctuations from the signal
+after re-synthesis.
+
+.. jupyter-execute::
+
+    import parselmouth
+    from parselmouth.praat import call as praat
+
+    def constant_pitch(signal, sampling_rate, desired_pitch):
+        sound = parselmouth.Sound(signal, sampling_rate)
+        manipulation = praat(sound, 'To Manipulation', 0.01, 75, 600)
+        pitch_tier = praat(manipulation, 'Create PitchTier', 'Name', sound.xmin, sound.xmax)
+        praat(pitch_tier, "Add point", sound.xmax / 2, desired_pitch)
+        praat([pitch_tier, manipulation], 'Replace pitch tier')
+        sound_transposed = praat(manipulation, 'Get resynthesis (overlap-add)')
+        return sound_transposed.values.flatten()
+        
+    transform = auglib.transform.Function(
+        function=constant_pitch,
+        function_args={'desired_pitch': 100},
+    )
+    augment = auglib.Augment(transform)
+    signal_augmented = augment(signal, sampling_rate)
+
+.. jupyter-execute::
+    :hide-code:
+
+    plot(signal_augmented, green, 'Constant\nPitch')
+
+.. jupyter-execute::
+    :hide-code:
+
+    Audio(signal_augmented, rate=sampling_rate)
+
+.. empty line for some extra space
+
+|
+
+.. _praat: http://www.praat.org/
