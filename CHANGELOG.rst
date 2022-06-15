@@ -7,6 +7,14 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.10.5 (2022-06-15)
+---------------------------
+
+* Added: pitch shift example
+* Added: constant pitch examples
+* Fixed: correct examples for ``pedalboard>=0.4.0``
+
+
 Version 0.10.4 (2022-01-26)
 ---------------------------
 
