@@ -535,3 +535,61 @@ to the target signal.
 .. empty line for some extra space
 
 |
+
+
+.. _examples-pitch-shift:
+
+Pitch Shift
+-----------
+
+You might want to change the pitch
+of a speaker or singer
+in your signal.
+We use praat_ here
+with the help of the :mod:`parselmouth` Python package.
+To install it
+you have to use the name ``praat-parselmouth``.
+Internally,
+it extracts the pitch contour,
+changes the pitch,
+and re-synthesises the audio signal.
+
+.. jupyter-execute::
+
+    import parselmouth
+    from parselmouth.praat import call as praat
+
+    auglib.seed(2)
+
+    def pitch_shift(signal, sampling_rate, semitones):
+        sound = parselmouth.Sound(signal, sampling_rate)
+        manipulation = praat(sound, 'To Manipulation', 0.01, 75, 600)
+        pitch_tier = praat(manipulation, 'Extract pitch tier')
+        factor = 2 ** (semitones / 12)
+        praat(pitch_tier, 'Multiply frequencies', sound.xmin, sound.xmax, factor)
+        praat([pitch_tier, manipulation], 'Replace pitch tier')
+        sound_transposed = praat(manipulation, 'Get resynthesis (overlap-add)')
+        return sound_transposed.values.flatten()
+        
+    transform = auglib.transform.Function(
+        function=pitch_shift,
+        function_args={'semitones': auglib.observe.IntUni(-4, 4)},
+    )
+    augment = auglib.Augment(transform)
+    signal_augmented = augment(signal, sampling_rate)
+
+.. jupyter-execute::
+    :hide-code:
+
+    plot(signal_augmented, green, 'Pitch\nShift')
+
+.. jupyter-execute::
+    :hide-code:
+
+    Audio(signal_augmented, rate=sampling_rate)
+
+.. empty line for some extra space
+
+|
+
+.. _praat: http://www.praat.org/
