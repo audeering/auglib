@@ -365,6 +365,11 @@ class Augment(audinterface.Process, audobject.Object):
             )
             if not force and os.path.exists(index_cache_path):
                 augmented_index = pd.read_pickle(index_cache_path)
+                # Make sure old cache entries use correct dtype
+                augmented_index = audformat.utils.set_index_dtypes(
+                    augmented_index,
+                    {'file': 'string'},
+                )
             else:
                 augmented_index = self._augment_index(
                     index,
