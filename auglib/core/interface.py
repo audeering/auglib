@@ -486,6 +486,10 @@ class Augment(audinterface.Process, audobject.Object):
                 audformat.define.IndexField.END
             ],
         )
+        augmented_index_with_file = audformat.utils.set_index_dtypes(
+            augmented_index_with_file,
+            {'file': 'string'},
+        )
 
         return augmented_index_with_file
 

@@ -13,15 +13,6 @@ import audobject
 import auglib
 
 
-def map_files(index, root):
-    if audformat.index_type(index) == audformat.define.IndexType.SEGMENTED:
-        files = index.levels[0]
-        files = [os.path.join(root, file) for file in files]
-        return index.set_levels(files, level=0)
-    else:
-        return index.map(lambda x: os.path.join(root, x))
-
-
 @pytest.mark.parametrize(
     'index, signal, sampling_rate, transform, keep_nat, '
     'expected_index, expected_signal',
@@ -232,7 +223,7 @@ def test_augment(tmpdir, index, signal, sampling_rate, transform,
     root = os.path.join(tmpdir, 'input')
     cache_root = os.path.join(tmpdir, 'cache')
 
-    index = map_files(index, root)
+    index = audformat.utils.expand_file_path(index, root)
     files = index.get_level_values('file').unique()
     for file in files:
         audeer.mkdir(os.path.dirname(file))
@@ -247,7 +238,10 @@ def test_augment(tmpdir, index, signal, sampling_rate, transform,
         index_hash,
         str(0),
     )
-    expected_index = map_files(expected_index, expected_root)
+    expected_index = audformat.utils.expand_file_path(
+        expected_index,
+        expected_root,
+    )
 
     # augment index
 
@@ -463,7 +457,7 @@ def test_augment_num_workers(tmpdir, transform):
     root = os.path.join(tmpdir, 'input')
     cache_root = os.path.join(tmpdir, 'cache')
 
-    index = map_files(index, root)
+    index = audformat.utils.expand_file_path(index, root)
     files = index.get_level_values('file').unique()
     for file in files:
         audeer.mkdir(os.path.dirname(file))
@@ -571,7 +565,7 @@ def test_augment_resample(tmpdir, sampling_rate, target_rate, resample,
     root = os.path.join(tmpdir, 'input')
     cache_root = os.path.join(tmpdir, 'cache')
 
-    index = map_files(index, root)
+    index = audformat.utils.expand_file_path(index, root)
     files = index.get_level_values('file').unique()
     for file in files:
         audeer.mkdir(os.path.dirname(file))
@@ -682,7 +676,7 @@ def test_augment_variants(tmpdir, index, num_variants, modified_only,
 
     # list with expected files
 
-    index = map_files(index, root)
+    index = audformat.utils.expand_file_path(index, root)
     cache_root = os.path.join(tmpdir, 'cache')
     expected_files = []
 
