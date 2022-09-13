@@ -434,7 +434,7 @@ def test_sine(freq):
 
     with Tone(freq, shape='sine')(AudioBuffer(n, sr, unit='samples'))\
             as tone:
-        sine = np.sin((np.arange(n, dtype=np.float) / sr) * 2 * np.pi * freq)
+        sine = np.sin((np.arange(n, dtype=float) / sr) * 2 * np.pi * freq)
         np.testing.assert_almost_equal(tone._data, sine, decimal=3)
 
 

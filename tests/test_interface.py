@@ -601,10 +601,16 @@ def test_augment_seed():
         augment_2 = audobject.from_yaml_s(augment_yaml)
         y_2 = augment_2(x, sr)  # matches y if seed == 1
 
-        augment_3 = audobject.from_yaml_s(augment_yaml, seed=0)
+        augment_3 = audobject.from_yaml_s(
+            augment_yaml,
+            override_args={'seed': 0},
+        )
         y_3 = augment_3(x, sr)  # matches y if seed == None
 
-        augment_4 = audobject.from_yaml_s(augment_yaml, seed=None)
+        augment_4 = audobject.from_yaml_s(
+            augment_yaml,
+            override_args={'seed': None},
+        )
         y_4 = augment_4(x, sr)  # never matches y
 
         if seed is None:
