@@ -966,11 +966,12 @@ class WhiteNoiseGaussian(Base):
             # = 10 * log10(stddev^2)
             # compare https://en.wikipedia.org/wiki/White_noise
             rms_noise_db = 10 * np.log10(self.stddev ** 2)
-            # Limit to -120 dB for very soft signals
-            rms_signal_db = 20 * np.log10(max(1e-6, rms(buf._data)))
-            # SNR = RMS_signal^2 / (gain * RMS_noise)^2
-            # => SNR_dB = RMS_signal_dB - gain_dB - RMS_noise_dB
-            gain_db = rms_signal_db - rms_noise_db - snr_db
+            rms_signal_db = rms_db(buf._data)
+            gain_db = get_noise_gain_from_requested_snr(
+                rms_signal_db,
+                rms_noise_db,
+                snr_db,
+            )
         else:
             gain_db = observe.observe(self.gain_db)
         stddev = observe.observe(self.stddev)
@@ -1008,9 +1009,16 @@ class PinkNoise(Base):
 class Tone(Base):
     r"""Adds basic waveform.
 
+    The sine waveform will start at 0,
+    the square and sawtooth waveform at -1,
+    and the triangle waveform at 1.
+    The waveform sawtooth has a rising ramp.
+
     Args:
         freq: fundamental frequency in Hz
-        gain_db: gain in decibels
+        gain_db: gain in decibels.
+            Ignored if ``snr_db`` is not ``None``
+        snr_db: signal-to-noise ratio in decibels
         shape: tone shape,
             one of ``'sine'``,
             ``'square'``,
@@ -1044,15 +1052,21 @@ class Tone(Base):
         array([[ 1.,  0., -1.,  0.,  1.,  0., -1.,  0.]], dtype=float32)
 
     """  # noqa: E501
-    def __init__(self, freq: Union[float, observe.Base],
-                 *, gain_db: Union[float, observe.Base] = 0.0,
-                 shape: str = 'sine',
-                 lfo_rate: Union[float, observe.Base] = 0.0,
-                 lfo_range: Union[float, observe.Base] = 0.0,
-                 bypass_prob: Union[float, observe.Base] = None):
+    def __init__(
+            self,
+            freq: Union[float, observe.Base],
+            *,
+            gain_db: Union[float, observe.Base] = 0.0,
+            snr_db: Union[float, observe.Base] = None,
+            shape: str = 'sine',
+            lfo_rate: Union[float, observe.Base] = 0.0,
+            lfo_range: Union[float, observe.Base] = 0.0,
+            bypass_prob: Union[float, observe.Base] = None,
+    ):
         super().__init__(bypass_prob)
         self.freq = freq
         self.gain_db = gain_db
+        self.snr_db = snr_db
         self.lfo_rate = lfo_rate
         self.lfo_range = lfo_range
         if shape not in SUPPORTED_TONE_SHAPES:
@@ -1065,9 +1079,29 @@ class Tone(Base):
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
         freq = observe.observe(self.freq)
-        gain_db = observe.observe(self.gain_db)
         lfo_rate = observe.observe(self.lfo_rate)
         lfo_range = observe.observe(self.lfo_range)
+        if self.snr_db is not None:
+            snr_db = observe.observe(self.snr_db)
+            # RMS values of the tone,
+            # see https://en.wikipedia.org/wiki/Root_mean_square
+            if self.shape == 'sine':
+                rms = 1 / np.sqrt(2)
+            elif self.shape == 'square':
+                rms = 1
+            elif self.shape == 'triangle':
+                rms = 1 / np.sqrt(3)
+            elif self.shape == 'sawtooth':
+                rms = 1 / np.sqrt(3)
+            rms_tone_db = 20 * np.log10(rms)
+            rms_signal_db = rms_db(buf._data)
+            gain_db = get_noise_gain_from_requested_snr(
+                rms_signal_db,
+                rms_tone_db,
+                snr_db,
+            )
+        else:
+            gain_db = observe.observe(self.gain_db)
         if self.shape == 'sine':
             shape_value = 0
         elif self.shape == 'square':
@@ -1508,5 +1542,36 @@ class Mask(Base):
         return buf
 
 
-def rms(signal):
-    return np.sqrt(np.mean(np.square(signal)))
+def rms_db(signal):
+    r"""Root mean square in dB.
+
+    Very soft signals are limited
+    to a value of -120 dB.
+
+    """
+    rms = np.sqrt(np.mean(np.square(signal)))
+    return 20 * np.log10(max(1e-6, rms))
+
+
+def get_noise_gain_from_requested_snr(rms_signal_db, rms_noise_db, snr_db):
+    r"""Translates requested SNR to gain of noise signal.
+
+    Args:
+        rms_signal_db: root mean square of signal in dB
+        rms_noise_db: root mean square of noise signal
+            with max amplitude in dB
+        snr_db: desired signal-to-noise ration in dB
+
+    Returns:
+        gain to be applied to noise signal
+            to achieve desired SNR in dB
+
+    """
+    # SNR = RMS_signal^2 / (gain * RMS_noise)^2
+    # => SNR_dB = 10 log10(RMS_signal^2 / (gain * RMS_noise)^2)
+    # => SNR_dB = 10 log10(RMS_signal^2) - 10 log10((gain * RMS_noise)^2)
+    # => SNR_dB = 20 log10(RMS_signal) - 20 log10(gain * RMS_noise)
+    # => SNR_dB = 20 log10(RMS_signal) - 20 log10(gain) - 20 log10(RMS_noise)
+    # => SNR_dB = RMS_signal_dB - gain_dB - RMS_noise_dB
+    gain_db = rms_signal_db - rms_noise_db - snr_db
+    return gain_db

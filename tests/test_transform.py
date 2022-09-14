@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 import pytest
-from scipy import signal
+import scipy
 
 import auglib
 from auglib import AudioBuffer
@@ -14,8 +14,8 @@ from auglib.transform import Mix, Append, AppendValue, Trim, NormalizeByPeak, \
 from auglib.utils import to_samples, to_db, from_db
 
 
-def rms(signal):
-    return np.sqrt(np.mean(np.square(signal)))
+def rms_db(signal):
+    return 20 * np.log10(np.sqrt(np.mean(np.square(signal))))
 
 
 @pytest.mark.parametrize(
@@ -341,30 +341,37 @@ def test_filter(n, sr):
     sig_in = np.zeros(n * sr, dtype='float32')
     sig_in[int(n * sr / 4):int(n * sr * 3 / 4)] = 1.0
 
-    b, a = signal.butter(1, 0.5, 'lowpass')
-    sig_out = signal.lfilter(b, a, sig_in)
+    b, a = scipy.signal.butter(1, 0.5, 'lowpass')
+    sig_out = scipy.signal.lfilter(b, a, sig_in)
 
     with AudioBuffer.from_array(sig_in, sampling_rate=sr) as buf:
         LowPass(0.5 * sr / 2)(buf)
         np.testing.assert_almost_equal(buf._data, sig_out)
 
-    b, a = signal.butter(1, 0.5, 'highpass')
-    sig_out = signal.lfilter(b, a, sig_in)
+    b, a = scipy.signal.butter(1, 0.5, 'highpass')
+    sig_out = scipy.signal.lfilter(b, a, sig_in)
 
     with AudioBuffer.from_array(sig_in, sampling_rate=sr) as buf:
         HighPass(0.5 * sr / 2)(buf)
         np.testing.assert_almost_equal(buf._data, sig_out)
 
-    b, a = signal.butter(1, np.array([0.5 - 0.25, 0.5 + 0.25]), 'bandpass')
-    sig_out = signal.lfilter(b, a, sig_in)
+    b, a = scipy.signal.butter(
+        1,
+        np.array([0.5 - 0.25, 0.5 + 0.25]),
+        'bandpass',
+    )
+    sig_out = scipy.signal.lfilter(b, a, sig_in)
 
     with AudioBuffer.from_array(sig_in, sampling_rate=sr) as buf:
         BandPass(0.5 * sr / 2, 0.5 * sr / 2)(buf)
         np.testing.assert_almost_equal(buf._data, sig_out)
 
-    b, a = signal.butter(1, (2.0 / sr) * np.array([1000 - 5, 1000 + 5]),
-                         'bandstop')
-    sig_out = signal.lfilter(b, a, sig_in)
+    b, a = scipy.signal.butter(
+        1,
+        (2.0 / sr) * np.array([1000 - 5, 1000 + 5]),
+        'bandstop',
+    )
+    sig_out = scipy.signal.lfilter(b, a, sig_in)
 
     with AudioBuffer.from_array(sig_in, sampling_rate=sr) as buf:
         BandStop(1000, 10)(buf)
@@ -455,7 +462,7 @@ def test_WhiteNoiseGaussian(duration, sampling_rate, stddev, gain_db, snr_db):
             )
             # Double check volume is correct
             np.testing.assert_almost_equal(
-                20 * np.log10(rms(expected_noise._data)),
+                rms_db(expected_noise._data),
                 expected_volume,
                 decimal=1,
             )
@@ -465,7 +472,7 @@ def test_WhiteNoiseGaussian(duration, sampling_rate, stddev, gain_db, snr_db):
                 expected_noise._data,
             )
             np.testing.assert_almost_equal(
-                20 * np.log10(rms(noise._data)),
+                rms_db(noise._data),
                 expected_volume,
                 decimal=1,
             )
@@ -495,16 +502,83 @@ def test_PinkNoise(dur, sr, gain, seed):
             np.testing.assert_almost_equal(buf._data.mean(), 0, decimal=1)
 
 
-@pytest.mark.parametrize('freq', [1, 440])
-def test_sine(freq):
+@pytest.mark.parametrize('duration', [1.0])
+@pytest.mark.parametrize('sampling_rate', [96000])
+@pytest.mark.parametrize('frequency', [1000])
+@pytest.mark.parametrize('shape', ['sine', 'square', 'triangle', 'sawtooth'])
+@pytest.mark.parametrize(
+    'gain_db, snr_db',
+    [
+        (-10, None),
+        (0, None),
+        (10, None),
+        (None, -10),
+        (None, 0),
+        (None, 10),
+        (0, 10),
+    ]
+)
+def test_Tone(duration, sampling_rate, frequency, shape, gain_db, snr_db):
 
-    sr = 8000
-    n = sr
+    transform = Tone(
+        frequency,
+        shape=shape,
+        gain_db=gain_db,
+        snr_db=snr_db,
+    )
+    with transform(AudioBuffer(duration, sampling_rate)) as tone:
 
-    with Tone(freq, shape='sine')(AudioBuffer(n, sr, unit='samples'))\
-            as tone:
-        sine = np.sin((np.arange(n, dtype=float) / sr) * 2 * np.pi * freq)
-        np.testing.assert_almost_equal(tone._data, sine, decimal=3)
+        if gain_db is None:
+            gain_db = 0.0
+
+        # Expected root mean square values,
+        # see https://en.wikipedia.org/wiki/Root_mean_square
+        time = (
+            np.arange(duration * sampling_rate, dtype=float)
+            / sampling_rate
+        )
+        omega = 2 * np.pi * frequency
+        if shape == 'sine':
+            expected_tone = np.sin(omega * time)
+            expected_rms_db = 20 * np.log10(1 / np.sqrt(2))
+        elif shape == 'square':
+            expected_tone = -1 * scipy.signal.square(omega * time, duty=0.5)
+            expected_rms_db = 20 * np.log10(1)
+        elif shape == 'triangle':
+            expected_tone = -1 * scipy.signal.sawtooth(omega * time, width=0.5)
+            expected_rms_db = 20 * np.log10(1 / np.sqrt(3))
+        elif shape == 'sawtooth':
+            expected_tone = scipy.signal.sawtooth(omega * time, width=1)
+            expected_rms_db = 20 * np.log10(1 / np.sqrt(3))
+        # Check reference signal has expected RMS value
+        np.testing.assert_almost_equal(
+            rms_db(expected_tone),
+            expected_rms_db,
+            decimal=2,
+        )
+
+        if snr_db is not None:
+            # We add noise to an empty signal,
+            # which is limited to -120 dB
+            gain_db = -120 - snr_db - rms_db(expected_tone)
+
+        expected_volume = rms_db(expected_tone) + gain_db
+
+        # Add gain to expected tone
+        gain = 10 ** (gain_db / 20)
+        expected_tone *= gain
+
+        # We cannot use np.testing.assert_almost_equal()
+        # for comparing square, triangle, and sawtooth signals
+        # as there might be a shift of one sample
+        # from time to time,
+        # which would let the test fail.
+        assert np.mean(np.abs(tone._data - expected_tone)) < 1e4
+        np.testing.assert_almost_equal(
+            rms_db(tone._data),
+            expected_volume,
+            decimal=2,
+        )
 
 
 def test_tone_errors():
