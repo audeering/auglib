@@ -14,6 +14,10 @@ from auglib.transform import Mix, Append, AppendValue, Trim, NormalizeByPeak, \
 from auglib.utils import to_samples, to_db, from_db
 
 
+def rms(signal):
+    return np.sqrt(np.mean(np.square(signal)))
+
+
 @pytest.mark.parametrize(
     'base_dur,aux_dur,sr,unit',
     [
@@ -396,20 +400,85 @@ def test_WhiteNoiseUniform(dur, sr, gain, seed):
             np.testing.assert_almost_equal(buf._data.mean(), 0, decimal=1)
 
 
-@pytest.mark.parametrize('dur,sr,gain,stddev,seed',
-                         [(1.0, 8000, 0.0, 0.3, 1)])
-def test_WhiteNoiseGaussian(dur, sr, gain, stddev, seed):
+@pytest.mark.parametrize('duration', [1.0])
+@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize('stddev', [0.1, 0.2, 0.3, 0.4])
+@pytest.mark.parametrize(
+    'gain_db, snr_db',
+    [
+        (-10, None),
+        (0, None),
+        (10, None),
+        (None, -10),
+        (None, 0),
+        (None, 10),
+        (0, 10),
+    ]
+)
+def test_WhiteNoiseGaussian(duration, sampling_rate, stddev, gain_db, snr_db):
 
+    seed = 0
     auglib.seed(seed)
-    with WhiteNoiseGaussian(stddev=stddev, gain_db=gain)(AudioBuffer(dur, sr))\
-            as noise:
-        with AudioBuffer(len(noise), noise.sampling_rate,
-                         unit='samples') as buf:
+    transform = WhiteNoiseGaussian(
+        stddev=stddev,
+        gain_db=gain_db,
+        snr_db=snr_db,
+    )
+    with transform(AudioBuffer(duration, sampling_rate)) as noise:
+        with AudioBuffer(
+                len(noise),
+                noise.sampling_rate,
+                unit='samples',
+        ) as expected_noise:
+
+            if gain_db is None:
+                gain_db = 0.0
+
+            # Power of white noise is given by std^2
+            noise_volume = 10 * np.log10(stddev ** 2)
+
+            if snr_db is not None:
+                # We add noise to an empty signal,
+                # which is limited to -120 dB
+                gain_db = -120 - snr_db - noise_volume
+
+            expected_volume = noise_volume + gain_db
+            expected_mean = 0
+            expected_stddev = auglib.utils.from_db(gain_db) * stddev
+
+            # Create expected noise signal
             auglib.seed(seed)
-            lib.AudioBuffer_addWhiteNoiseGaussian(buf._obj, gain, stddev)
-            np.testing.assert_equal(noise._data, buf._data)
-            np.testing.assert_almost_equal(buf._data.mean(), 0, decimal=1)
-            np.testing.assert_almost_equal(buf._data.std(), stddev, decimal=1)
+            lib.AudioBuffer_addWhiteNoiseGaussian(
+                expected_noise._obj,
+                gain_db,
+                stddev,
+            )
+            # Double check volume is correct
+            np.testing.assert_almost_equal(
+                20 * np.log10(rms(expected_noise._data)),
+                expected_volume,
+                decimal=1,
+            )
+
+            np.testing.assert_equal(
+                noise._data,
+                expected_noise._data,
+            )
+            np.testing.assert_almost_equal(
+                20 * np.log10(rms(noise._data)),
+                expected_volume,
+                decimal=1,
+            )
+            np.testing.assert_almost_equal(
+                noise._data.mean(),
+                expected_mean,
+                decimal=1,
+            )
+            np.testing.assert_almost_equal(
+                noise._data.std(),
+                expected_stddev,
+                decimal=1,
+            )
 
 
 @pytest.mark.parametrize('dur,sr,gain,seed',

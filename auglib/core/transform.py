@@ -929,7 +929,9 @@ class WhiteNoiseGaussian(Base):
     r"""Adds Gaussian white noise.
 
     Args:
-        gain_db: gain in decibels
+        gain_db: gain in decibels.
+            Ignored if ``snr_db`` is not ``None``
+        snr_db: signal-to-noise ratio in decibels
         stddev: standard deviation
         bypass_prob: probability to bypass the transformation
 
@@ -941,16 +943,36 @@ class WhiteNoiseGaussian(Base):
         array([[-0.12818003,  0.33024564]], dtype=float32)
 
     """
-    def __init__(self, *,
-                 gain_db: Union[float, observe.Base] = 0.0,
-                 stddev: Union[float, observe.Base] = 0.3,
-                 bypass_prob: Union[float, observe.Base] = None):
+    def __init__(
+            self,
+            *,
+            gain_db: Union[float, observe.Base] = 0.0,
+            snr_db: Union[float, observe.Base] = None,
+            stddev: Union[float, observe.Base] = 0.3,
+            bypass_prob: Union[float, observe.Base] = None,
+    ):
         super().__init__(bypass_prob)
         self.gain_db = gain_db
+        self.snr_db = snr_db
         self.stddev = stddev
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
-        gain_db = observe.observe(self.gain_db)
+        if self.snr_db is not None:
+            snr_db = observe.observe(self.snr_db)
+            # For white noise we have
+            # rms_noise_db
+            # = 20 * log10(rms_noise)
+            # = 10 * log10(power_noise)
+            # = 10 * log10(stddev^2)
+            # compare https://en.wikipedia.org/wiki/White_noise
+            rms_noise_db = 10 * np.log10(self.stddev ** 2)
+            # Limit to -120 dB for very soft signals
+            rms_signal_db = 20 * np.log10(max(1e-6, rms(buf._data)))
+            # SNR = RMS_signal^2 / (gain * RMS_noise)^2
+            # => SNR_dB = RMS_signal_dB - gain_dB - RMS_noise_dB
+            gain_db = rms_signal_db - rms_noise_db - snr_db
+        else:
+            gain_db = observe.observe(self.gain_db)
         stddev = observe.observe(self.stddev)
         lib.AudioBuffer_addWhiteNoiseGaussian(buf._obj, gain_db, stddev)
         return buf
@@ -1484,3 +1506,7 @@ class Mask(Base):
         aug_signal[:num_samples][mask] = org_signal[:num_samples][mask]
 
         return buf
+
+
+def rms(signal):
+    return np.sqrt(np.mean(np.square(signal)))
