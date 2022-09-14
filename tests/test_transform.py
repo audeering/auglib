@@ -393,18 +393,72 @@ def test_filter_errors(filter_obj, params):
         filter_obj(*params, design=design)
 
 
-@pytest.mark.parametrize('dur,sr,gain,seed',
-                         [(1.0, 8000, 0.0, 1)])
-def test_WhiteNoiseUniform(dur, sr, gain, seed):
+@pytest.mark.parametrize('duration', [1.0])
+@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize(
+    'gain_db, snr_db',
+    [
+        (-10, None),
+        (0, None),
+        (10, None),
+        (None, -10),
+        (None, 0),
+        (None, 10),
+        (0, 10),
+    ]
+)
+def test_WhiteNoiseUniform(duration, sampling_rate, gain_db, snr_db):
 
+    seed = 0
     auglib.seed(seed)
-    with WhiteNoiseUniform(gain_db=gain)(AudioBuffer(dur, sr)) as noise:
-        with AudioBuffer(len(noise), noise.sampling_rate,
-                         unit='samples') as buf:
+    transform = WhiteNoiseUniform(
+        gain_db=gain_db,
+        snr_db=snr_db,
+    )
+    with transform(AudioBuffer(duration, sampling_rate)) as noise:
+        with AudioBuffer(
+                len(noise),
+                noise.sampling_rate,
+                unit='samples',
+        ) as expected_noise:
+            if gain_db is None:
+                gain_db = 0.0
+
+            # Approximate value of the uniform white noise energy
+            noise_volume = -4.77125
+            if snr_db is not None:
+                gain_db = -120 - snr_db - noise_volume
+
+            expected_volume = noise_volume + gain_db
+            expected_mean = 0
+
+            # Create expected noise signal
             auglib.seed(seed)
-            lib.AudioBuffer_addWhiteNoiseUniform(buf._obj, gain)
-            np.testing.assert_equal(noise._data, buf._data)
-            np.testing.assert_almost_equal(buf._data.mean(), 0, decimal=1)
+            lib.AudioBuffer_addWhiteNoiseUniform(
+                expected_noise._obj,
+                gain_db,
+            )
+            # Double check volume is correct
+            np.testing.assert_almost_equal(
+                rms_db(expected_noise._data),
+                expected_volume,
+                decimal=1,
+            )
+
+            np.testing.assert_equal(
+                noise._data,
+                expected_noise._data,
+            )
+            np.testing.assert_almost_equal(
+                rms_db(noise._data),
+                expected_volume,
+                decimal=1,
+            )
+            np.testing.assert_almost_equal(
+                noise._data.mean(),
+                expected_mean,
+                decimal=1,
+            )
 
 
 @pytest.mark.parametrize('duration', [1.0])

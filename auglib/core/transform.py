@@ -899,10 +899,12 @@ class BandStop(Base):
 
 
 class WhiteNoiseUniform(Base):
-    r"""Adds uniform white noise.
+    """Adds uniform white noise.
 
     Args:
-        gain_db: gain in decibels
+        gain_db: gain in decibels.
+            Ignored if ``snr_db`` is not ``None``
+        snr_db: signal-to-noise ratio in decibels
         bypass_prob: probability to bypass the transformation
 
     Example:
@@ -913,14 +915,38 @@ class WhiteNoiseUniform(Base):
         array([[-0.796302  ,  0.89579505]], dtype=float32)
 
     """
-    def __init__(self, *,
-                 gain_db: Union[float, observe.Base] = 0.0,
-                 bypass_prob: Union[float, observe.Base] = None):
+    def __init__(
+            self,
+            *,
+            gain_db: Union[float, observe.Base] = 0.0,
+            snr_db: Union[float, observe.Base] = None,
+            bypass_prob: Union[float, observe.Base] = None,
+    ):
         super().__init__(bypass_prob)
         self.gain_db = gain_db
+        self.snr_db = snr_db
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
-        gain_db = observe.observe(self.gain_db)
+        if self.snr_db is not None:
+            snr_db = observe.observe(self.snr_db)
+            # For uniform white noise we have
+            # rms_noise_db ≈ -4.77125 dB
+            # deducted as the mean RMS of multiple
+            # randomly initialised Uniform White Noises
+            # with 0 dB as gain
+            #
+            # For short signals and low sampling rates,
+            # rms_noise_db and hence the resulting SNR
+            # can slightly deviate.
+            rms_noise_db = -4.77125
+            rms_signal_db = rms_db(buf._data)
+            gain_db = get_noise_gain_from_requested_snr(
+                rms_signal_db,
+                rms_noise_db,
+                snr_db,
+            )
+        else:
+            gain_db = observe.observe(self.gain_db)
         lib.AudioBuffer_addWhiteNoiseUniform(buf._obj, gain_db)
         return buf
 
@@ -965,6 +991,10 @@ class WhiteNoiseGaussian(Base):
             # = 10 * log10(power_noise)
             # = 10 * log10(stddev^2)
             # compare https://en.wikipedia.org/wiki/White_noise
+            #
+            # For short signals and low sampling rates,
+            # rms_noise_db and hence the resulting SNR
+            # can slightly deviate from the theoretical value.
             rms_noise_db = 10 * np.log10(self.stddev ** 2)
             rms_signal_db = rms_db(buf._data)
             gain_db = get_noise_gain_from_requested_snr(
@@ -1085,6 +1115,10 @@ class Tone(Base):
             snr_db = observe.observe(self.snr_db)
             # RMS values of the tone,
             # see https://en.wikipedia.org/wiki/Root_mean_square
+            #
+            # For short signals and low sampling rates,
+            # rms_tone_db and hence the resulting SNR
+            # can slightly deviate from the theoretical value.
             if self.shape == 'sine':
                 rms = 1 / np.sqrt(2)
             elif self.shape == 'square':
