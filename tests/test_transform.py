@@ -26,101 +26,224 @@ def rms_db(signal):
         (500, 1000, 44100, 'ms'),
     ],
 )
-def test_mix(tmpdir, base_dur, aux_dur, sr, unit):
+def test_Mix_1(tmpdir, base_dur, aux_dur, sr, unit):
 
     unit = unit or 'seconds'
     n_base = to_samples(base_dur, sampling_rate=sr, unit=unit)
     n_aux = to_samples(aux_dur, sampling_rate=sr, unit=unit)
 
     n_min = min(n_base, n_aux)
-    n_max = max(n_base, n_aux)
 
     # init auxiliary buffer
+    with AudioBuffer(aux_dur, sr, value=1.0, unit=unit) as aux:
 
-    aux = AudioBuffer(aux_dur, sr, value=0.0, unit=unit)
-    aux_012345 = AudioBuffer.from_array(list(range(5)), sr)
+        # default mix
 
-    # default mix
+        with AudioBuffer(base_dur, sr, unit=unit) as base:
+            Mix(aux)(base)
+            expected_mix = np.concatenate(
+                [np.ones(n_min), np.zeros(n_base - n_min)]
+            )
+            np.testing.assert_equal(base._data, expected_mix)
 
-    with AudioBuffer(base_dur, sr, unit=unit) as base:
-        Mix(aux)(base)
-        assert np.sum(np.abs(base._data[n_min:])) == 0
-        np.testing.assert_equal(base._data[:n_min], aux._data[:n_min])
+        # from file
 
-    # with transform
-
-    transform = Function(lambda x, _: x + 1)
-    with AudioBuffer(base_dur, sr, unit=unit) as base:
-        Mix(aux, transform=transform)(base)
-        assert np.sum(np.abs(base._data[n_min:])) == 0
-        np.testing.assert_equal(base._data[:n_min], aux._data[:n_min])
-
-    # from file
-
-    path = os.path.join(tmpdir, 'test.wav')
-    aux.write(path)
-    with AudioBuffer(base_dur, sr, unit=unit) as base:
-        Mix(path)(base)
-        assert np.sum(np.abs(base._data[n_min:])) == 0
-        with AudioBuffer.read(path) as aux_from_file:
-            np.testing.assert_equal(
-                base._data[:n_min],
-                aux_from_file._data[:n_min],
+        path = os.path.join(tmpdir, 'test.wav')
+        aux.write(path)
+        with AudioBuffer(base_dur, sr, unit=unit) as base:
+            Mix(path)(base)
+            expected_mix = np.concatenate(
+                [np.ones(n_min), np.zeros(n_base - n_min)]
+            )
+            np.testing.assert_almost_equal(
+                base._data,
+                expected_mix,
+                decimal=4,
             )
 
-    # loop auxiliary
+        # clipping
 
-    with AudioBuffer(base_dur, sr, unit=unit) as base:
-        Mix(aux, loop_aux=True)(base)
-        np.testing.assert_equal(base._data, np.ones(n_base))
-
-    # extend base
-
-    with AudioBuffer(base_dur, sr, unit=unit) as base:
-        Mix(aux, extend_base=True)(base)
-        assert len(base) == n_max
-        np.testing.assert_equal(base._data[:n_aux], np.ones(n_aux))
-
-    # restrict length of auxiliary
-
-    with AudioBuffer(base_dur, sr, unit=unit) as base:
-        Mix(aux, read_dur_aux=1, unit='samples')(base)
-        assert base._data[0] == 1 and np.sum(np.abs(base._data[1:])) == 0
-
-    # read position of auxiliary
-
-    with AudioBuffer(base_dur, sr, unit=unit) as base:
-        Mix(aux, read_pos_aux=n_aux - 1, unit='samples')(base)
-        assert base._data[0] == 1 and np.sum(np.abs(base._data[1:])) == 0
-
-    for i in range(5):
         with AudioBuffer(base_dur, sr, unit=unit) as base:
-            Mix(aux_012345, read_pos_aux=i, unit='samples')(base)
-            np.testing.assert_equal(base._data[:len(aux_012345) - i],
-                                    aux_012345._data[i:])
+            Mix(aux, gain_aux_db=to_db(2), loop_aux=True, clip_mix=True)(base)
+            expected_mix = np.ones(n_base)
+            np.testing.assert_equal(base._data, expected_mix)
 
-    # write position of base
+        # with transform
+        # (needs to be tested at the end as it changes aux)
 
-    with AudioBuffer(base_dur, sr, unit=unit) as base:
-        Mix(aux, write_pos_base=n_base - 1, unit='samples')(base)
-        assert base._data[-1] == 1 and np.sum(np.abs(base._data[:-1])) == 0
+        transform = Function(lambda x, _: x + 1)
+        with AudioBuffer(base_dur, sr, unit=unit) as base:
+            Mix(aux, transform=transform)(base)
+            expected_mix = np.concatenate(
+                [np.ones(n_min) + 1, np.zeros(n_base - n_min)]
+            )
+            np.testing.assert_equal(base._data, expected_mix)
 
-    # set gain of auxiliary
+    values = [0, 1, 2, 3, 4]
+    with AudioBuffer.from_array(values, sr) as aux:
 
-    with AudioBuffer(base_dur, sr, unit=unit) as base:
-        Mix(aux, gain_aux_db=to_db(2), loop_aux=True)(base)
-        assert all(base._data == 2)
-        Mix(aux, gain_base_db=to_db(0.5), loop_aux=True)(base)
-        assert all(base._data == 2)
+        # read position of aux and repeated execution
 
-    # clipping
+        for i in range(5):
+            with AudioBuffer(base_dur, sr, unit=unit) as base:
+                Mix(aux, read_pos_aux=i, unit='samples')(base)
+                expected_mix = np.concatenate(
+                    [values[i:], np.zeros(n_base - len(values[i:]))]
+                )
+                np.testing.assert_equal(base._data, expected_mix)
 
-    with AudioBuffer(base_dur, sr, unit=unit) as base:
-        Mix(aux, gain_aux_db=to_db(2), loop_aux=True, clip_mix=True)(base)
-        assert all(base._data == 1)
 
-    aux.free()
-    aux_012345.free()
+# All duration are given in samples for this test
+@pytest.mark.parametrize('base_duration', [5, 10])
+@pytest.mark.parametrize('aux_duration', [5, 10])
+@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize('write_pos_base', [0, 1])
+@pytest.mark.parametrize('extend_base', [False, True])
+@pytest.mark.parametrize('read_pos_aux', [0, 1])
+@pytest.mark.parametrize('read_dur_aux', [None, 3, 6])
+@pytest.mark.parametrize('loop_aux', [False, True])
+@pytest.mark.parametrize('gain_base_db', [0, 10])
+@pytest.mark.parametrize(
+    'gain_aux_db, snr_db',
+    [
+        (0, None),
+        (10, None),
+        (None, -10),
+        (None, 0),
+        (None, 10),
+        (0, 10),
+    ]
+)
+def test_Mix_2(
+        base_duration,
+        aux_duration,
+        sampling_rate,
+        write_pos_base,
+        extend_base,
+        read_pos_aux,
+        read_dur_aux,
+        loop_aux,
+        gain_base_db,
+        gain_aux_db,
+        snr_db,
+):
+
+    aux_values = np.array(range(aux_duration))
+    base_value = 0.1
+
+    # Skip tests for loop_aux=True and read_dur_aux not None
+    # as this is broken at the moment, see
+    # https://gitlab.audeering.com/tools/pyauglib/-/issues/47
+    if (
+            loop_aux
+            and read_dur_aux is not None
+    ):
+        return
+
+    # Skip test for read_dur_aux longer than len(aux)
+    # and gain_base_db different from 0
+    # as this is borken at the moment, see
+    # https://gitlab.audeering.com/tools/pyauglib/-/issues/76
+    if (
+            gain_base_db != 0
+            and read_dur_aux is not None
+            and read_dur_aux > len(aux_values)
+    ):
+        return
+
+    with AudioBuffer.from_array(aux_values, sampling_rate) as aux:
+        with AudioBuffer(
+                base_duration,
+                sampling_rate,
+                value=base_value,
+                unit='samples',
+        ) as base:
+
+            # Number of samples read for mix from aux
+            if (
+                    read_dur_aux is None
+                    or read_dur_aux == 0
+            ):
+                len_mix_aux = len(aux) - read_pos_aux
+            else:
+                len_mix_aux = read_dur_aux
+
+            # Number of samples available for mix in base
+            len_mix_base = len(base) - write_pos_base
+
+            # If number of samples available for mix in base
+            # is smaller than the number of samples read from aux
+            # we pad zeros to base if extend_base is `True`.
+            # Otherwise we trim the aux signal.
+            gain_base = auglib.utils.from_db(gain_base_db)
+            expected_mix = gain_base * base_value * np.ones(len(base))
+            if len_mix_aux > len_mix_base:
+                if extend_base:
+                    expected_mix = np.concatenate(
+                        [expected_mix, np.zeros(len_mix_aux - len_mix_base)],
+                    )
+                else:
+                    len_mix_aux = len_mix_base
+
+            # read_dur_aux is allowed to extend aux buffer,
+            # in this case zeros are padded at the end.
+            # Those zeros will NOT be included in the RMS_dB calculation
+            len_mix_aux = min(
+                len(aux) - read_pos_aux,
+                len_mix_aux,
+            )
+            aux_values = aux_values[read_pos_aux:read_pos_aux + len_mix_aux]
+
+            # As we use a fixed signal for `base`
+            # the RMS_db value is independent of signal length
+            rms_db_base = rms_db(gain_base * base_value)
+            rms_db_aux = rms_db(aux_values)
+
+            # Get gain factor for aux
+            if gain_aux_db is None:
+                gain_aux_db = 0.0
+            if snr_db is not None:
+                gain_aux_db = rms_db_base - snr_db - rms_db_aux
+            gain_aux = auglib.utils.from_db(gain_aux_db)
+
+            # Add aux values to expected mix
+            mix_start = write_pos_base
+            expected_mix[mix_start:mix_start + len_mix_aux] += (
+                gain_aux * aux_values
+            )
+            # If aux should be looped,
+            # we have to repeat adding aux to the mix
+            mix_start += len_mix_aux
+            if loop_aux:
+                while mix_start < len(expected_mix):
+                    mix_end = min(
+                        mix_start + len_mix_aux,
+                        len(expected_mix),
+                    )
+                    expected_mix[mix_start:mix_end] += (
+                        gain_aux * aux_values[:mix_end - mix_start]
+                    )
+                    mix_start += len_mix_aux
+
+            transform = Mix(
+                aux,
+                gain_base_db=gain_base_db,
+                gain_aux_db=gain_aux_db,
+                snr_db=snr_db,
+                write_pos_base=write_pos_base,
+                read_pos_aux=read_pos_aux,
+                read_dur_aux=read_dur_aux,
+                extend_base=extend_base,
+                unit='samples',
+                loop_aux=loop_aux,
+            )
+            transform(base)
+
+            np.testing.assert_almost_equal(
+                base._data,
+                expected_mix,
+                decimal=5,
+            )
 
 
 @pytest.mark.parametrize(

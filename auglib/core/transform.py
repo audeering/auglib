@@ -123,43 +123,58 @@ class Select(Base):
 
 
 class Mix(Base):
-    r"""Mix the audio buffer (base) with another buffer (auxiliary) by
-    adding the auxiliary buffer to the base buffer.
+    r"""Mix two audio buffers.
 
-    Base and auxiliary buffer may differ in length but must have the
-    same sampling rate.
+    Mix a base and auxiliary buffer
+    which may differ in length,
+    but must have the same sampling rate.
+    Individual gains can be set for both signals
+    (``gain_base_db`` and ``gain_aux_db``).
+    If ``snr_db`` is specified,
+    ``gain_aux_db`` is automatically calculated
+    to match the requested signal-to-noise ratio.
+    The signal-to-noise ratio
+    refers only to the overlapping parts
+    of the base and auxiliary buffer.
 
-    Mix the content of an auxiliary buffer ``aux`` on top of the base
-    buffer (possibly changing its content). Individual gains can be set
-    for the two signals (``gain_base_db`` and ``gain_aux_db`` expressed
-    in decibels). The starting point of the mixing (with respect to the
-    base buffer) can be set via the ``write_pos_base`` argument.
-    Selecting a sub-segment of the auxiliary buffer is possible by means of
-    ``read_pos_aux`` (the initial position of the reading pointer) and
-    ``read_dur_aux`` (the total length of the selected segment). Note
-    ``read_dur_aux = None`` (default value) has the effect of selecting
-    the whole auxiliary buffer. In order to force clipping of the mixed
-    signal between 1.0 and -1.0, the ``clip_mix`` argument can be
-    set. In order to allow the looping of the auxiliary buffer (or the
-    selected sub-segment), the ``loop_aux`` argument can be used. In case
-    the auxiliary buffer (or the selected sub-segment) ends beyond the
-    original ending point, the extra portion will be discarded, unless
-    the ``extend_base`` is set turned on, in which case the base buffer is
-    extended accordingly. By default, the auxiliary buffer is mixed
-    into the base buffer exactly once. However, the number of repetitions
-    can be controlled vith ``num_repeat``. Usually, this only makes sense
-    when reading from random positions or random files.
+    ``write_pos_base`` specifies the starting point
+    of adding the auxiliary signal
+    to the the base buffer.
+    Selecting a sub-segment of the auxiliary buffer is possible
+    with selecting a starting point (``read_pos_aux``)
+    and/or specifying its duration (``read_dur_aux``).
+
+    In order to allow the looping of the auxiliary buffer
+    or its selected sub-segment,
+    the ``loop_aux`` argument can be used.
+    In case the auxiliary buffer ends beyond
+    the original ending point,
+    the extra portion will be discarded,
+    unless ``extend_base`` is set,
+    in which case the base buffer is extended accordingly.
+
+    By default,
+    the auxiliary buffer is mixed
+    into the base buffer exactly once.
+    However, the number of repetitions
+    can be controlled with ``num_repeat``.
+    Usually,
+    this only makes sense
+    when reading from random positions
+    or random files.
 
     Args:
         aux: auxiliary buffer
         gain_base_db: gain of base buffer
-        gain_aux_db: gain of auxiliary buffer
+        gain_aux_db: gain of auxiliary buffer.
+            Ignored if ``snr_db`` is not ``None``
+        snr_db: signal-to-noise (base-to-aux) ratio in decibels
         write_pos_base: write position of base buffer (see ``unit``)
         read_pos_aux: read position of auxiliary buffer (see ``unit``)
-        read_dur_aux: duration to read from auxiliary buffer (see
-            ``unit``). Set to None to read the whole buffer.
-        clip_mix: clip amplitude values of base buffer to the [-1, 1]
-            interval (after mixing)
+        read_dur_aux: duration to read from auxiliary buffer
+            (see ``unit``).
+            Set to ``None`` or ``0`` to read the whole buffer
+        clip_mix: clip amplitude values of mixed signal to [-1, 1]
         loop_aux: loop auxiliary buffer if shorter than base buffer
         extend_base: if needed, extend base buffer to total required
             length (considering length of auxiliary buffer)
@@ -184,6 +199,7 @@ class Mix(Base):
             *,
             gain_base_db: Union[float, observe.Base] = 0.0,
             gain_aux_db: Union[float, observe.Base] = 0.0,
+            snr_db: Union[float, observe.Base] = None,
             write_pos_base: Union[int, float, observe.Base, Time] = 0.0,
             read_pos_aux: Union[int, float, observe.Base, Time] = 0.0,
             read_dur_aux: Union[int, float, observe.Base, Time] = None,
@@ -200,6 +216,7 @@ class Mix(Base):
         self.aux = aux
         self.gain_base_db = gain_base_db
         self.gain_aux_db = gain_aux_db
+        self.snr_db = snr_db
         self.write_pos_base = write_pos_base
         self.read_pos_aux = read_pos_aux
         self.read_dur_aux = read_dur_aux or 0
@@ -230,13 +247,40 @@ class Mix(Base):
             unit=self.unit,
             length=len(aux),
         )
-        gain_aux_db = observe.observe(self.gain_aux_db)
         gain_base_db = observe.observe(self.gain_base_db)
         clip_mix = observe.observe(self.clip_mix)
         loop_aux = observe.observe(self.loop_aux)
         extend_base = observe.observe(self.extend_base)
         if self.transform:
             self.transform(aux)
+        if self.snr_db is not None:
+            snr_db = observe.observe(self.snr_db)
+            # Estimate gain by considering only overlapping parts
+            # of the buffers
+            len_base = len(base) - write_pos_base
+            if read_dur_aux == 0:
+                len_aux = len(aux) - read_pos_aux
+            else:
+                len_aux = min(
+                    len(aux) - read_pos_aux,
+                    read_dur_aux,
+                )
+            if len_base > len_aux and not loop_aux:
+                len_base = len_aux
+            elif len_aux > len_base and not extend_base:
+                len_aux = len_base
+            rms_base_db = (
+                gain_base_db
+                + rms_db(base._data[write_pos_base:len_base])
+            )
+            rms_aux_db = rms_db(aux._data[read_pos_aux:read_pos_aux + len_aux])
+            gain_aux_db = get_noise_gain_from_requested_snr(
+                rms_base_db,
+                rms_aux_db,
+                snr_db,
+            )
+        else:
+            gain_aux_db = observe.observe(self.gain_aux_db)
         lib.AudioBuffer_mix(
             base._obj,
             aux._obj,
