@@ -12,7 +12,7 @@ set(AUGLIB_DIR "" CACHE PATH "Path to the auglib directory.")
 
 add_library(cauglib SHARED cauglib.cpp)
 
-target_include_directories(cauglib PRIVATE 
+target_include_directories(cauglib PRIVATE
     ${CONAN_INCLUDE_DIRS}
     ${AUGLIB_DIR}/soundtouch/include
     ${AUGLIB_DIR}/FFTConvolver
@@ -27,7 +27,7 @@ find_library(SoundTouch SoundTouch
 
 find_library(FFTConvolver FFTConvolver
     NAMES libFFTConvolver
-    HINTS "${AUGLIB_DIR}/Release/lib"
+    HINTS "${AUGLIB_DIR}/build/lib"
     REQUIRED
 )
 
@@ -35,7 +35,7 @@ find_library(opencore-amrnb opencore-amrnb REQUIRED)
 
 find_library(augdeering augdeering
     NAMES libaugdeering
-    HINTS "${AUGLIB_DIR}/Release/lib"
+    HINTS "${AUGLIB_DIR}/build/lib"
     REQUIRED
 )
 
