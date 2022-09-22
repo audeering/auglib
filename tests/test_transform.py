@@ -1,5 +1,6 @@
 import os
 
+import audresample
 import numpy as np
 import pytest
 import scipy
@@ -904,3 +905,43 @@ def test_mask(signal, sampling_rate, transform, start_pos,
         mask(buf)
         augmented_signal = buf.to_array()
         np.testing.assert_equal(augmented_signal, expected)
+
+
+@pytest.mark.parametrize(
+    'signal, original_rate, target_rate',
+    [
+        (
+            np.random.uniform(-1, 1, (1, 16000)).astype(np.float32),
+            16000,
+            8000,
+        ),
+        (
+            np.random.uniform(-1, 1, (1, 16000)).astype(np.float32),
+            16000,
+            16000,
+        ),
+        (
+            np.random.uniform(-1, 1, (1, 8000)).astype(np.float32),
+            8000,
+            16000,
+        ),
+    ]
+)
+@pytest.mark.parametrize(
+    'override',
+    [False, True],
+)
+def test_resample(signal, original_rate, target_rate, override):
+
+    expected = audresample.resample(signal, original_rate, target_rate)
+
+    transform = auglib.transform.Resample(target_rate, override=override)
+    with AudioBuffer.from_array(signal, original_rate) as buf:
+        transform(buf)
+        resampled = buf.to_array()
+        if override:
+            assert buf.sampling_rate == target_rate
+        else:
+            assert buf.sampling_rate == original_rate
+
+    np.testing.assert_equal(resampled, expected)

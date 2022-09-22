@@ -1,5 +1,5 @@
 #include <auglib.h>
-#include <mutex>  
+#include <mutex>
 
 
 #define MAX_MSG_LEN 2048
@@ -16,13 +16,13 @@
 
 
 extern "C"
-{    
+{
     std::mt19937 auglib_randEngine(1);
-    
+
 
     bool _has_exception = false;
     char _exception_msg[MAX_MSG_LEN];
-    std::mutex _exception_mutex; 
+    std::mutex _exception_mutex;
 
     void _copy_string(char *dst, size_t size, const char *src)
     {
@@ -30,19 +30,19 @@ extern "C"
         if (n >= size)
         {
             n = size - 1;
-        }            
-        memcpy(dst, src, n); 
+        }
+        memcpy(dst, src, n);
         dst[n] = '\0';
     }
-    
+
     void _set_exception(const std::exception &ex)
     {
         std::lock_guard<std::mutex> lock(_exception_mutex);
-        // first come, first stored...        
+        // first come, first stored...
         if (!_has_exception)
-        {         
+        {
             _has_exception = true;
-            _copy_string(_exception_msg, MAX_MSG_LEN, ex.what());          
+            _copy_string(_exception_msg, MAX_MSG_LEN, ex.what());
         }
     }
 
@@ -56,13 +56,13 @@ extern "C"
         else
         {
             buffer[0] = '\0';
-        }        
+        }
         return _has_exception;
     }
 
     void auglib_release_exception()
     {
-        std::lock_guard<std::mutex> lock(_exception_mutex);        
+        std::lock_guard<std::mutex> lock(_exception_mutex);
         _has_exception = false;
     }
 
@@ -70,13 +70,13 @@ extern "C"
     {
         if (seed == 0)
         {
-            seed = time(NULL);            
+            seed = time(NULL);
         }
-        
+
         auglib_randEngine.seed(seed);
         srand(seed);
     }
-    
+
     cAudioBuffer *AudioBuffer_new(size_t length_samples, unsigned int sampling_rate)
     {
         return new cAudioBuffer(length_samples, sampling_rate);
@@ -87,13 +87,13 @@ extern "C"
         delete obj;
     }
 
-    const float *AudioBuffer_data(cAudioBuffer *obj) 
+    const float *AudioBuffer_data(cAudioBuffer *obj)
     {
         return obj->data();
     }
 
     void AudioBuffer_dump(cAudioBuffer *obj)
-    {        
+    {
         const float *data = obj->data();
         for (size_t i = 0; i < obj->size(); i++)
         {
@@ -107,13 +107,18 @@ extern "C"
         return obj->size();
     }
 
+    void AudioBuffer_setSampleRate(cAudioBuffer *obj, unsigned int sample_rate)
+    {
+        obj->setSampleRate(sample_rate);
+    }
+
     void AudioBuffer_mix(cAudioBuffer *obj, const cAudioBuffer *auxBuf,
       float gainBase_dB = 0.0, float gainAux_dB = 0.0, size_t writePos_base = 0,
       size_t readPos_aux = 0, size_t readLength_aux = 0, bool clipMix = false,
       bool loopAux = false, bool extendBase = false)
     {
-        CALL(obj->mix(*auxBuf, gainBase_dB, gainAux_dB, writePos_base, readPos_aux, 
-                      readLength_aux, clipMix, loopAux, extendBase))        
+        CALL(obj->mix(*auxBuf, gainBase_dB, gainAux_dB, writePos_base, readPos_aux,
+                      readLength_aux, clipMix, loopAux, extendBase))
     }
 
     void AudioBuffer_append(cAudioBuffer *obj, cAudioBuffer *aux, size_t readPos_aux = 0, size_t readLength_aux = 0)
@@ -137,7 +142,7 @@ extern "C"
     }
 
     void AudioBuffer_addPinkNoise(cAudioBuffer *obj, float gain_dB)
-    {        
+    {
         CALL(obj->addPinkNoise(gain_dB, auglib_randEngine, false))
     }
 

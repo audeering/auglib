@@ -1,12 +1,13 @@
+import ctypes
+from functools import wraps
 import typing
 from typing import Callable, Optional, Sequence, Union
-from functools import wraps
-import ctypes
 
-import audeer
 import numpy as np
 
+import audeer
 import audobject
+import audresample
 
 from auglib.core.api import lib
 from auglib.core.buffer import AudioBuffer
@@ -1653,3 +1654,80 @@ def get_noise_gain_from_requested_snr(rms_signal_db, rms_noise_db, snr_db):
     # => SNR_dB = RMS_signal_dB - gain_dB - RMS_noise_dB
     gain_db = rms_signal_db - rms_noise_db - snr_db
     return gain_db
+
+
+class Resample(Base):
+    r"""Resample signal to another sampling rate.
+
+    Changes number of samples of the audio buffer
+    by applying :func:`audresample.resample` to the signal.
+    By default,
+    this will not change the sampling rate of the audio buffer.
+    However,
+    if ``override=True`` the sampling rate
+    of the audio buffer will be set to ``target_rate``.
+    This is useful to provide a desired input sampling rate
+    for other transforms such as :class:`auglib.transform.AMRNB`.
+    But the sampling rate of augmented signals
+    generated with :class:`auglib.Augment` is never affected.
+
+    Args:
+        target_rate: target rate in Hz
+        override: override sampling rate of buffer with target rate
+        bypass_prob: probability to bypass the transformation
+
+    Example:
+        >>> seed(0)
+        >>> transform = Resample(8000)
+        >>> with AudioBuffer(4, 16000, value=0, unit='samples') as buf:
+        ...     transform(buf)
+        array([[0., 0.]], dtype=float32)
+
+    """
+    def __init__(
+            self,
+            target_rate: typing.Union[int, observe.List],
+            *,
+            override: bool = False,
+            bypass_prob: typing.Union[float, observe.Base] = None,
+    ):
+        super().__init__(bypass_prob)
+        self.target_rate = target_rate
+        self.override = override
+
+    def _call(self, buf: AudioBuffer) -> AudioBuffer:
+
+        original_rate = buf.sampling_rate
+        target_rate = observe.observe(self.target_rate)
+
+        if original_rate != target_rate:
+
+            # resample buffer
+            x = buf.to_array(copy=False)
+            y = audresample.resample(
+                x,
+                original_rate,
+                target_rate,
+            )
+
+            # fit buffer size to result
+            if y.size < x.size:
+                Trim(
+                    duration=y.size,
+                    unit='samples',
+                )(buf)
+            elif y.size > x.size:
+                AppendValue(
+                    duration=y.size - x.size,
+                    unit='samples',
+                )(buf)
+
+            # copy result to buffer
+            buf._data[:] = y
+
+            # possibly change sampling rate of buffer
+            if self.override:
+                buf.sampling_rate = target_rate
+                lib.AudioBuffer_setSampleRate(buf._obj, target_rate)
+
+        return buf

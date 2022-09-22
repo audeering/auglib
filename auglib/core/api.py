@@ -28,6 +28,9 @@ lib.AudioBuffer_data.restype = ctypes.POINTER(ctypes.c_float)
 lib.AudioBuffer_size.argtypes = [ctypes.c_void_p]
 lib.AudioBuffer_size.restype = ctypes.c_size_t
 
+lib.AudioBuffer_setSampleRate.argtypes = [ctypes.c_void_p, ctypes.c_uint]
+lib.AudioBuffer_setSampleRate.restype = ctypes.c_void_p
+
 lib.auglib_check_exception.argtypes = [ctypes.c_char_p, ctypes.c_size_t]
 lib.auglib_check_exception.restype = ctypes.c_bool
 

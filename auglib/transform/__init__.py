@@ -149,6 +149,7 @@ from auglib.core.transform import (
     Mix,
     NormalizeByPeak,
     PinkNoise,
+    Resample,
     Select,
     Tone,
     Trim,

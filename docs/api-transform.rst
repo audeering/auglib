@@ -117,6 +117,12 @@ PinkNoise
 .. autoclass:: PinkNoise
     :members:
 
+Resample
+--------
+
+.. autoclass:: Resample
+    :members:
+
 Select
 ------
 
