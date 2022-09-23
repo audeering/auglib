@@ -666,18 +666,91 @@ def test_WhiteNoiseGaussian(duration, sampling_rate, stddev, gain_db, snr_db):
             )
 
 
-@pytest.mark.parametrize('dur,sr,gain,seed',
-                         [(1.0, 8000, 0.0, 1)])
-def test_PinkNoise(dur, sr, gain, seed):
-
+@pytest.mark.parametrize('duration', [1.0])
+@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize(
+    'gain_db, snr_db',
+    [
+        (-10, None),
+        (0, None),
+        (10, None),
+        (None, -10),
+        (None, 0),
+        (None, 10),
+        (0, 10),
+    ]
+)
+def test_PinkNoise(duration, sampling_rate, gain_db, snr_db):
+    seed = 0
     auglib.seed(seed)
-    with PinkNoise(gain_db=gain)(AudioBuffer(dur, sr)) as noise:
-        with AudioBuffer(len(noise), noise.sampling_rate,
-                         unit='samples') as buf:
-            auglib.seed(seed)
-            lib.AudioBuffer_addPinkNoise(buf._obj, gain)
-            np.testing.assert_equal(noise._data, buf._data)
-            np.testing.assert_almost_equal(buf._data.mean(), 0, decimal=1)
+    transform = PinkNoise(
+        gain_db=gain_db,
+        snr_db=snr_db,
+    )
+
+    with transform(AudioBuffer(duration, sampling_rate)) as noise:
+        with AudioBuffer(
+                len(noise),
+                noise.sampling_rate,
+                unit='samples',
+        ) as expected_noise:
+
+            if gain_db is None:
+                gain_db = 0.0
+
+            # Get the empiric measure of the RMS energy for Pink Noise
+            with AudioBuffer(
+                    len(noise), noise.sampling_rate, unit='samples'
+            ) as tmp_pink_noise:
+                auglib.seed(seed)
+                lib.AudioBuffer_addPinkNoise(
+                    tmp_pink_noise._obj,
+                    0,
+                )
+                noise_volume = rms_db(tmp_pink_noise._data)
+
+                if snr_db is not None:
+                    gain_db = -120 - snr_db - noise_volume
+
+                expected_volume = noise_volume + gain_db
+
+                if snr_db is not None:
+                    lib.AudioBuffer_mix(
+                        expected_noise._obj,
+                        tmp_pink_noise._obj,
+                        0,
+                        gain_db,
+                        0,
+                        0,
+                        0,
+                        False,
+                        False,
+                        False,
+                    )
+                else:
+                    auglib.seed(seed)
+                    lib.AudioBuffer_addPinkNoise(
+                        expected_noise._obj,
+                        gain_db,
+                    )
+
+            # Check volume is correct
+            np.testing.assert_almost_equal(
+                rms_db(expected_noise._data),
+                expected_volume,
+                decimal=1,
+            )
+
+            np.testing.assert_almost_equal(
+                rms_db(noise._data),
+                expected_volume,
+                decimal=1,
+            )
+
+            np.testing.assert_equal(
+                noise._data,
+                expected_noise._data,
+            )
 
 
 @pytest.mark.parametrize('duration', [1.0])

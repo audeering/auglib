@@ -1059,6 +1059,8 @@ class PinkNoise(Base):
 
     Args:
         gain_db: gain in decibels
+            Ignored if ``snr_db`` is not ``None``
+        snr_db: signal-to-noise ratio in decibels
         bypass_prob: probability to bypass the transformation
 
     Example:
@@ -1069,15 +1071,49 @@ class PinkNoise(Base):
         array([[0.06546371, 0.06188003]], dtype=float32)
 
     """
-    def __init__(self, *,
-                 gain_db: Union[float, observe.Base] = 0.0,
-                 bypass_prob: Union[float, observe.Base] = None):
+    def __init__(
+            self,
+            *,
+            gain_db: Union[float, observe.Base] = 0.0,
+            snr_db: Union[float, observe.Base] = None,
+            bypass_prob: Union[float, observe.Base] = None,
+    ):
         super().__init__(bypass_prob)
         self.gain_db = gain_db
+        self.snr_db = snr_db
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
-        gain_db = observe.observe(self.gain_db)
-        lib.AudioBuffer_addPinkNoise(buf._obj, gain_db)
+        if self.snr_db is not None:
+            snr_db = observe.observe(self.snr_db)
+            # The RMS value of pink noise signals
+            # generated with a fixed gain
+            # has a larger fluctuation
+            # than for white noise (> 1dB).
+            # To provide a better result
+            # for the requested SNR value
+            # we measure explicitly the actual RMS
+            # of the generated pink noise vector
+            # and adjust the gain afterwards.
+            with AudioBuffer(
+                    len(buf),
+                    buf.sampling_rate,
+                    unit='samples',
+            ) as tmp:
+                lib.AudioBuffer_addPinkNoise(tmp._obj, 0)
+                rms_noise_db = rms_db(tmp._data)
+                rms_signal_db = rms_db(buf._data)
+                gain_db = get_noise_gain_from_requested_snr(
+                    rms_signal_db,
+                    rms_noise_db,
+                    snr_db,
+                )
+                lib.AudioBuffer_mix(
+                    buf._obj, tmp._obj, 0, gain_db, 0, 0, 0, False, False,
+                    False
+                )
+        else:
+            gain_db = observe.observe(self.gain_db)
+            lib.AudioBuffer_addPinkNoise(buf._obj, gain_db)
         return buf
 
 
