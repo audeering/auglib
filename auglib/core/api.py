@@ -130,6 +130,19 @@ lib.AudioBuffer_getPeak.restype = ctypes.c_float
 lib.AudioBuffer_getPeakDecibels.argtypes = [ctypes.c_void_p]
 lib.AudioBuffer_getPeakDecibels.restype = ctypes.c_float
 
+lib.AudioBuffer_getRms.argtypes = [ctypes.c_void_p]
+lib.AudioBuffer_getRms.restype = ctypes.c_float
+
+lib.AudioBuffer_getRmsDecibels.argtypes = [ctypes.c_void_p]
+lib.AudioBuffer_getRmsDecibels.restype = ctypes.c_float
+
+lib.AudioBuffer_prepend.argtypes = [ctypes.c_void_p, ctypes.c_void_p,
+                                    ctypes.c_size_t, ctypes.c_size_t]
+lib.AudioBuffer_prepend.restype = ctypes.c_void_p
+
+lib.AudioBuffer_prependSilence.argtypes = [ctypes.c_void_p, ctypes.c_size_t]
+lib.AudioBuffer_prependSilence.restype = ctypes.c_void_p
+
 lib.AudioBuffer_AMRNB.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int]
 lib.AudioBuffer_AMRNB.restype = ctypes.c_void_p
 

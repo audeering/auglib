@@ -233,4 +233,24 @@ extern "C"
     {
         CALL(obj->AMRNB(bitRate, dtx))
     }
+
+    void AudioBuffer_prepend(cAudioBuffer *obj, cAudioBuffer *aux, size_t readPos_aux = 0, size_t readLength_aux = 0)
+    {
+        CALL(obj->prepend(*aux, readPos_aux, readLength_aux))
+    }
+
+    void AudioBuffer_prependSilence(cAudioBuffer *obj, size_t length = 0)
+    {
+        CALL(obj->prependSilence(length))
+    }
+
+    void AudioBuffer_getRms(cAudioBuffer *obj)
+    {
+        CALL(obj->getRms())
+    }
+
+    void AudioBuffer_getRmsDecibels(cAudioBuffer *obj)
+    {
+        CALL(obj->getRmsDecibels())
+    }
 }
