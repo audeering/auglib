@@ -304,58 +304,79 @@ def test_append(tmpdir, base_dur, aux_dur, sr, unit):
     aux.free()
 
 
+# Trim tests that should be independent of fill
+@pytest.mark.parametrize('fill', ['none', 'zeros', 'loop'])
 @pytest.mark.parametrize(
-    'start,dur,sr,unit',
+    'start_pos, duration, unit, signal, expected_signal',
     [
-        (0.1, 0.8, 8000, 'seconds'),
-        (0.25, 0.5, 8000, 'seconds'),
-        (0.1, None, 8000, 'seconds'),
-        (0.1, 0.8, 16000, 'seconds'),
-        (0.25, 0.5, 16000, 'seconds'),
-        (0.1, None, 16000, 'seconds'),
-        pytest.param(
-            -1.0, 0.8, 8000, 'seconds',
+        (0, None, 'samples', [1, 2, 3], [1, 2, 3]),
+        (0, 2, 'samples', [1, 2, 3], [1, 2]),
+        (1, 2, 'samples', [1, 2, 3], [2, 3]),
+        # Errors raised by pyauglib
+        pytest.param(  # negative start (seconds)
+            -1.0, None, 'seconds', [1, 2, 3], None,
             marks=pytest.mark.xfail(raises=ValueError),
-        ),  # negative start (seconds) -> error from pyauglib
-        pytest.param(
-            -1, 10, 8000, 'samples',
-            marks=pytest.mark.xfail(raises=ValueError)
-        ),  # negative start -> error from pyauglib
-        pytest.param(
-            0, -1, 8000, 'samples',
-            marks=pytest.mark.xfail(raises=ValueError)
-        ),  # negative duration -> error from pyauglib
-        pytest.param(
-            42.0, 0.5, 8000, 'seconds',
-            marks=pytest.mark.xfail(raises=RuntimeError)
-        ),  # start > buffer length -> error from auglib (C++ side)
+        ),
+        pytest.param(  # negative start
+            -1, None, 'samples', [1, 2, 3], None,
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+        pytest.param(  # negative duration
+            0, -1, 'samples', [1, 2, 3], None,
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+        # Errors raised by auglib (C++ library)
+        pytest.param(  # empty buffer is not supported
+            0, None, 'samples', [], [],
+            marks=pytest.mark.xfail(raises=RuntimeError),
+        ),
+        pytest.param(  # empty buffer is not supported
+            0, 0, 'samples', [], [],
+            marks=pytest.mark.xfail(raises=RuntimeError),
+        ),
+        pytest.param(  # start > buffer length
+            4, None, 'samples', [1, 2, 3], None,
+            marks=pytest.mark.xfail(raises=RuntimeError),
+        ),
     ]
 )
-def test_trim(start, dur, sr, unit):
-    # start from a step signal (0.5s of zeros, then 0.5s of ones) and trim out
-    # different portions
-    block_dur = 0.5
-    target_start = start
-    if target_start is None:
-        target_start = 0
-    target_dur = dur
-    if target_dur is None:
-        target_dur = 2 * block_dur - target_start
-    target_length = int(round(target_dur * sr))
-
-    try:
-        target_array = np.append(
-            np.zeros(int((block_dur - target_start) * sr)),
-            np.ones(int((target_start + target_dur - block_dur) * sr))
+def test_Trim1(fill, start_pos, duration, unit, signal, expected_signal):
+    with AudioBuffer.from_array(signal, 8000) as buf:
+        transform = Trim(
+            start_pos=start_pos,
+            duration=duration,
+            fill=fill,
+            unit=unit,
         )
-    except ValueError:
-        target_array = None
+        transform(buf)
+        np.testing.assert_equal(buf._data, np.array(expected_signal))
 
-    with AudioBuffer(block_dur, sr) as buf:
-        AppendValue(block_dur, value=1.0)(buf)
-        Trim(start_pos=start, duration=dur, unit=unit)(buf)
-        assert len(buf) == target_length
-        np.testing.assert_equal(target_array, buf._data)
+
+# Trim tests that should dependent of fill
+@pytest.mark.parametrize(
+    'start_pos, duration, unit, fill, signal, expected_signal',
+    [
+        (2, 2, 'samples', 'none', [1, 2, 3], [3]),
+        (2, 2, 'samples', 'zeros', [1, 2, 3], [3, 0]),
+        (2, 2, 'samples', 'loop', [1, 2, 3], [3, 1]),
+        (2, 3, 'samples', 'none', [1, 2, 3], [3]),
+        (2, 3, 'samples', 'zeros', [1, 2, 3], [3, 0, 0]),
+        (2, 3, 'samples', 'loop', [1, 2, 3], [3, 1, 2]),
+        (2, 4, 'samples', 'none', [1, 2, 3], [3]),
+        (2, 4, 'samples', 'zeros', [1, 2, 3], [3, 0, 0, 0]),
+        (2, 4, 'samples', 'loop', [1, 2, 3], [3, 1, 2, 3]),
+    ]
+)
+def test_Trim2(start_pos, duration, unit, fill, signal, expected_signal):
+    with AudioBuffer.from_array(signal, 8000) as buf:
+        transform = Trim(
+            start_pos=start_pos,
+            duration=duration,
+            fill=fill,
+            unit=unit,
+        )
+        transform(buf)
+        np.testing.assert_equal(buf._data, np.array(expected_signal))
 
 
 @pytest.mark.parametrize('n,sr',

@@ -54,20 +54,18 @@ class Base(audobject.Object):
 
 
 def _check_data_decorator(func):
-    # Preserve docstring, see:
+    # Wrap func to preserve docstring, see:
     # https://docs.python.org/3.6/library/functools.html#functools.wraps
     @wraps(func)
     def inner(*args, **kwargs):
         self = args[1]
-        old_ptr = ctypes.addressof(lib.AudioBuffer_data(self._obj).contents)
-        old_length = lib.AudioBuffer_size(self._obj)
         func(*args, **kwargs)
-        new_ptr = ctypes.addressof(lib.AudioBuffer_data(self._obj).contents)
-        new_length = lib.AudioBuffer_size(self._obj)
-        if old_ptr != new_ptr or old_length != new_length:
-            length = lib.AudioBuffer_size(self._obj)
-            self._data = np.ctypeslib.as_array(lib.AudioBuffer_data(self._obj),
-                                               shape=(length,))
+        # Adjust length of buffer to desired length after transform
+        length = lib.AudioBuffer_size(self._obj)
+        self._data = np.ctypeslib.as_array(
+            lib.AudioBuffer_data(self._obj),
+            shape=(length,),
+        )
         return self
     return inner
 
