@@ -22,7 +22,10 @@ def test_file(tmpdir, dur, sr):
     x = np.random.random(n).astype(np.float32)
 
     with auglib.AudioBuffer.from_array(x, sr) as buf:
+        buf.write(path, root=tmpdir, sampling_rate=48000)
+        assert audiofile.sampling_rate(os.path.join(tmpdir, path)) == 48000
         buf.write(path, root=tmpdir)
+        assert audiofile.sampling_rate(os.path.join(tmpdir, path)) == sr
     with auglib.AudioBuffer.read(path, root=tmpdir) as buf:
         np.testing.assert_almost_equal(buf._data, x, decimal=3)
 

@@ -189,14 +189,25 @@ class AudioBuffer:
         deprecated_argument='precision',
         removal_version='0.10.0',
     )
-    def write(self, path: Union[str, observe.Base], *, root: str = None,
-              bit_depth: int = 16, normalize: bool = False):
+    def write(
+            self,
+            path: Union[str, observe.Base],
+            *,
+            root: str = None,
+            sampling_rate: int = None,
+            bit_depth: int = 16,
+            normalize: bool = False,
+    ):
         r"""Write buffer to a audio file.
 
         Args:
-            path: file name of output audio file. The format (WAV, FLAC, OGG)
+            path: file name of output audio file.
+                The format (WAV, FLAC, OGG)
                 will be inferred from the file name
             root: optional root directory
+            sampling_rate: sampling rate of written audio file.
+                If ``None``
+                the sampling rate of the buffer is used
             bit_depth: bit depth of written file in bit, can be 8, 16,
                 24 for WAV and FLAC files, and in addition 32 for WAV files
             normalize: normalize audio data before writing
@@ -204,7 +215,9 @@ class AudioBuffer:
         """
         path = safe_path(path, root=root)
         audeer.mkdir(os.path.dirname(path))
-        af.write(path, self._data, self.sampling_rate, bit_depth=bit_depth,
+        if sampling_rate is None:
+            sampling_rate = self.sampling_rate
+        af.write(path, self._data, sampling_rate, bit_depth=bit_depth,
                  normalize=normalize)
 
     @staticmethod
