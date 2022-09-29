@@ -389,38 +389,58 @@ def test_normalize(n, sr):
         assert np.abs(buf._data).max() == 1.0
 
 
-@pytest.mark.parametrize('n,sr',
-                         [(10, 8000),
-                          (10, 44100)])
-def test_clip(n, sr):
+@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize(
+    'threshold, normalize, signal, expected_signal',
+    [
+        (1.0, False, [-1.5, -0.5, 0.5, 1.5], [-1.0, -0.5, 0.5, 1.0]),
+        (0.5, False, [-1.5, 0.5], [-0.5, 0.5]),
+        (0.5, True, [-1.5, 0.5], [-1.0, 1.0]),
+        (0.5, True, [-1.5, 0.25], [-1.0, 0.5]),
+    ],
+)
+def test_Clip(sampling_rate, threshold, normalize, signal, expected_signal):
 
-    x = np.c_[np.random.uniform(-1.5, 1.0, n // 2),
-              np.random.uniform(1.0, 1.5, n - (n // 2))]
-    x = x.flatten()
-    np.random.shuffle(x)
+    with AudioBuffer.from_array(signal, sampling_rate) as buf:
+        transform = Clip(
+            threshold=auglib.utils.to_db(threshold),
+            normalize=normalize,
+        )
+        transform(buf)
+        np.testing.assert_almost_equal(
+            buf._data,
+            np.array(expected_signal, dtype=np.float32),
+            decimal=4,
+        )
 
-    with AudioBuffer.from_array(x, sr) as buf:
-        Clip()(buf)
-        np.isclose(np.abs(buf._data).max(), 1.0)
 
-    with AudioBuffer.from_array(x, sr) as buf:
-        Clip(threshold=0.5)(buf)
-        np.isclose(np.abs(buf._data).max(), 0.5)
+@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize(
+    'ratio, normalize, soft, signal, expected_signal',
+    [
+        (0.5, False, False, [0.5, 2.0], [0.5, 0.5]),
+        (0.5, False, True, [0.5, 2.0], [0.5, 0.5]),
+        (0.5, True, False, [0.5, 2.0], [1.0, 1.0]),
+        (1 / 3, False, False, [0.5, 1.0, 2.0], [0.5, 1.0, 1.0]),
+    ],
+)
+def test_ClipByRatio(
+        sampling_rate,
+        ratio,
+        normalize,
+        soft,
+        signal,
+        expected_signal,
+):
 
-    with AudioBuffer.from_array(x, sr) as buf:
-        Clip(threshold=0.5, normalize=True)(buf)
-        assert np.isclose(np.abs(buf._data).max(), 1.0)
-
-    x = np.random.uniform(1, 2, n)
-
-    with AudioBuffer.from_array(x, sr) as buf:
-        ClipByRatio(0.5, normalize=False)(buf)
-        assert buf._data.max() <= np.median(x)
-
-    with AudioBuffer.from_array(x, sr) as buf:
-        ClipByRatio(0.5, normalize=True)(buf)
-        assert np.isclose(np.abs(buf._data).max(), 1.0)
-        assert np.abs(buf._data).min() >= 1. / 1.5
+    with AudioBuffer.from_array(signal, sampling_rate) as buf:
+        transform = ClipByRatio(ratio, normalize=normalize, soft=soft)
+        transform(buf)
+        np.testing.assert_almost_equal(
+            buf._data,
+            np.array(expected_signal, dtype=np.float32),
+            decimal=4,
+        )
 
 
 @pytest.mark.parametrize('n,sr,gain,max_peak,clip',
