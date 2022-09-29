@@ -40,7 +40,7 @@ docs:
     # Copy audb config file to correct location
     - cp docs/audb.yaml ~/.audb.yaml
     - python -m sphinx -W docs/ build/html -b html
-    - python -m sphinx -W docs/ build/linkcheck -b linkcheck
+    - python -m sphinx -W docs/ build/html -b linkcheck
   artifacts:
     paths:
       - build/
