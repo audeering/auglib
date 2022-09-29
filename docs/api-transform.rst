@@ -129,6 +129,12 @@ Select
 .. autoclass:: Select
     :members:
 
+Shift
+-----
+
+.. autoclass:: Shift
+    :members:
+
 Tone
 ----
 

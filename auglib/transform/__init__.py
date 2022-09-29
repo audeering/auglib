@@ -151,6 +151,7 @@ from auglib.core.transform import (
     PinkNoise,
     Resample,
     Select,
+    Shift,
     Tone,
     Trim,
     WhiteNoiseGaussian,

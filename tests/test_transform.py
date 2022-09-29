@@ -8,11 +8,35 @@ import scipy
 import auglib
 from auglib import AudioBuffer
 from auglib.core.buffer import lib
-from auglib.transform import Mix, Append, AppendValue, Trim, NormalizeByPeak, \
-    Clip, ClipByRatio, GainStage, FFTConvolve, LowPass, HighPass, BandPass, \
-    BandStop, WhiteNoiseUniform, WhiteNoiseGaussian, PinkNoise, Tone, \
-    CompressDynamicRange, AMRNB, Function, Mask
-from auglib.utils import to_samples, to_db, from_db
+from auglib.transform import (
+    AMRNB,
+    Append,
+    AppendValue,
+    BandPass,
+    BandStop,
+    Clip,
+    ClipByRatio,
+    CompressDynamicRange,
+    FFTConvolve,
+    Function,
+    GainStage,
+    HighPass,
+    LowPass,
+    Mask,
+    Mix,
+    NormalizeByPeak,
+    PinkNoise,
+    Shift,
+    Tone,
+    Trim,
+    WhiteNoiseUniform,
+    WhiteNoiseGaussian,
+)
+from auglib.utils import (
+    from_db,
+    to_db,
+    to_samples,
+)
 
 
 def rms_db(signal):
@@ -1059,3 +1083,23 @@ def test_resample(signal, original_rate, target_rate, override):
             assert buf.sampling_rate == original_rate
 
     np.testing.assert_equal(resampled, expected)
+
+
+@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize(
+    'duration, unit, base, expected',
+    [
+        (0, 'samples', [1, 2, 3], [1, 2, 3]),
+        (1, 'samples', [1, 2, 3], [2, 3, 1]),
+        (2, 'samples', [1, 2, 3], [3, 1, 2]),
+        (3, 'samples', [1, 2, 3], [1, 2, 3]),
+        (4, 'samples', [1, 2, 3], [2, 3, 1]),
+    ],
+)
+def test_Shift(sampling_rate, duration, unit, base, expected):
+    with AudioBuffer.from_array(base, sampling_rate) as base_buf:
+        Shift(duration=duration, unit=unit)(base_buf)
+        np.testing.assert_equal(
+            base_buf._data,
+            np.array(expected, dtype=np.float32),
+        )

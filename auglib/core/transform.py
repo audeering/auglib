@@ -1765,3 +1765,46 @@ class Resample(Base):
                 lib.AudioBuffer_setSampleRate(buf._obj, target_rate)
 
         return buf
+
+
+class Shift(Base):
+    r"""Shift signal without changing its duration.
+
+    The buffer will be read
+    from the position
+    given by ``duration``,
+    and the skipped samples from the beginng
+    will be added at the end.
+
+    Args:
+        duration: duration of shift
+        unit: literal specifying the format of ``duration``
+            (see :meth:`auglib.utils.to_samples`)
+        bypass_prob: probability to bypass the transformation
+
+    Example:
+        >>> transform = Shift(1, unit='samples')
+        >>> with AudioBuffer.from_array([1, 2, 3, 4], 8000) as buf:
+        ...     transform(buf)
+        array([[2., 3., 4., 1.]], dtype=float32)
+
+    """
+    def __init__(
+            self,
+            duration: typing.Union[int, float, observe.Base, Time] = None,
+            *,
+            unit: str = 'seconds',
+            bypass_prob: typing.Union[float, observe.Base] = None,
+    ):
+        super().__init__(bypass_prob)
+        self.duration = duration
+        self.unit = unit
+
+    def _call(self, buf: AudioBuffer) -> AudioBuffer:
+        Trim(
+            start_pos=Time(self.duration, unit=self.unit),
+            duration=Time(len(buf), unit='samples'),
+            fill='loop',
+        )(buf)
+
+        return buf
