@@ -265,7 +265,7 @@ class Mix(Base):
         self.unit = unit
 
     @buffer_length_can_change_decorator
-    def _call(self, base: AudioBuffer, aux: AudioBuffer):
+    def _call(self, base: AudioBuffer, aux: AudioBuffer) -> AudioBuffer:
         num_repeat = observe.observe(self.num_repeat)
         for _ in range(num_repeat):
             write_pos_base = to_samples(
@@ -333,6 +333,8 @@ class Mix(Base):
                 extend_base,
             )
 
+        return base
+
 
 class Append(Base):
     r"""Append an auxiliary buffer at the end of the base buffer.
@@ -375,7 +377,7 @@ class Append(Base):
         self.unit = unit
 
     @buffer_length_can_change_decorator
-    def _call(self, base: AudioBuffer, aux: AudioBuffer):
+    def _call(self, base: AudioBuffer, aux: AudioBuffer) -> AudioBuffer:
         read_pos_aux = to_samples(self.read_pos_aux,
                                   sampling_rate=aux.sampling_rate,
                                   unit=self.unit)
@@ -384,6 +386,7 @@ class Append(Base):
                                   unit=self.unit)
         lib.AudioBuffer_append(base._obj, aux._obj, read_pos_aux,
                                read_dur_aux)
+        return base
 
 
 class AppendValue(Base):
