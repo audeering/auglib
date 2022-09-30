@@ -335,7 +335,7 @@ def test_Mix_2(
     'read_pos_aux, read_dur_aux, unit, aux, expected',
     [
         (0, 0, 'samples', [0, 2], [1, 1, 0, 2]),
-        (0, 0, 'samples', [0, 2], [1, 1, 0, 2]),
+        (0, None, 'samples', [0, 2], [1, 1, 0, 2]),
         (1, 0, 'samples', [0, 2], [1, 1, 2]),
         (0, 1, 'samples', [0, 2], [1, 1, 0]),
     ],
