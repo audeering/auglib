@@ -117,6 +117,12 @@ PinkNoise
 .. autoclass:: PinkNoise
     :members:
 
+Prepend
+-------
+
+.. autoclass:: Prepend
+    :members:
+
 Resample
 --------
 

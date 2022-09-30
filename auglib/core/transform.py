@@ -421,6 +421,70 @@ class AppendValue(Base):
         return buf
 
 
+class Prepend(Base):
+    r"""Prepend an auxiliary buffer to the base buffer.
+
+    Base and auxiliary buffer may differ in length
+    but must have the same sampling rate.
+
+    Args:
+        aux: auxiliary buffer
+        read_pos_aux: read position of auxiliary buffer
+            (see ``unit``)
+        read_dur_aux: duration to read from auxiliary buffer
+            (see ``unit``).
+            Set to ``None`` or ``0`` to read the whole buffer
+        unit: literal specifying the format
+            of ``read_pos_aux`` and ``read_dur_aux``
+            (see :meth:`auglib.utils.to_samples`)
+        transform: transformation applied to the auxiliary buffer
+        bypass_prob: probability to bypass the transformation
+
+    Example:
+        >>> with AudioBuffer.from_array([0, 0], 8000) as buf:
+        ...     with AudioBuffer.from_array([1, 1], 8000) as aux:
+        ...         Prepend(aux)(buf)
+        array([[1., 1., 0., 0.]], dtype=float32)
+
+    """
+    def __init__(
+            self,
+            aux: Union[str, observe.Base, AudioBuffer],
+            *,
+            read_pos_aux: Union[int, float, observe.Base, Time] = 0.0,
+            read_dur_aux: Union[int, float, observe.Base, Time] = None,
+            unit: str = 'seconds',
+            transform: Base = None,
+            bypass_prob: Union[float, observe.Base] = None,
+    ):
+        super().__init__(bypass_prob)
+        self.aux = aux
+        self.read_pos_aux = read_pos_aux
+        self.read_dur_aux = read_dur_aux or 0
+        self.unit = unit
+        self.transform = transform
+
+    @buffer_length_can_change_decorator
+    def _call(self, base: AudioBuffer, aux: AudioBuffer) -> AudioBuffer:
+        read_pos_aux = to_samples(
+            self.read_pos_aux,
+            sampling_rate=aux.sampling_rate,
+            unit=self.unit,
+        )
+        read_dur_aux = to_samples(
+            self.read_dur_aux,
+            sampling_rate=aux.sampling_rate,
+            unit=self.unit,
+        )
+        lib.AudioBuffer_prepend(
+            base._obj,
+            aux._obj,
+            read_pos_aux,
+            read_dur_aux,
+        )
+        return base
+
+
 class Trim(Base):
     r"""Trim base buffer to desired duration, given a desired starting point.
 

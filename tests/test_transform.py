@@ -381,6 +381,41 @@ def test_Append(
             )
 
 
+@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize('base', [[1, 1]])
+@pytest.mark.parametrize(
+    'read_pos_aux, read_dur_aux, unit, aux, expected',
+    [
+        (0, None, 'samples', [0, 2], [0, 2, 1, 1]),
+        (0, 0, 'samples', [0, 2], [0, 2, 1, 1]),
+        (1, None, 'samples', [0, 2], [2, 1, 1]),
+        (0, 1, 'samples', [0, 2], [0, 1, 1]),
+    ],
+)
+def test_Prepend(
+        tmpdir,
+        sampling_rate,
+        base,
+        read_pos_aux,
+        read_dur_aux,
+        unit,
+        aux,
+        expected,
+):
+    with AudioBuffer.from_array(base, sampling_rate) as base_buf:
+        with AudioBuffer.from_array(aux, sampling_rate) as aux_buf:
+            auglib.transform.Prepend(
+                aux_buf,
+                read_pos_aux=read_pos_aux,
+                read_dur_aux=read_dur_aux,
+                unit=unit,
+            )(base_buf)
+            np.testing.assert_equal(
+                base_buf._data,
+                np.array(expected, dtype=np.float32),
+            )
+
+
 # Trim tests that should be independent of fill
 @pytest.mark.parametrize('fill', ['none', 'zeros', 'loop'])
 @pytest.mark.parametrize(
