@@ -71,7 +71,18 @@ def test_Mix_1(tmpdir, base_dur, aux_dur, sr, unit):
             )
             np.testing.assert_equal(base._data, expected_mix)
 
-        # from file
+        # clipping
+
+        with AudioBuffer(base_dur, sr, unit=unit) as base:
+            Mix(aux, gain_aux_db=to_db(2), loop_aux=True, clip_mix=True)(base)
+            expected_mix = np.ones(n_base)
+            np.testing.assert_equal(base._data, expected_mix)
+
+        # We need to test in at least one transform:
+        # * reading a buffer from file
+        # * applying a transform to the aux buffer
+
+        # from file (this has to be tested in at least one transform
 
         path = os.path.join(tmpdir, 'test.wav')
         aux.write(path)
@@ -85,13 +96,6 @@ def test_Mix_1(tmpdir, base_dur, aux_dur, sr, unit):
                 expected_mix,
                 decimal=4,
             )
-
-        # clipping
-
-        with AudioBuffer(base_dur, sr, unit=unit) as base:
-            Mix(aux, gain_aux_db=to_db(2), loop_aux=True, clip_mix=True)(base)
-            expected_mix = np.ones(n_base)
-            np.testing.assert_equal(base._data, expected_mix)
 
         # with transform
         # (needs to be tested at the end as it changes aux)
@@ -271,61 +275,39 @@ def test_Mix_2(
             )
 
 
+@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize('base', [[1, 1]])
 @pytest.mark.parametrize(
-    'base_dur,aux_dur,sr,unit',
+    'read_pos_aux, read_dur_aux, unit, aux, expected',
     [
-        (1.0, 1.0, 8000, None),
-        (16000, 8000, 16000, 'samples'),
-        (500, 1000, 44100, 'ms'),
+        (0, 0, 'samples', [0, 2], [1, 1, 0, 2]),
+        (0, 0, 'samples', [0, 2], [1, 1, 0, 2]),
+        (1, 0, 'samples', [0, 2], [1, 1, 2]),
+        (0, 1, 'samples', [0, 2], [1, 1, 0]),
     ],
 )
-def test_append(tmpdir, base_dur, aux_dur, sr, unit):
-
-    unit = unit or 'seconds'
-    n_base = to_samples(base_dur, sampling_rate=sr, unit=unit)
-    n_aux = to_samples(aux_dur, sampling_rate=sr, unit=unit)
-
-    aux = AudioBuffer(aux_dur, sr, unit=unit, value=1.0)
-
-    with AudioBuffer(base_dur, sr, unit=unit) as base:
-        Append(aux)(base)
-        np.testing.assert_equal(base._data[:n_base], np.zeros(n_base))
-        np.testing.assert_equal(base._data[n_base:], np.ones(n_aux))
-
-    with AudioBuffer(base_dur, sr, unit=unit) as base:
-        Append(aux, read_pos_aux=n_aux - 1, unit='samples')(base)
-        np.testing.assert_equal(base._data[:n_base], np.zeros(n_base))
-        assert len(base._data) == n_base + 1
-        assert base._data[-1] == 1
-
-    with AudioBuffer(base_dur, sr, unit=unit) as base:
-        Append(aux, read_dur_aux=1, unit='samples')(base)
-        np.testing.assert_equal(base._data[:n_base], np.zeros(n_base))
-        assert len(base._data) == n_base + 1
-        assert base._data[-1] == 1
-
-    # with transform
-
-    transform = Function(lambda x, _: x + 1)
-    with AudioBuffer(base_dur, sr, unit=unit) as base:
-        Append(aux, transform=transform)(base)
-        np.testing.assert_equal(base._data[:n_base], np.zeros(n_base))
-        np.testing.assert_equal(base._data[n_base:], np.ones(n_aux) * 2)
-
-    # from file
-
-    path = os.path.join(tmpdir, 'test.wav')
-    aux.write(path)
-    with AudioBuffer(base_dur, sr, unit=unit) as base:
-        Append(path)(base)
-        np.testing.assert_equal(base._data[:n_base], np.zeros(n_base))
-        with AudioBuffer.read(path) as aux_from_file:
+def test_Append(
+        tmpdir,
+        sampling_rate,
+        base,
+        read_pos_aux,
+        read_dur_aux,
+        unit,
+        aux,
+        expected,
+):
+    with AudioBuffer.from_array(base, sampling_rate) as base_buf:
+        with AudioBuffer.from_array(aux, sampling_rate) as aux_buf:
+            auglib.transform.Append(
+                aux_buf,
+                read_pos_aux=read_pos_aux,
+                read_dur_aux=read_dur_aux,
+                unit=unit,
+            )(base_buf)
             np.testing.assert_equal(
-                base._data[n_base:],
-                aux_from_file._data,
+                base_buf._data,
+                np.array(expected, dtype=np.float32),
             )
-
-    aux.free()
 
 
 # Trim tests that should be independent of fill
@@ -486,40 +468,26 @@ def test_gain_stage(n, sr, gain, max_peak, clip):
                               from_db(gain) * np.abs(x).max())
 
 
+@pytest.mark.parametrize('sampling_rate', [8000])
 @pytest.mark.parametrize(
-    'n,sr',
+    'keep_tail, aux, base, expected',
     [
-        (10, 8000),
-        (10, 44100),
+        (False, [1, 0, 0], [1, 2, 3], [1, 2, 3]),
+        (False, [0, 1, 0], [1, 2, 3], [0, 1, 2]),
+        (True, [0, 1, 0], [1, 2, 3], [0, 1, 2, 3, 0]),
+        (True, [0, 1, 0, 0], [1, 2, 3], [0, 1, 2, 3, 0, 0]),
     ],
 )
-def test_fft_convolve(tmpdir, n, sr):
+def test_FFTConvolve(sampling_rate, keep_tail, aux, base, expected):
 
-    with AudioBuffer(n, sr, unit='samples') as base:
-        with AudioBuffer(n, sr, unit='samples', value=1.0) as aux:
-            base._data[0] = 1
-            FFTConvolve(aux, keep_tail=False)(base)
-            np.testing.assert_equal(base._data, np.ones(len(base)))
-
-    # with transform
-
-    transform = Function(lambda x, _: x + 1)
-    with AudioBuffer(n, sr, unit='samples') as base:
-        with AudioBuffer(n, sr, unit='samples', value=0.0) as aux:
-            base._data[0] = 1
-            FFTConvolve(aux, transform=transform, keep_tail=False)(base)
-            np.testing.assert_equal(base._data, np.ones(len(base)))
-
-    # from file
-
-    path = os.path.join(tmpdir, 'test.wav')
-    with AudioBuffer(n, sr, unit='samples', value=1.0) as aux:
-        aux.write(path)
-        with AudioBuffer(n, sr, unit='samples') as base:
-            base._data[0] = 1
-            FFTConvolve(path, keep_tail=False)(base)
-            with AudioBuffer.read(path) as aux_from_file:
-                np.testing.assert_equal(base._data, aux_from_file._data)
+    with AudioBuffer.from_array(base, sampling_rate) as base_buf:
+        with AudioBuffer.from_array(aux, sampling_rate) as aux_buf:
+            FFTConvolve(aux_buf, keep_tail=keep_tail)(base_buf)
+            np.testing.assert_almost_equal(
+                base_buf._data,
+                np.array(expected, dtype=np.float32),
+                decimal=4,
+            )
 
 
 @pytest.mark.parametrize('n,sr',

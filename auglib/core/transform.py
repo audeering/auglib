@@ -23,37 +23,14 @@ SUPPORTED_FILTER_DESIGNS = ['butter']
 SUPPORTED_TONE_SHAPES = ['sine', 'square', 'triangle', 'sawtooth']
 
 
-class Base(audobject.Object):
-    r"""Base class for transforms applied to an :class:`auglib.AudioBuffer`.
+def buffer_length_can_change_decorator(func):
+    r"""Decorator to adjust the buffer length in C library.
 
-    Args:
-        bypass_prob: probability to bypass the transformation
+    Add this decorator to ``_call()`` methods
+    that can potentially change the length
+    of the base buffer.
 
     """
-    def __init__(self, bypass_prob: Union[float, observe.Base] = None):
-        self.bypass_prob = bypass_prob
-
-    def _call(self, buf: AudioBuffer):  # pragma: no cover
-        r"""Transform an :class:`auglib.AudioBuffer`.
-
-        Args:
-            buf: audio buffer
-
-        Raises:
-            NotImplementedError: raised if not overwritten in child class
-
-        """
-        raise NotImplementedError()
-
-    @_check_exception_decorator
-    def __call__(self, buf: AudioBuffer) -> AudioBuffer:
-        bypass_prob = observe.observe(self.bypass_prob)
-        if bypass_prob is None or np.random.random_sample() >= bypass_prob:
-            self._call(buf)
-        return buf
-
-
-def _check_data_decorator(func):
     # Wrap func to preserve docstring, see:
     # https://docs.python.org/3.6/library/functools.html#functools.wraps
     @wraps(func)
@@ -68,6 +45,68 @@ def _check_data_decorator(func):
         )
         return self
     return inner
+
+
+class Base(audobject.Object):
+    r"""Base class for transforms applied to an :class:`auglib.AudioBuffer`.
+
+    Args:
+        bypass_prob: probability to bypass the transformation
+        aux: auxiliary buffer
+            from which is read
+            to create the desired transform
+        transform: transformation applied to the auxiliary buffer
+
+    """
+    def __init__(
+            self,
+            bypass_prob: Union[float, observe.Base] = None,
+            aux: Union[str, observe.Base, AudioBuffer] = None,
+            transform: 'Base' = None,
+    ):
+        self.bypass_prob = bypass_prob
+        self.aux = aux
+        self.transform = transform
+
+    def _call(
+            self,
+            buf: AudioBuffer,
+            aux: AudioBuffer = None,
+    ):  # pragma: no cover
+        r"""Transform an :class:`auglib.AudioBuffer`.
+
+        Args:
+            buf: audio buffer
+
+        Raises:
+            NotImplementedError: raised if not overwritten in child class
+
+        """
+        raise NotImplementedError()
+
+    @_check_exception_decorator
+    def __call__(self, buf: AudioBuffer) -> AudioBuffer:
+        bypass_prob = observe.observe(self.bypass_prob)
+        if (
+                bypass_prob is None
+                or np.random.random_sample() >= bypass_prob
+        ):
+            if self.aux is None:
+                self._call(buf)
+            else:
+                free_aux = False
+                if isinstance(self.aux, AudioBuffer):
+                    aux = self.aux
+                else:
+                    path = observe.observe(self.aux)
+                    aux = AudioBuffer.read(path)
+                    free_aux = True
+                if self.transform is not None:
+                    self.transform(aux)
+                self._call(buf, aux)
+                if free_aux:
+                    aux.free()
+        return buf
 
 
 class Compose(Base):
@@ -211,8 +250,7 @@ class Mix(Base):
             bypass_prob: Union[float, observe.Base] = None,
     ):
 
-        super().__init__(bypass_prob)
-        self.aux = aux
+        super().__init__(bypass_prob, aux, transform)
         self.gain_base_db = gain_base_db
         self.gain_aux_db = gain_aux_db
         self.snr_db = snr_db
@@ -224,85 +262,75 @@ class Mix(Base):
         self.extend_base = extend_base
         self.num_repeat = num_repeat
         self.unit = unit
-        self.transform = transform
 
-    @_check_data_decorator
-    def _mix(self, base: AudioBuffer, aux: AudioBuffer):
-        write_pos_base = to_samples(
-            self.write_pos_base,
-            sampling_rate=base.sampling_rate,
-            unit=self.unit,
-            length=len(base),
-        )
-        read_pos_aux = to_samples(
-            self.read_pos_aux,
-            sampling_rate=aux.sampling_rate,
-            unit=self.unit,
-            length=len(aux),
-        )
-        read_dur_aux = to_samples(
-            self.read_dur_aux,
-            sampling_rate=aux.sampling_rate,
-            unit=self.unit,
-            length=len(aux),
-        )
-        gain_base_db = observe.observe(self.gain_base_db)
-        clip_mix = observe.observe(self.clip_mix)
-        loop_aux = observe.observe(self.loop_aux)
-        extend_base = observe.observe(self.extend_base)
-        if self.transform:
-            self.transform(aux)
-        if self.snr_db is not None:
-            snr_db = observe.observe(self.snr_db)
-            # Estimate gain by considering only overlapping parts
-            # of the buffers
-            len_base = len(base) - write_pos_base
-            if read_dur_aux == 0:
-                len_aux = len(aux) - read_pos_aux
-            else:
-                len_aux = min(
-                    len(aux) - read_pos_aux,
-                    read_dur_aux,
-                )
-            if len_base > len_aux and not loop_aux:
-                len_base = len_aux
-            elif len_aux > len_base and not extend_base:
-                len_aux = len_base
-            rms_base_db = (
-                gain_base_db
-                + rms_db(base._data[write_pos_base:len_base])
-            )
-            rms_aux_db = rms_db(aux._data[read_pos_aux:read_pos_aux + len_aux])
-            gain_aux_db = get_noise_gain_from_requested_snr(
-                rms_base_db,
-                rms_aux_db,
-                snr_db,
-            )
-        else:
-            gain_aux_db = observe.observe(self.gain_aux_db)
-        lib.AudioBuffer_mix(
-            base._obj,
-            aux._obj,
-            gain_base_db,
-            gain_aux_db,
-            write_pos_base,
-            read_pos_aux,
-            read_dur_aux,
-            clip_mix,
-            loop_aux,
-            extend_base,
-        )
-
-    def _call(self, buf: AudioBuffer) -> AudioBuffer:
+    @buffer_length_can_change_decorator
+    def _call(self, base: AudioBuffer, aux: AudioBuffer):
         num_repeat = observe.observe(self.num_repeat)
         for _ in range(num_repeat):
-            if isinstance(self.aux, AudioBuffer):
-                self._mix(buf, self.aux)
+            write_pos_base = to_samples(
+                self.write_pos_base,
+                sampling_rate=base.sampling_rate,
+                unit=self.unit,
+                length=len(base),
+            )
+            read_pos_aux = to_samples(
+                self.read_pos_aux,
+                sampling_rate=aux.sampling_rate,
+                unit=self.unit,
+                length=len(aux),
+            )
+            read_dur_aux = to_samples(
+                self.read_dur_aux,
+                sampling_rate=aux.sampling_rate,
+                unit=self.unit,
+                length=len(aux),
+            )
+            gain_base_db = observe.observe(self.gain_base_db)
+            clip_mix = observe.observe(self.clip_mix)
+            loop_aux = observe.observe(self.loop_aux)
+            extend_base = observe.observe(self.extend_base)
+            if self.snr_db is not None:
+                snr_db = observe.observe(self.snr_db)
+                # Estimate gain by considering only overlapping parts
+                # of the buffers
+                len_base = len(base) - write_pos_base
+                if read_dur_aux == 0:
+                    len_aux = len(aux) - read_pos_aux
+                else:
+                    len_aux = min(
+                        len(aux) - read_pos_aux,
+                        read_dur_aux,
+                    )
+                if len_base > len_aux and not loop_aux:
+                    len_base = len_aux
+                elif len_aux > len_base and not extend_base:
+                    len_aux = len_base
+                rms_base_db = (
+                    gain_base_db
+                    + rms_db(base._data[write_pos_base:len_base])
+                )
+                rms_aux_db = rms_db(
+                    aux._data[read_pos_aux:read_pos_aux + len_aux]
+                )
+                gain_aux_db = get_noise_gain_from_requested_snr(
+                    rms_base_db,
+                    rms_aux_db,
+                    snr_db,
+                )
             else:
-                path = observe.observe(self.aux)
-                with AudioBuffer.read(path) as aux:
-                    self._mix(buf, aux)
-        return buf
+                gain_aux_db = observe.observe(self.gain_aux_db)
+            lib.AudioBuffer_mix(
+                base._obj,
+                aux._obj,
+                gain_base_db,
+                gain_aux_db,
+                write_pos_base,
+                read_pos_aux,
+                read_dur_aux,
+                clip_mix,
+                loop_aux,
+                extend_base,
+            )
 
 
 class Append(Base):
@@ -340,34 +368,21 @@ class Append(Base):
                  unit: str = 'seconds',
                  transform: Base = None,
                  bypass_prob: Union[float, observe.Base] = None):
-        super().__init__(bypass_prob)
-        self.aux = aux
+        super().__init__(bypass_prob, aux, transform)
         self.read_pos_aux = read_pos_aux
         self.read_dur_aux = read_dur_aux
         self.unit = unit
-        self.transform = transform
 
-    @_check_data_decorator
-    def _append(self, base: AudioBuffer, aux: AudioBuffer):
+    @buffer_length_can_change_decorator
+    def _call(self, base: AudioBuffer, aux: AudioBuffer):
         read_pos_aux = to_samples(self.read_pos_aux,
                                   sampling_rate=aux.sampling_rate,
                                   unit=self.unit)
         read_dur_aux = to_samples(self.read_dur_aux,
                                   sampling_rate=aux.sampling_rate,
                                   unit=self.unit)
-        if self.transform:
-            self.transform(aux)
         lib.AudioBuffer_append(base._obj, aux._obj, read_pos_aux,
                                read_dur_aux)
-
-    def _call(self, buf: AudioBuffer) -> AudioBuffer:
-        if isinstance(self.aux, AudioBuffer):
-            self._append(buf, self.aux)
-        else:
-            path = observe.observe(self.aux)
-            with AudioBuffer.read(path) as aux:
-                self._append(buf, aux)
-        return buf
 
 
 class AppendValue(Base):
@@ -396,7 +411,7 @@ class AppendValue(Base):
         self.value = value
         self.unit = unit
 
-    @_check_data_decorator
+    @buffer_length_can_change_decorator
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
         with AudioBuffer(duration=self.duration,
                          sampling_rate=buf.sampling_rate,
@@ -493,7 +508,7 @@ class Trim(Base):
         self.fill = fill
         self.unit = unit
 
-    @_check_data_decorator
+    @buffer_length_can_change_decorator
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
 
         start_pos = to_samples(
@@ -733,26 +748,13 @@ class FFTConvolve(Base):
                  keep_tail: Union[bool, observe.Base] = True,
                  transform: Base = None,
                  bypass_prob: Union[float, observe.Base] = None):
-        super().__init__(bypass_prob)
-        self.aux = aux
+        super().__init__(bypass_prob, aux, transform)
         self.keep_tail = keep_tail
-        self.transform = transform
 
-    def _fft_convolve(self, base: AudioBuffer, aux: AudioBuffer):
-        if self.transform:
-            self.transform(aux)
+    @buffer_length_can_change_decorator
+    def _call(self, base: AudioBuffer, aux: AudioBuffer):
         keep_tail = observe.observe(self.keep_tail)
         lib.AudioBuffer_fftConvolve(base._obj, aux._obj, keep_tail)
-
-    @_check_data_decorator
-    def _call(self, buf: AudioBuffer) -> AudioBuffer:
-        if isinstance(self.aux, AudioBuffer):
-            self._fft_convolve(buf, self.aux)
-        else:
-            path = observe.observe(self.aux)
-            with AudioBuffer.read(path) as aux:
-                self._fft_convolve(buf, aux)
-        return buf
 
 
 class LowPass(Base):
