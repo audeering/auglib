@@ -123,6 +123,12 @@ Prepend
 .. autoclass:: Prepend
     :members:
 
+PrependValue
+------------
+
+.. autoclass:: PrependValue
+    :members:
+
 Resample
 --------
 

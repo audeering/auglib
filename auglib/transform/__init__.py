@@ -150,6 +150,7 @@ from auglib.core.transform import (
     NormalizeByPeak,
     PinkNoise,
     Prepend,
+    PrependValue,
     Resample,
     Select,
     Shift,

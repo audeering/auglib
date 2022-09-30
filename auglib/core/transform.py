@@ -393,10 +393,12 @@ class AppendValue(Base):
     r"""Expand base buffer with a constant value.
 
     Args:
-        duration: duration to read from auxiliary buffer (see ``unit``)
+        duration: duration of buffer with constant value
+            that will be appended
+            (see ``unit``)
         value: value to append
-        unit: Literal specifying the format of ``duration`` (see
-            :meth:`auglib.utils.to_samples`).
+        unit: literal specifying the format of ``duration``
+            (see :meth:`auglib.utils.to_samples`).
         bypass_prob: probability to bypass the transformation
 
     Example:
@@ -487,6 +489,50 @@ class Prepend(Base):
             read_dur_aux,
         )
         return base
+
+
+class PrependValue(Base):
+    r"""Prepend base buffer with a constant value.
+
+    Args:
+        duration: duration of buffer with constant value
+            that will be prepended
+            (see ``unit``)
+        value: value to prepend
+        unit: literal specifying the format of ``duration``
+            (see :meth:`auglib.utils.to_samples`)
+        bypass_prob: probability to bypass the transformation
+
+    Example:
+        >>> with AudioBuffer.from_array([0, 0], 8000) as buf:
+        ...     PrependValue(2, 1, unit='samples')(buf)
+        array([[1., 1., 0., 0.]], dtype=float32)
+
+    """
+    def __init__(
+            self,
+            duration: Union[int, float, observe.Base, Time],
+            value: Union[float, observe.Base] = 0,
+            *,
+            unit: str = 'seconds',
+            bypass_prob: Union[float, observe.Base] = None,
+    ):
+        super().__init__(bypass_prob)
+        self.duration = duration
+        self.value = value
+        self.unit = unit
+
+    @buffer_length_can_change_decorator
+    def _call(self, buf: AudioBuffer) -> AudioBuffer:
+        if self.duration != 0:
+            with AudioBuffer(
+                    duration=self.duration,
+                    sampling_rate=buf.sampling_rate,
+                    value=self.value,
+                    unit=self.unit,
+            ) as aux:
+                Prepend(aux)(buf)
+        return buf
 
 
 class Trim(Base):
