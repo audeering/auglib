@@ -27,6 +27,12 @@ AppendValue
 .. autoclass:: AppendValue
     :members:
 
+BabbleNoise
+-----------
+
+.. autoclass:: BabbleNoise
+    :members:
+
 BandPass
 --------
 

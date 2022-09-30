@@ -306,9 +306,7 @@ in the background
 all talking at the same time.
 The easiest way to augment your signal
 with babble noise
-is to use another speech database
-that we can use to generate the babble noise
-samples from.
+is to use another speech database.
 
 In the next example, we use speech from musan_
 and augment our signal with it
@@ -318,12 +316,6 @@ We only load 10 speech files from musan_
 to speed the example up.
 We recommend to use all media files,
 when using the augmentation in a real application.
-We randomly crop
-with repetition
-from 4 to 7 speech samples,
-attenuate each of them
-between -20 dB and -13 dB,
-and add each to the original input signal.
 
 .. jupyter-execute::
 
@@ -337,13 +329,11 @@ and add each to the original input signal.
         verbose=False,
     )
 
-    transform = auglib.transform.Mix(
-        auglib.observe.List(db.files, draw=True),
-        gain_aux_db=auglib.observe.IntUni(-20, -13),
-        num_repeat=auglib.observe.IntUni(4, 7),
-        read_pos_aux=auglib.observe.FloatUni(0, 1),
-        unit='relative',
-        loop_aux=True,
+    transform = auglib.transform.BabbleNoise(
+        list(db.files),
+        num_speakers=auglib.observe.IntUni(3, 7),
+        snr_db=auglib.observe.IntUni(13, 20),
+        unit='samples',
     )
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)

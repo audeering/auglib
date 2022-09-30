@@ -131,6 +131,7 @@ A much simpler approach is to use
 """
 from auglib.core.transform import (
     Base,
+    BabbleNoise,
     AMRNB,
     Append,
     AppendValue,

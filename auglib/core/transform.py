@@ -18,7 +18,10 @@ from auglib.core import observe
 from auglib.core.exception import _check_exception_decorator
 from auglib.core.seed import seed
 from auglib.core.time import Time
-from auglib.core.utils import to_samples
+from auglib.core.utils import (
+    to_db,
+    to_samples,
+)
 
 
 SUPPORTED_FILL_STRATEGIES = ['none', 'zeros', 'loop']
@@ -114,6 +117,95 @@ class Base(audobject.Object):
                     self._call(buf, aux)
                     if free_aux:
                         aux.free()
+        return buf
+
+
+class BabbleNoise(Base):
+    """Adds Babble Noise.
+
+    Babble noise refers to having several speakers
+    in the background
+    all talking at the same time.
+
+    :class:`BabbleNoise` does not use built-in speech signals
+    but expects a sequence of speech buffers or files
+    as ``speech`` argument,
+    from which it then randomly samples the speech.
+
+    Args:
+        speech: speech buffer(s) used to create babble noise
+        num_speakers: number of speech buffers
+            used to create babble noise.
+            If not enough speech buffers are given
+            it will repeat all
+            or some of them
+        gain_db: gain in decibels.
+            Ignored if ``snr_db`` is not ``None``
+        snr_db: signal-to-noise ratio in decibels
+        bypass_prob: probability to bypass the transformation
+
+    Example:
+        >>> seed(0)
+        >>> with AudioBuffer.from_array([0, 0, 0, 0], 8000) as base:
+        ...     with AudioBuffer.from_array([1, 0, 0], 8000) as aux:
+        ...         BabbleNoise([aux], num_speakers=2)(base)
+        array([[0.5, 0. , 0.5, 0. ]], dtype=float32)
+
+    """
+    def __init__(
+            self,
+            speech: Sequence[Union[str, AudioBuffer]],
+            *,
+            num_speakers: Union[int, observe.Base] = 5,
+            gain_db: Union[float, observe.Base] = 0.0,
+            snr_db: Union[float, observe.Base] = None,
+            unit: str = 'seconds',
+            bypass_prob: Union[float, observe.Base] = None,
+    ):
+        super().__init__(bypass_prob)
+        self.speech = speech
+        self.num_speakers = num_speakers
+        self.gain_db = gain_db
+        self.snr_db = snr_db
+
+    def _call(self, buf: AudioBuffer) -> AudioBuffer:
+        with AudioBuffer(
+                len(buf),
+                buf.sampling_rate,
+                unit='samples',
+        ) as babble:
+            # First create buffer containing babble noise
+            # by summing speech buffers
+            num_repeat = observe.observe(self.num_speakers)
+            transform = Mix(
+                observe.List(self.speech, draw=True),
+                gain_aux_db=to_db(1 / num_repeat),
+                num_repeat=num_repeat,
+                unit='relative',
+                loop_aux=True,
+                # Cycle the input signal
+                # using Trim
+                # as it is more efficient
+                # than Shift
+                # when having a fixed signal duration
+                transform=Trim(
+                    start_pos=Time(
+                        observe.FloatUni(0, 1),
+                        unit='relative',
+                    ),
+                    duration=babble.duration,
+                    fill='loop',
+                    unit='seconds',
+                )
+            )
+            transform(babble)
+            # Mix the babble noise to aux buffer
+            transform = Mix(
+                babble,
+                gain_aux_db=self.gain_db,
+                snr_db=self.snr_db,
+            )
+            transform(buf)
         return buf
 
 
