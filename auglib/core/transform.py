@@ -98,9 +98,10 @@ class Base(audobject.Object):
                 if isinstance(self.aux, AudioBuffer):
                     aux = self.aux
                 else:
-                    path = observe.observe(self.aux)
-                    aux = AudioBuffer.read(path)
-                    free_aux = True
+                    aux = observe.observe(self.aux)
+                    if not isinstance(aux, AudioBuffer):
+                        aux = AudioBuffer.read(aux)
+                        free_aux = True
                 if self.transform is not None:
                     self.transform(aux)
                 self._call(buf, aux)

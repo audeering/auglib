@@ -14,6 +14,7 @@ from auglib.transform import (
     AppendValue,
     BandPass,
     BandStop,
+    Base,
     Clip,
     ClipByRatio,
     CompressDynamicRange,
@@ -41,6 +42,89 @@ from auglib.utils import (
 
 def rms_db(signal):
     return 20 * np.log10(np.sqrt(np.mean(np.square(signal))))
+
+
+@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize(
+    'bypass_prob, base, expected',
+    [
+        (None, [0, 0], [1, 1]),
+        (1, [0, 0], [0, 0]),
+    ],
+)
+def test_Base(sampling_rate, bypass_prob, base, expected):
+
+    # Define transform without aux
+    class Transform(Base):
+
+        def __init__(self, bypass_prob):
+            super().__init__(bypass_prob)
+
+        def _call(self, base):
+            base._data = base._data + 1
+            return base
+
+    with AudioBuffer.from_array(base, sampling_rate) as base_buf:
+        t = Transform(bypass_prob)
+        assert t.bypass_prob == bypass_prob
+        t(base_buf)
+        np.testing.assert_equal(
+            base_buf._data,
+            np.array(expected, dtype=np.float32),
+        )
+
+
+@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize('base', [[0, 0]])
+@pytest.mark.parametrize('from_file', [True, False])
+@pytest.mark.parametrize('observe', [True, False])
+@pytest.mark.parametrize(
+    'transform, aux, expected',
+    [
+        (None, [1, 1], [1, 1]),
+        (Function(lambda x, sr: x + 1), [1, 1], [2, 2]),
+    ],
+)
+def test_Base_aux(
+        tmpdir,
+        sampling_rate,
+        base,
+        from_file,
+        observe,
+        transform,
+        aux,
+        expected,
+):
+
+    # Define transform with aux
+    class Transform(Base):
+
+        def __init__(self, aux, transform):
+            super().__init__(None, aux, transform)
+
+        def _call(self, base, aux):
+            base._data = base._data + aux._data
+            return base
+
+    with AudioBuffer.from_array(base, sampling_rate) as base_buf:
+        with AudioBuffer.from_array(aux, sampling_rate) as aux_buf:
+            if from_file:
+                path = os.path.join(tmpdir, 'test.wav')
+                aux_buf.write(path)
+                aux_buf.free()
+                aux_buf = path
+            if observe:
+                aux_buf = auglib.observe.List([aux_buf])
+            t = Transform(aux_buf, transform)
+            assert t.bypass_prob is None
+            assert t.aux == aux_buf
+            assert t.transform == transform
+            t(base_buf)
+            np.testing.assert_almost_equal(
+                base_buf._data,
+                np.array(expected, dtype=np.float32),
+                decimal=4,
+            )
 
 
 @pytest.mark.parametrize(
@@ -76,36 +160,6 @@ def test_Mix_1(tmpdir, base_dur, aux_dur, sr, unit):
         with AudioBuffer(base_dur, sr, unit=unit) as base:
             Mix(aux, gain_aux_db=to_db(2), loop_aux=True, clip_mix=True)(base)
             expected_mix = np.ones(n_base)
-            np.testing.assert_equal(base._data, expected_mix)
-
-        # We need to test in at least one transform:
-        # * reading a buffer from file
-        # * applying a transform to the aux buffer
-
-        # from file (this has to be tested in at least one transform
-
-        path = os.path.join(tmpdir, 'test.wav')
-        aux.write(path)
-        with AudioBuffer(base_dur, sr, unit=unit) as base:
-            Mix(path)(base)
-            expected_mix = np.concatenate(
-                [np.ones(n_min), np.zeros(n_base - n_min)]
-            )
-            np.testing.assert_almost_equal(
-                base._data,
-                expected_mix,
-                decimal=4,
-            )
-
-        # with transform
-        # (needs to be tested at the end as it changes aux)
-
-        transform = Function(lambda x, _: x + 1)
-        with AudioBuffer(base_dur, sr, unit=unit) as base:
-            Mix(aux, transform=transform)(base)
-            expected_mix = np.concatenate(
-                [np.ones(n_min) + 1, np.zeros(n_base - n_min)]
-            )
             np.testing.assert_equal(base._data, expected_mix)
 
     values = [0, 1, 2, 3, 4]
