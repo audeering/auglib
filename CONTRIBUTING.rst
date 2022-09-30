@@ -11,6 +11,7 @@ Contributions are always welcome!
 .. _merge request:
     https://gitlab.audeering.com/tools/pyauglib/merge_requests/new
 
+
 Development Installation
 ------------------------
 
@@ -26,6 +27,7 @@ newest development version from Gitlab_::
 
 This way, your installation always stays up-to-date, even if you pull new
 changes from the Gitlab repository.
+
 
 Building the Documentation
 --------------------------
@@ -49,6 +51,7 @@ It is also possible to automatically check if all links are still valid::
 
 .. _Sphinx: https://sphinx-doc.org/
 
+
 Running the Tests
 -----------------
 
@@ -62,6 +65,78 @@ To execute the tests, simply run::
     pytest tests/
 
 .. _pytest: https://pytest.org/
+
+
+Updating the C++ Library
+------------------------
+
+``auglib`` depends on the
+`C++ auglib library`_,
+which is included in ``auglib``
+with the help of a C-wrapper.
+
+To use a new version of the
+`C++ auglib library`_,
+you need to update the C-wrapper.
+Install needed requirements by::
+
+    pip install -r cwrapper/requirements.txt
+    sudo apt-get install --yes cmake libtool automake patchelf
+
+Clone and install AMR codec::
+
+    cd cwrapper
+    git clone --depth 1 --branch master https://gitlab.audeering.com/tools/opencore-amr.git
+    cd opencore-amr
+    autoreconf --install
+    autoconf
+    ./configure
+    make
+    sudo make install
+    cd ..
+
+Setup Conan_ to find packages on Artifactory_
+by following the `Setup Conan`_ instructions.
+
+Clone and build a static version of the `C++ auglib library`_
+in release mode::
+
+    git clone --depth 1 --branch master https://gitlab.audeering.com/tools/auglib
+    cd auglib
+    bash build-soundtouch.sh
+    mkdir build
+    cd build
+    conan install ..
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DOPENCOREAMR_SUPPORT=ON -DOPENCOREAMRNB_INCLUDE_PATH=/usr/local/include/opencore-amrnb
+    cd ../..
+
+And finally build the C-wrapper::
+
+    export AUGLIB=./auglib
+    bash build.sh
+
+.. _C++ auglib library: https://gitlab.audeering.com/tools/auglib
+.. _Conan: https://conan.io
+.. _Artifactory: https://artifactory.audeering.com/ui/repos/tree/General/conan-local/
+.. _Setup Conan: https://gitlab.audeering.com/devops/conan/meta/-/blob/master/conan-setup.md
+
+
+Including a New C++ Function
+----------------------------
+
+If you added a new function in the
+`C++ auglib library`_
+and would like to include it in ``auglib``
+as well,
+you need to include it in ``cwrapper/cauglib.cpp``
+and follow the steps
+explained in the previous section
+on updating the C++ library.
+
+Afterwards,
+add the functions signature to ``auglib/core/api.py``
+as well.
+
 
 Creating a New Release
 ----------------------
