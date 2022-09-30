@@ -414,10 +414,11 @@ class AppendValue(Base):
 
     @buffer_length_can_change_decorator
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
-        with AudioBuffer(duration=self.duration,
-                         sampling_rate=buf.sampling_rate,
-                         value=self.value, unit=self.unit) as aux:
-            Append(aux)(buf)
+        if self.duration != 0:
+            with AudioBuffer(duration=self.duration,
+                             sampling_rate=buf.sampling_rate,
+                             value=self.value, unit=self.unit) as aux:
+                Append(aux)(buf)
         return buf
 
 

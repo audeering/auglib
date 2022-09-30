@@ -384,6 +384,37 @@ def test_Append(
 @pytest.mark.parametrize('sampling_rate', [8000])
 @pytest.mark.parametrize('base', [[1, 1]])
 @pytest.mark.parametrize(
+    'duration, unit, value, expected',
+    [
+        (0, 'samples', 0, [1, 1]),
+        (0, 'seconds', 0, [1, 1]),
+        (1, 'samples', 2, [1, 1, 2]),
+        (2, 'samples', 2, [1, 1, 2, 2]),
+    ],
+)
+def test_AppendValue(
+        sampling_rate,
+        base,
+        duration,
+        unit,
+        value,
+        expected,
+):
+    with AudioBuffer.from_array(base, sampling_rate) as base_buf:
+        AppendValue(
+            duration,
+            value,
+            unit=unit,
+        )(base_buf)
+        np.testing.assert_equal(
+            base_buf._data,
+            np.array(expected, dtype=np.float32),
+        )
+
+
+@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize('base', [[1, 1]])
+@pytest.mark.parametrize(
     'read_pos_aux, read_dur_aux, unit, aux, expected',
     [
         (0, None, 'samples', [0, 2], [0, 2, 1, 1]),
