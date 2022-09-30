@@ -346,7 +346,7 @@ class Append(Base):
         aux: auxiliary buffer
         read_pos_aux: read position of auxiliary buffer (see ``unit``)
         read_dur_aux: duration to read from auxiliary buffer
-            (see ``unit``)
+            (see ``unit``).
             Set to ``None`` or ``0`` to read the whole buffer
         unit: literal specifying the format of ``read_pos_aux`` and
             ``read_dur_aux`` (see :meth:`auglib.utils.to_samples`)
