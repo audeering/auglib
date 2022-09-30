@@ -98,6 +98,22 @@ class AudioBuffer:
         if self._obj:
             return lib.AudioBuffer_getPeakDecibels(self._obj)
 
+    @property
+    def rms(self) -> float:
+        r"""Buffer root mean square."""
+        if self._obj:
+            return np.sqrt(np.mean(np.square(self._data)))
+
+    @property
+    def rms_db(self) -> float:
+        r"""Buffer root mean square in decibels.
+
+        Returned value has a lower limit of -120 dB.
+
+        """
+        if self._obj:
+            return rms_db(self._data)
+
     # Exclude the following function
     # from code coverage
     # as it is not trivial
@@ -367,3 +383,17 @@ def safe_path(path: Union[str, observe.Base], *, root: str = None) -> str:
     if root:
         path = os.path.join(root, path)
     return audeer.safe_path(path)
+
+
+def rms_db(signal: np.ndarray):
+    r"""Root mean square in dB.
+
+    Very soft signals are limited
+    to a value of -120 dB.
+
+    """
+    # It is:
+    # 20 * log10(rms) = 10 * log10(power)
+    # which saves us from calculating sqrt()
+    power = np.mean(np.square(signal))
+    return 10 * np.log10(max(1e-12, power))

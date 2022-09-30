@@ -10,7 +10,10 @@ import audobject
 import audresample
 
 from auglib.core.api import lib
-from auglib.core.buffer import AudioBuffer
+from auglib.core.buffer import (
+    AudioBuffer,
+    rms_db,
+)
 from auglib.core import observe
 from auglib.core.exception import _check_exception_decorator
 from auglib.core.seed import seed
@@ -1721,17 +1724,6 @@ class Mask(Base):
         aug_signal[:num_samples][mask] = org_signal[:num_samples][mask]
 
         return buf
-
-
-def rms_db(signal):
-    r"""Root mean square in dB.
-
-    Very soft signals are limited
-    to a value of -120 dB.
-
-    """
-    rms = np.sqrt(np.mean(np.square(signal)))
-    return 20 * np.log10(max(1e-6, rms))
 
 
 def get_noise_gain_from_requested_snr(rms_signal_db, rms_noise_db, snr_db):

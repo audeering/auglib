@@ -66,6 +66,24 @@ def test_init(dur, sr, unit):
     assert buf._data is None
 
 
+@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize('signal', [[0, 1, 2, 3]])
+def test_rms(sampling_rate, signal):
+    with auglib.AudioBuffer.from_array(signal, sampling_rate) as buf:
+        expected_rms = np.sqrt(np.mean(np.square(signal)))
+        expected_rms_db = 20 * np.log10(expected_rms)
+        np.testing.assert_almost_equal(
+            buf.rms,
+            expected_rms,
+            decimal=4,
+        )
+        np.testing.assert_almost_equal(
+            buf.rms_db,
+            expected_rms_db,
+            decimal=4,
+        )
+
+
 def test_shape_error(tmpdir):
 
     signal = np.zeros((2, 8))
