@@ -63,10 +63,12 @@ class Base(audobject.Object):
             bypass_prob: Union[float, observe.Base] = None,
             aux: Union[str, observe.Base, AudioBuffer] = None,
             transform: 'Base' = None,
+            num_repeat: int = None,
     ):
         self.bypass_prob = bypass_prob
         self.aux = aux
         self.transform = transform
+        self.num_repeat = num_repeat
 
     def _call(
             self,
@@ -91,22 +93,24 @@ class Base(audobject.Object):
                 bypass_prob is None
                 or np.random.random_sample() >= bypass_prob
         ):
-            if self.aux is None:
-                self._call(buf)
-            else:
-                free_aux = False
-                if isinstance(self.aux, AudioBuffer):
-                    aux = self.aux
+            num_repeat = observe.observe(self.num_repeat) or 1
+            for _ in range(num_repeat):
+                if self.aux is None:
+                    self._call(buf)
                 else:
-                    aux = observe.observe(self.aux)
-                    if not isinstance(aux, AudioBuffer):
-                        aux = AudioBuffer.read(aux)
-                        free_aux = True
-                if self.transform is not None:
-                    self.transform(aux)
-                self._call(buf, aux)
-                if free_aux:
-                    aux.free()
+                    free_aux = False
+                    if isinstance(self.aux, AudioBuffer):
+                        aux = self.aux
+                    else:
+                        aux = observe.observe(self.aux)
+                        if not isinstance(aux, AudioBuffer):
+                            aux = AudioBuffer.read(aux)
+                            free_aux = True
+                    if self.transform is not None:
+                        self.transform(aux)
+                    self._call(buf, aux)
+                    if free_aux:
+                        aux.free()
         return buf
 
 
@@ -251,7 +255,7 @@ class Mix(Base):
             bypass_prob: Union[float, observe.Base] = None,
     ):
 
-        super().__init__(bypass_prob, aux, transform)
+        super().__init__(bypass_prob, aux, transform, num_repeat)
         self.gain_base_db = gain_base_db
         self.gain_aux_db = gain_aux_db
         self.snr_db = snr_db
@@ -261,77 +265,74 @@ class Mix(Base):
         self.clip_mix = clip_mix
         self.loop_aux = loop_aux
         self.extend_base = extend_base
-        self.num_repeat = num_repeat
         self.unit = unit
 
     @buffer_length_can_change_decorator
     def _call(self, base: AudioBuffer, aux: AudioBuffer) -> AudioBuffer:
-        num_repeat = observe.observe(self.num_repeat)
-        for _ in range(num_repeat):
-            write_pos_base = to_samples(
-                self.write_pos_base,
-                sampling_rate=base.sampling_rate,
-                unit=self.unit,
-                length=len(base),
-            )
-            read_pos_aux = to_samples(
-                self.read_pos_aux,
-                sampling_rate=aux.sampling_rate,
-                unit=self.unit,
-                length=len(aux),
-            )
-            read_dur_aux = to_samples(
-                self.read_dur_aux,
-                sampling_rate=aux.sampling_rate,
-                unit=self.unit,
-                length=len(aux),
-            )
-            gain_base_db = observe.observe(self.gain_base_db)
-            clip_mix = observe.observe(self.clip_mix)
-            loop_aux = observe.observe(self.loop_aux)
-            extend_base = observe.observe(self.extend_base)
-            if self.snr_db is not None:
-                snr_db = observe.observe(self.snr_db)
-                # Estimate gain by considering only overlapping parts
-                # of the buffers
-                len_base = len(base) - write_pos_base
-                if read_dur_aux == 0:
-                    len_aux = len(aux) - read_pos_aux
-                else:
-                    len_aux = min(
-                        len(aux) - read_pos_aux,
-                        read_dur_aux,
-                    )
-                if len_base > len_aux and not loop_aux:
-                    len_base = len_aux
-                elif len_aux > len_base and not extend_base:
-                    len_aux = len_base
-                rms_base_db = (
-                    gain_base_db
-                    + rms_db(base._data[write_pos_base:len_base])
-                )
-                rms_aux_db = rms_db(
-                    aux._data[read_pos_aux:read_pos_aux + len_aux]
-                )
-                gain_aux_db = get_noise_gain_from_requested_snr(
-                    rms_base_db,
-                    rms_aux_db,
-                    snr_db,
-                )
+        write_pos_base = to_samples(
+            self.write_pos_base,
+            sampling_rate=base.sampling_rate,
+            unit=self.unit,
+            length=len(base),
+        )
+        read_pos_aux = to_samples(
+            self.read_pos_aux,
+            sampling_rate=aux.sampling_rate,
+            unit=self.unit,
+            length=len(aux),
+        )
+        read_dur_aux = to_samples(
+            self.read_dur_aux,
+            sampling_rate=aux.sampling_rate,
+            unit=self.unit,
+            length=len(aux),
+        )
+        gain_base_db = observe.observe(self.gain_base_db)
+        clip_mix = observe.observe(self.clip_mix)
+        loop_aux = observe.observe(self.loop_aux)
+        extend_base = observe.observe(self.extend_base)
+        if self.snr_db is not None:
+            snr_db = observe.observe(self.snr_db)
+            # Estimate gain by considering only overlapping parts
+            # of the buffers
+            len_base = len(base) - write_pos_base
+            if read_dur_aux == 0:
+                len_aux = len(aux) - read_pos_aux
             else:
-                gain_aux_db = observe.observe(self.gain_aux_db)
-            lib.AudioBuffer_mix(
-                base._obj,
-                aux._obj,
-                gain_base_db,
-                gain_aux_db,
-                write_pos_base,
-                read_pos_aux,
-                read_dur_aux,
-                clip_mix,
-                loop_aux,
-                extend_base,
+                len_aux = min(
+                    len(aux) - read_pos_aux,
+                    read_dur_aux,
+                )
+            if len_base > len_aux and not loop_aux:
+                len_base = len_aux
+            elif len_aux > len_base and not extend_base:
+                len_aux = len_base
+            rms_base_db = (
+                gain_base_db
+                + rms_db(base._data[write_pos_base:len_base])
             )
+            rms_aux_db = rms_db(
+                aux._data[read_pos_aux:read_pos_aux + len_aux]
+            )
+            gain_aux_db = get_noise_gain_from_requested_snr(
+                rms_base_db,
+                rms_aux_db,
+                snr_db,
+            )
+        else:
+            gain_aux_db = observe.observe(self.gain_aux_db)
+        lib.AudioBuffer_mix(
+            base._obj,
+            aux._obj,
+            gain_base_db,
+            gain_aux_db,
+            write_pos_base,
+            read_pos_aux,
+            read_dur_aux,
+            clip_mix,
+            loop_aux,
+            extend_base,
+        )
 
         return base
 

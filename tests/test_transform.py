@@ -162,18 +162,35 @@ def test_Mix_1(tmpdir, base_dur, aux_dur, sr, unit):
             expected_mix = np.ones(n_base)
             np.testing.assert_equal(base._data, expected_mix)
 
+    # Test for repeated execution.
     values = [0, 1, 2, 3, 4]
-    with AudioBuffer.from_array(values, sr) as aux:
-
-        # read position of aux and repeated execution
-
-        for i in range(5):
-            with AudioBuffer(base_dur, sr, unit=unit) as base:
-                Mix(aux, read_pos_aux=i, unit='samples')(base)
-                expected_mix = np.concatenate(
-                    [values[i:], np.zeros(n_base - len(values[i:]))]
-                )
-                np.testing.assert_equal(base._data, expected_mix)
+    expected_mix = np.zeros(n_base)
+    for n in range(len(values)):
+        expected_mix += np.concatenate(
+            [values[n:], np.zeros(n_base - len(values[n:]))]
+        )
+    # Shift aux by increasing read_pos_aux
+    with AudioBuffer(base_dur, sr, unit=unit) as base:
+        with AudioBuffer.from_array(values, sr) as aux:
+            Mix(
+                aux,
+                read_pos_aux=auglib.observe.List(values),
+                unit='samples',
+                num_repeat=len(values),
+            )(base)
+            np.testing.assert_equal(base._data, expected_mix)
+    # Shift aux by observe list of buffers
+    with AudioBuffer(base_dur, sr, unit=unit) as base:
+        Mix(
+            auglib.observe.List(
+                [
+                    AudioBuffer.from_array(values[n:], sr)
+                    for n in range(len(values))
+                ]
+            ),
+            num_repeat=len(values),
+        )(base)
+        np.testing.assert_equal(base._data, expected_mix)
 
 
 # All duration are given in samples for this test
