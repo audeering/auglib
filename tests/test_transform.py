@@ -49,31 +49,37 @@ def rms_db(signal):
 
 @pytest.mark.parametrize('sampling_rate', [8000])
 @pytest.mark.parametrize(
-    'bypass_prob, base, expected',
+    'bypass_prob, preserve_level, base, expected',
     [
-        (None, [0, 0], [1, 1]),
-        (1, [0, 0], [0, 0]),
+        (None, False, [1, 1], [2, 2]),
+        (None, True, [1, 1], [1, 1]),
+        (1, False, [0, 0], [0, 0]),
+        (1, True, [0, 0], [0, 0]),
     ],
 )
-def test_Base(sampling_rate, bypass_prob, base, expected):
+def test_Base(sampling_rate, bypass_prob, preserve_level, base, expected):
 
     # Define transform without aux
     class Transform(Base):
 
-        def __init__(self, bypass_prob):
-            super().__init__(bypass_prob)
+        def __init__(self, bypass_prob, preserve_level):
+            super().__init__(bypass_prob, preserve_level)
 
         def _call(self, base):
             base._data = base._data + 1
             return base
 
     with AudioBuffer.from_array(base, sampling_rate) as base_buf:
-        t = Transform(bypass_prob)
+        t = Transform(bypass_prob, preserve_level)
         assert t.bypass_prob == bypass_prob
+        print(preserve_level)
+        print(t.preserve_level)
+        assert t.preserve_level == preserve_level
         t(base_buf)
-        np.testing.assert_equal(
+        np.testing.assert_almost_equal(
             base_buf._data,
             np.array(expected, dtype=np.float32),
+            decimal=4,
         )
 
 
@@ -82,10 +88,12 @@ def test_Base(sampling_rate, bypass_prob, base, expected):
 @pytest.mark.parametrize('from_file', [True, False])
 @pytest.mark.parametrize('observe', [True, False])
 @pytest.mark.parametrize(
-    'transform, aux, expected',
+    'transform, preserve_level, aux, expected',
     [
-        (None, [1, 1], [1, 1]),
-        (Function(lambda x, sr: x + 1), [1, 1], [2, 2]),
+        (None, False, [1, 1], [1, 1]),
+        (None, True, [1, 1], [1.e-06, 1.e-06]),
+        (Function(lambda x, sr: x + 1), False, [1, 1], [2, 2]),
+        (Function(lambda x, sr: x + 1), True, [1, 1], [1.e-06, 1.e-06]),
     ],
 )
 def test_Base_aux(
@@ -95,6 +103,7 @@ def test_Base_aux(
         from_file,
         observe,
         transform,
+        preserve_level,
         aux,
         expected,
 ):
@@ -102,8 +111,8 @@ def test_Base_aux(
     # Define transform with aux
     class Transform(Base):
 
-        def __init__(self, aux, transform):
-            super().__init__(None, aux, transform)
+        def __init__(self, aux, preserve_level, transform):
+            super().__init__(None, preserve_level, aux, transform)
 
         def _call(self, base, aux):
             base._data = base._data + aux._data
@@ -118,8 +127,9 @@ def test_Base_aux(
                 aux_buf = path
             if observe:
                 aux_buf = auglib.observe.List([aux_buf])
-            t = Transform(aux_buf, transform)
+            t = Transform(aux_buf, preserve_level, transform)
             assert t.bypass_prob is None
+            assert t.preserve_level == preserve_level
             assert t.aux == aux_buf
             assert t.transform == transform
             t(base_buf)

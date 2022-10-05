@@ -19,6 +19,7 @@ from auglib.core.exception import _check_exception_decorator
 from auglib.core.seed import seed
 from auglib.core.time import Time
 from auglib.core.utils import (
+    from_db,
     to_db,
     to_samples,
 )
@@ -58,6 +59,11 @@ class Base(audobject.Object):
 
     Args:
         bypass_prob: probability to bypass the transformation
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         aux: auxiliary buffer
             from which is read
             to create the desired transform
@@ -67,11 +73,13 @@ class Base(audobject.Object):
     def __init__(
             self,
             bypass_prob: Union[float, observe.Base] = None,
+            preserve_level: Union[bool, observe.Base] = False,
             aux: Union[str, observe.Base, AudioBuffer] = None,
             transform: 'Base' = None,
             num_repeat: int = None,
     ):
         self.bypass_prob = bypass_prob
+        self.preserve_level = preserve_level
         self.aux = aux
         self.transform = transform
         self.num_repeat = num_repeat
@@ -95,10 +103,13 @@ class Base(audobject.Object):
     @_check_exception_decorator
     def __call__(self, buf: AudioBuffer) -> AudioBuffer:
         bypass_prob = observe.observe(self.bypass_prob)
+        preserve_level = observe.observe(self.preserve_level)
         if (
                 bypass_prob is None
                 or np.random.random_sample() >= bypass_prob
         ):
+            if preserve_level:
+                base_level = rms_db(buf._data)
             num_repeat = observe.observe(self.num_repeat) or 1
             for _ in range(num_repeat):
                 if self.aux is None:
@@ -117,6 +128,10 @@ class Base(audobject.Object):
                     self._call(buf, aux)
                     if free_aux:
                         aux.free()
+            if preserve_level:
+                mix_level = rms_db(buf._data)
+                gain = from_db(base_level - mix_level)
+                buf._data = gain * buf._data
         return buf
 
 
@@ -142,6 +157,11 @@ class BabbleNoise(Base):
         gain_db: gain in decibels.
             Ignored if ``snr_db`` is not ``None``
         snr_db: signal-to-noise ratio in decibels
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Example:
@@ -214,6 +234,11 @@ class Compose(Base):
 
     Args:
         transforms: list of transforms to compose
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Example:
@@ -223,9 +248,14 @@ class Compose(Base):
         array([[1., 1., 1., 1.]], dtype=float32)
 
     """
-    def __init__(self, transforms: Sequence[Base], *,
-                 bypass_prob: Union[float, observe.Base] = None):
-        super().__init__(bypass_prob)
+    def __init__(
+            self,
+            transforms: Sequence[Base],
+            *,
+            preserve_level: Union[bool, observe.Base] = False,
+            bypass_prob: Union[float, observe.Base] = None,
+    ):
+        super().__init__(bypass_prob, preserve_level)
         self.transforms = transforms
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
@@ -239,6 +269,11 @@ class Select(Base):
 
     Args:
         transforms: list of transforms to choose from
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Example:
@@ -249,9 +284,14 @@ class Select(Base):
         array([[1.9905359, 1.9905359, 1.9905359, 1.9905359]], dtype=float32)
 
     """
-    def __init__(self, transforms: Sequence[Base],
-                 bypass_prob: Union[float, observe.Base] = None):
-        super().__init__(bypass_prob)
+    def __init__(
+            self,
+            transforms: Sequence[Base],
+            *,
+            preserve_level: Union[bool, observe.Base] = False,
+            bypass_prob: Union[float, observe.Base] = None,
+    ):
+        super().__init__(bypass_prob, preserve_level)
         self.transforms = transforms
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
@@ -321,6 +361,11 @@ class Mix(Base):
             ``read_pos_aux`` and ``read_dur_aux``
             (see :meth:`auglib.utils.to_samples`)
         transform: transformation applied to the auxiliary buffer
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Example:
@@ -347,10 +392,17 @@ class Mix(Base):
             num_repeat: Union[int, observe.Base] = 1,
             unit='seconds',
             transform: Base = None,
+            preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
 
-        super().__init__(bypass_prob, aux, transform, num_repeat)
+        super().__init__(
+            bypass_prob,
+            preserve_level,
+            aux,
+            transform,
+            num_repeat,
+        )
         self.gain_base_db = gain_base_db
         self.gain_aux_db = gain_aux_db
         self.snr_db = snr_db
@@ -447,6 +499,11 @@ class Append(Base):
         unit: literal specifying the format of ``read_pos_aux`` and
             ``read_dur_aux`` (see :meth:`auglib.utils.to_samples`)
         transform: transformation applied to the auxiliary buffer
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Example:
@@ -457,13 +514,18 @@ class Append(Base):
         array([[0., 0., 1., 1.]], dtype=float32)
 
     """
-    def __init__(self, aux: Union[str, observe.Base, AudioBuffer], *,
-                 read_pos_aux: Union[int, float, observe.Base, Time] = 0.0,
-                 read_dur_aux: Union[int, float, observe.Base, Time] = None,
-                 unit: str = 'seconds',
-                 transform: Base = None,
-                 bypass_prob: Union[float, observe.Base] = None):
-        super().__init__(bypass_prob, aux, transform)
+    def __init__(
+            self,
+            aux: Union[str, observe.Base, AudioBuffer],
+            *,
+            read_pos_aux: Union[int, float, observe.Base, Time] = 0.0,
+            read_dur_aux: Union[int, float, observe.Base, Time] = None,
+            unit: str = 'seconds',
+            transform: Base = None,
+            preserve_level: Union[bool, observe.Base] = False,
+            bypass_prob: Union[float, observe.Base] = None,
+    ):
+        super().__init__(bypass_prob, preserve_level, aux, transform)
         self.read_pos_aux = read_pos_aux
         self.read_dur_aux = read_dur_aux or 0
         self.unit = unit
@@ -491,6 +553,11 @@ class AppendValue(Base):
         value: value to append
         unit: literal specifying the format of ``duration``
             (see :meth:`auglib.utils.to_samples`).
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Example:
@@ -500,11 +567,16 @@ class AppendValue(Base):
         array([[0., 0., 1., 1.]], dtype=float32)
 
     """
-    def __init__(self, duration: Union[int, float, observe.Base, Time],
-                 value: Union[float, observe.Base] = 0, *,
-                 unit: str = 'seconds',
-                 bypass_prob: Union[float, observe.Base] = None):
-        super().__init__(bypass_prob)
+    def __init__(
+            self,
+            duration: Union[int, float, observe.Base, Time],
+            value: Union[float, observe.Base] = 0,
+            *,
+            unit: str = 'seconds',
+            preserve_level: Union[bool, observe.Base] = False,
+            bypass_prob: Union[float, observe.Base] = None,
+    ):
+        super().__init__(bypass_prob, preserve_level)
         self.duration = duration
         self.value = value
         self.unit = unit
@@ -536,6 +608,11 @@ class Prepend(Base):
             of ``read_pos_aux`` and ``read_dur_aux``
             (see :meth:`auglib.utils.to_samples`)
         transform: transformation applied to the auxiliary buffer
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Example:
@@ -553,9 +630,10 @@ class Prepend(Base):
             read_dur_aux: Union[int, float, observe.Base, Time] = None,
             unit: str = 'seconds',
             transform: Base = None,
+            preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob)
+        super().__init__(bypass_prob, preserve_level)
         self.aux = aux
         self.read_pos_aux = read_pos_aux
         self.read_dur_aux = read_dur_aux or 0
@@ -593,6 +671,11 @@ class PrependValue(Base):
         value: value to prepend
         unit: literal specifying the format of ``duration``
             (see :meth:`auglib.utils.to_samples`)
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Example:
@@ -644,6 +727,11 @@ class Trim(Base):
             ``'loop'`` the signal is repeated.
         unit: Literal specifying the format of ``start`` and ``duration`` (see
             :meth:`auglib.utils.to_samples`).
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: Probability to bypass the transformation.
 
     Raises:
@@ -701,9 +789,10 @@ class Trim(Base):
             duration: Union[int, float, observe.Base, Time] = None,
             fill: str = 'none',
             unit: str = 'seconds',
+            preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob)
+        super().__init__(bypass_prob, preserve_level)
         self.start_pos = start_pos
         self.duration = duration or 0
         if fill not in SUPPORTED_FILL_STRATEGIES:
@@ -767,6 +856,11 @@ class Clip(Base):
             decibels)
         soft: apply soft-clipping
         normalize: after clipping normalize buffer to 0 decibels
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Example:
@@ -778,12 +872,16 @@ class Clip(Base):
         array([[0.       , 0.       , 0.5011872, 0.5011872]], dtype=float32)
 
     """
-    def __init__(self, *,
-                 threshold: Union[float, observe.Base] = 0.0,
-                 soft: Union[bool, observe.Base] = False,
-                 normalize: Union[bool, observe.Base] = False,
-                 bypass_prob: Union[float, observe.Base] = None):
-        super().__init__(bypass_prob)
+    def __init__(
+            self,
+            *,
+            threshold: Union[float, observe.Base] = 0.0,
+            soft: Union[bool, observe.Base] = False,
+            normalize: Union[bool, observe.Base] = False,
+            preserve_level: Union[bool, observe.Base] = False,
+            bypass_prob: Union[float, observe.Base] = None,
+    ):
+        super().__init__(bypass_prob, preserve_level)
         self.threshold = threshold
         self.soft = soft
         self.normalize = normalize
@@ -814,6 +912,11 @@ class ClipByRatio(Base):
             and the total number of samples in the buffer
         soft: apply soft-clipping
         normalize: after clipping normalize buffer to 0 decibels
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Example:
@@ -827,11 +930,16 @@ class ClipByRatio(Base):
         array([[0.        , 0.3       , 0.30000004]], dtype=float32)
 
     """
-    def __init__(self, ratio: Union[float, observe.Base], *,
-                 soft: Union[bool, observe.Base] = False,
-                 normalize: Union[bool, observe.Base] = False,
-                 bypass_prob: Union[float, observe.Base] = None):
-        super().__init__(bypass_prob)
+    def __init__(
+            self,
+            ratio: Union[float, observe.Base],
+            *,
+            soft: Union[bool, observe.Base] = False,
+            normalize: Union[bool, observe.Base] = False,
+            preserve_level: Union[bool, observe.Base] = False,
+            bypass_prob: Union[float, observe.Base] = None,
+    ):
+        super().__init__(bypass_prob, preserve_level)
         self.ratio = ratio
         self.soft = soft
         self.normalize = normalize
@@ -850,6 +958,11 @@ class NormalizeByPeak(Base):
     Args:
         peak_db: desired peak value in decibels
         clip: clip sample values to the interval [-1.0, 1.0]
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Example:
@@ -863,11 +976,15 @@ class NormalizeByPeak(Base):
         array([[0.7079458, 0.7079458]], dtype=float32)
 
     """
-    def __init__(self, *,
-                 peak_db: Union[float, observe.Base] = 0.0,
-                 clip: Union[bool, observe.Base] = False,
-                 bypass_prob: Union[float, observe.Base] = None):
-        super().__init__(bypass_prob)
+    def __init__(
+            self,
+            *,
+            peak_db: Union[float, observe.Base] = 0.0,
+            clip: Union[bool, observe.Base] = False,
+            preserve_level: Union[bool, observe.Base] = False,
+            bypass_prob: Union[float, observe.Base] = None,
+    ):
+        super().__init__(bypass_prob, preserve_level)
         self.peak_db = peak_db
         self.clip = clip
 
@@ -895,6 +1012,11 @@ class GainStage(Base):
         gain_db: amplification in decibels
         max_peak_db: maximum peak level allowed in decibels (see note)
         clip: clip sample values to the interval [-1.0, 1.0]
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Example:
@@ -904,11 +1026,16 @@ class GainStage(Base):
         array([[0.7062688, 0.7062688]], dtype=float32)
 
     """
-    def __init__(self, gain_db: Union[float, observe.Base], *,
-                 max_peak_db: Union[float, observe.Base] = None,
-                 clip: Union[bool, observe.Base] = False,
-                 bypass_prob: Union[float, observe.Base] = None):
-        super().__init__(bypass_prob)
+    def __init__(
+            self,
+            gain_db: Union[float, observe.Base],
+            *,
+            max_peak_db: Union[float, observe.Base] = None,
+            clip: Union[bool, observe.Base] = False,
+            preserve_level: Union[bool, observe.Base] = False,
+            bypass_prob: Union[float, observe.Base] = None,
+    ):
+        super().__init__(bypass_prob, preserve_level)
         self.gain_db = gain_db
         self.max_peak_db = max_peak_db
         self.clip = clip
@@ -936,6 +1063,11 @@ class FFTConvolve(Base):
             the length of the buffer), or to cut it out (keeping the
             original length of the input)
         transform: transformation applied to the auxiliary buffer
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Example:
@@ -951,11 +1083,16 @@ class FFTConvolve(Base):
         array([[0.5, 1. ]], dtype=float32)
 
     """
-    def __init__(self, aux: Union[str, observe.Base, AudioBuffer], *,
-                 keep_tail: Union[bool, observe.Base] = True,
-                 transform: Base = None,
-                 bypass_prob: Union[float, observe.Base] = None):
-        super().__init__(bypass_prob, aux, transform)
+    def __init__(
+            self,
+            aux: Union[str, observe.Base, AudioBuffer],
+            *,
+            keep_tail: Union[bool, observe.Base] = True,
+            transform: Base = None,
+            preserve_level: Union[bool, observe.Base] = False,
+            bypass_prob: Union[float, observe.Base] = None,
+    ):
+        super().__init__(bypass_prob, preserve_level, aux, transform)
         self.keep_tail = keep_tail
 
     @buffer_length_can_change_decorator
@@ -973,6 +1110,11 @@ class LowPass(Base):
         design: filter design,
             at the moment only ``'butter'`` is available
             corresponding to a Butterworth filter
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Raises:
@@ -985,11 +1127,16 @@ class LowPass(Base):
         array([[0.01890238, 0.05527793]], dtype=float32)
 
     """
-    def __init__(self, cutoff: Union[float, observe.Base], *,
-                 order: Union[int, observe.Base] = 1,
-                 design: str = 'butter',
-                 bypass_prob: Union[float, observe.Base] = None):
-        super().__init__(bypass_prob)
+    def __init__(
+            self,
+            cutoff: Union[float, observe.Base],
+            *,
+            order: Union[int, observe.Base] = 1,
+            design: str = 'butter',
+            preserve_level: Union[bool, observe.Base] = False,
+            bypass_prob: Union[float, observe.Base] = None,
+    ):
+        super().__init__(bypass_prob, preserve_level)
         self.cutoff = cutoff
         self.order = order
         if design not in SUPPORTED_FILTER_DESIGNS:
@@ -1017,6 +1164,11 @@ class HighPass(Base):
         design: filter design,
             at the moment only ``'butter'`` is available
             corresponding to a Butterworth filter
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Raises:
@@ -1029,11 +1181,16 @@ class HighPass(Base):
         array([[ 0.00046675, -0.00278969]], dtype=float32)
 
     """
-    def __init__(self, cutoff: Union[float, observe.Base], *,
-                 order: Union[int, observe.Base] = 1,
-                 design: str = 'butter',
-                 bypass_prob: Union[float, observe.Base] = None):
-        super().__init__(bypass_prob)
+    def __init__(
+            self,
+            cutoff: Union[float, observe.Base],
+            *,
+            order: Union[int, observe.Base] = 1,
+            design: str = 'butter',
+            preserve_level: Union[bool, observe.Base] = False,
+            bypass_prob: Union[float, observe.Base] = None,
+    ):
+        super().__init__(bypass_prob, preserve_level)
         self.cutoff = cutoff
         self.order = order
         if design not in SUPPORTED_FILTER_DESIGNS:
@@ -1062,6 +1219,11 @@ class BandPass(Base):
         design: filter design,
             at the moment only ``'butter'`` is available
             corresponding to a Butterworth filter
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Raises:
@@ -1074,12 +1236,17 @@ class BandPass(Base):
         array([[0.1464466 , 0.14644662]], dtype=float32)
 
     """
-    def __init__(self, center: Union[float, observe.Base],
-                 bandwidth: Union[float, observe.Base], *,
-                 order: Union[int, observe.Base] = 1,
-                 design: str = 'butter',
-                 bypass_prob: Union[float, observe.Base] = None):
-        super().__init__(bypass_prob)
+    def __init__(
+            self,
+            center: Union[float, observe.Base],
+            bandwidth: Union[float, observe.Base],
+            *,
+            order: Union[int, observe.Base] = 1,
+            design: str = 'butter',
+            preserve_level: Union[bool, observe.Base] = False,
+            bypass_prob: Union[float, observe.Base] = None,
+    ):
+        super().__init__(bypass_prob, preserve_level)
         self.center = center
         self.bandwidth = bandwidth
         self.order = order
@@ -1111,6 +1278,11 @@ class BandStop(Base):
         design: filter design,
             at the moment only ``'butter'`` is available
             corresponding to a Butterworth filter
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Raises:
@@ -1123,12 +1295,17 @@ class BandStop(Base):
         array([[0.35355338, 0.35355338]], dtype=float32)
 
     """
-    def __init__(self, center: Union[float, observe.Base],
-                 bandwidth: Union[float, observe.Base], *,
-                 order: Union[int, observe.Base] = 1,
-                 design: str = 'butter',
-                 bypass_prob: Union[float, observe.Base] = None):
-        super().__init__(bypass_prob)
+    def __init__(
+            self,
+            center: Union[float, observe.Base],
+            bandwidth: Union[float, observe.Base],
+            *,
+            order: Union[int, observe.Base] = 1,
+            design: str = 'butter',
+            preserve_level: Union[bool, observe.Base] = False,
+            bypass_prob: Union[float, observe.Base] = None,
+    ):
+        super().__init__(bypass_prob, preserve_level)
         self.center = center
         self.bandwidth = bandwidth
         self.order = order
@@ -1157,6 +1334,11 @@ class WhiteNoiseUniform(Base):
         gain_db: gain in decibels.
             Ignored if ``snr_db`` is not ``None``
         snr_db: signal-to-noise ratio in decibels
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Example:
@@ -1172,9 +1354,10 @@ class WhiteNoiseUniform(Base):
             *,
             gain_db: Union[float, observe.Base] = 0.0,
             snr_db: Union[float, observe.Base] = None,
+            preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob)
+        super().__init__(bypass_prob, preserve_level)
         self.gain_db = gain_db
         self.snr_db = snr_db
 
@@ -1211,6 +1394,11 @@ class WhiteNoiseGaussian(Base):
             Ignored if ``snr_db`` is not ``None``
         snr_db: signal-to-noise ratio in decibels
         stddev: standard deviation
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Example:
@@ -1227,9 +1415,10 @@ class WhiteNoiseGaussian(Base):
             gain_db: Union[float, observe.Base] = 0.0,
             snr_db: Union[float, observe.Base] = None,
             stddev: Union[float, observe.Base] = 0.3,
+            preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob)
+        super().__init__(bypass_prob, preserve_level)
         self.gain_db = gain_db
         self.snr_db = snr_db
         self.stddev = stddev
@@ -1268,6 +1457,11 @@ class PinkNoise(Base):
         gain_db: gain in decibels
             Ignored if ``snr_db`` is not ``None``
         snr_db: signal-to-noise ratio in decibels
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Example:
@@ -1283,9 +1477,10 @@ class PinkNoise(Base):
             *,
             gain_db: Union[float, observe.Base] = 0.0,
             snr_db: Union[float, observe.Base] = None,
+            preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob)
+        super().__init__(bypass_prob, preserve_level)
         self.gain_db = gain_db
         self.snr_db = snr_db
 
@@ -1344,6 +1539,11 @@ class Tone(Base):
             ``'sawtooth'``
         lfo_rate: modulation rate of Low Frequency Oscillator
         lfo_range: modulation range of Low Frequency Oscillator
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Raises:
@@ -1379,9 +1579,10 @@ class Tone(Base):
             shape: str = 'sine',
             lfo_rate: Union[float, observe.Base] = 0.0,
             lfo_range: Union[float, observe.Base] = 0.0,
+            preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob)
+        super().__init__(bypass_prob, preserve_level)
         self.freq = freq
         self.gain_db = gain_db
         self.snr_db = snr_db
@@ -1476,6 +1677,11 @@ class CompressDynamicRange(Base):
         release_time: release time in seconds
         makeup_db: optional amplification gain
         clip: clip signal
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Example:
@@ -1485,16 +1691,19 @@ class CompressDynamicRange(Base):
         array([[0.56034607,  0.56034607]], dtype=float32)
 
     """
-    def __init__(self,
-                 threshold_db: Union[float, observe.Base],
-                 ratio: Union[float, observe.Base], *,
-                 attack_time: Union[float, observe.Base] = 0.01,
-                 release_time: Union[float, observe.Base] = 0.02,
-                 knee_radius_db: Union[float, observe.Base] = 4.0,
-                 makeup_db: Union[None, float, observe.Base] = 0.0,
-                 clip: Union[bool, observe.Base] = False,
-                 bypass_prob: Union[float, observe.Base] = None):
-        super().__init__(bypass_prob)
+    def __init__(
+            self,
+            threshold_db: Union[float, observe.Base],
+            ratio: Union[float, observe.Base], *,
+            attack_time: Union[float, observe.Base] = 0.01,
+            release_time: Union[float, observe.Base] = 0.02,
+            knee_radius_db: Union[float, observe.Base] = 4.0,
+            makeup_db: Union[None, float, observe.Base] = 0.0,
+            clip: Union[bool, observe.Base] = False,
+            preserve_level: Union[bool, observe.Base] = False,
+            bypass_prob: Union[float, observe.Base] = None,
+    ):
+        super().__init__(bypass_prob, preserve_level)
         self.threshold_db = threshold_db
         self.ratio = ratio
         self.attack_time = attack_time
@@ -1539,6 +1748,11 @@ class AMRNB(Base):
     Args:
         bit_rate: target bit rate of the encoded stream (in bits per second)
         dtx: enable discontinuous transmission (DTX)
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Example:
@@ -1548,12 +1762,15 @@ class AMRNB(Base):
         0.02783203125
 
     """
-    def __init__(self,
-                 bit_rate: Union[int, observe.Base],
-                 *,
-                 dtx: Union[bool, observe.Base] = False,
-                 bypass_prob: Union[float, observe.Base] = None):
-        super().__init__(bypass_prob)
+    def __init__(
+            self,
+            bit_rate: Union[int, observe.Base],
+            *,
+            dtx: Union[bool, observe.Base] = False,
+            preserve_level: Union[bool, observe.Base] = False,
+            bypass_prob: Union[float, observe.Base] = None,
+    ):
+        super().__init__(bypass_prob, preserve_level)
         self.bit_rate = bit_rate
         self.dtx = dtx
 
@@ -1603,6 +1820,11 @@ class Function(Base):
     Args:
         function: (lambda) function object
         function_args: dictionary with additional function arguments
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Example:
@@ -1635,9 +1857,10 @@ class Function(Base):
             function: Callable[..., Optional[np.ndarray]],
             function_args: typing.Dict = None,
             *,
+            preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob)
+        super().__init__(bypass_prob, preserve_level)
         self.function = function
         self.function_args = function_args
 
@@ -1703,6 +1926,11 @@ class Mask(Base):
         unit: literal specifying the format of ``step``,
             ``start_pos`` and ``duration``
             (see :meth:`auglib.utils.to_samples`)
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Example:
@@ -1781,6 +2009,7 @@ class Mask(Base):
             ] = None,
             invert: typing.Union[bool, observe.Base] = False,
             unit: str = 'seconds',
+            preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: typing.Union[float, observe.Base] = None,
     ):
         if step is not None:
@@ -1789,7 +2018,7 @@ class Mask(Base):
                 step = step * 2
             step = tuple(step)
 
-        super().__init__(bypass_prob)
+        super().__init__(bypass_prob, preserve_level)
         self.transform = transform
         self.start_pos = start_pos
         self.duration = duration
@@ -1906,6 +2135,11 @@ class Resample(Base):
     Args:
         target_rate: target rate in Hz
         override: override sampling rate of buffer with target rate
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Example:
@@ -1921,9 +2155,10 @@ class Resample(Base):
             target_rate: typing.Union[int, observe.List],
             *,
             override: bool = False,
+            preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: typing.Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob)
+        super().__init__(bypass_prob, preserve_level)
         self.target_rate = target_rate
         self.override = override
 
@@ -1978,6 +2213,11 @@ class Shift(Base):
         duration: duration of shift
         unit: literal specifying the format of ``duration``
             (see :meth:`auglib.utils.to_samples`)
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
         bypass_prob: probability to bypass the transformation
 
     Example:
@@ -1992,9 +2232,10 @@ class Shift(Base):
             duration: typing.Union[int, float, observe.Base, Time] = None,
             *,
             unit: str = 'seconds',
+            preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: typing.Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob)
+        super().__init__(bypass_prob, preserve_level)
         self.duration = duration
         self.unit = unit
 
