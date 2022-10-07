@@ -296,6 +296,48 @@ and add it to the original input signal.
 |
 
 
+.. _examples-noise-snr:
+
+Noise with fixed SNR
+--------------------
+
+When adding noise to a signal during augmentation,
+it is often desired
+to let the noise level
+depend on the signal level
+to achieve a fixed signal-to-noise (SNR)
+between the two.
+
+This can be achieved in :mod:`auglib`
+by the ``snr_db`` argument.
+The following example
+adds pink noise
+with a SNR of 10 dB
+to the input signal.
+
+.. jupyter-execute::
+
+    auglib.seed(0)
+
+    transform = auglib.transform.PinkNoise(snr_db=10)
+    augment = auglib.Augment(transform)
+    signal_augmented = augment(signal, sampling_rate)
+
+.. jupyter-execute::
+    :hide-code:
+
+    plot(signal_augmented, green, 'Pink\nNoise')
+
+.. jupyter-execute::
+    :hide-code:
+
+    Audio(signal_augmented, rate=sampling_rate)
+
+.. empty line for some extra space
+
+|
+
+
 .. _examples-babble-noise:
 
 Babble Noise
