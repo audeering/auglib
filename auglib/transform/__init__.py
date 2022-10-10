@@ -12,13 +12,13 @@ comes with a number of transformations,
 which can be combined
 using :class:`auglib.transform.Compose`, e.g.:
 
-.. code-block:: python
+.. jupyter-execute::
 
     import auglib
 
     transform = auglib.transform.Compose(
         [
-            auglib.transform.HighPass(cutoff=5000),
+            auglib.transform.HighPass(cutoff=3000),
             auglib.transform.Clip(),
             auglib.transform.NormalizeByPeak(peak_db=-3),
         ]
@@ -27,9 +27,10 @@ using :class:`auglib.transform.Compose`, e.g.:
 If we want to apply the augmentation,
 we have to create an :class:`auglib.AudioBuffer` first.
 
-.. code-block:: python
+.. jupyter-execute::
 
-    with auglib.AudioBuffer(1.0, 8000) as buf:
+    sampling_rate = 8000
+    with auglib.AudioBuffer(1.0, sampling_rate) as buf:
         transform(buf)  # apply transformation to buffer
 
 Since :mod:`auglib` is just a wrapper
@@ -40,10 +41,11 @@ that the C array gets freed afterwards.
 We can use :class:`auglib.AudioBuffer.from_array()`
 to initialize it from a :class:`numpy.ndarray` instead.
 
-.. code-block:: python
+.. jupyter-execute::
 
-    # signal: numpy array with shape (1, num_samples)
-    # sampling_rate: sampling rate in Hz
+    import numpy as np
+
+    signal = np.ones([1, 1000])  # signal with shape (1, num_samples)
     with auglib.AudioBuffer.from_array(signal, sampling_rate) as buf:
         transform(buf)
 
@@ -52,7 +54,7 @@ is an in-place operation,
 we can afterwards call ``buf.to_array()``
 to get the augmented signal as a numpy array.
 
-.. code-block:: python
+.. jupyter-execute::
 
     with auglib.AudioBuffer.from_array(signal, sampling_rate) as buf:
         transform(buf)
@@ -62,7 +64,7 @@ As explained in :ref:`usage`
 with :class:`auglib.Augment`
 we can simplify to:
 
-.. code-block:: python
+.. jupyter-execute::
 
     augment = auglib.Augment(transform)
     y = augment(signal, sampling_rate)
@@ -82,7 +84,7 @@ One way is to implement
 a new class that derives from
 :class:`auglib.transform.Base`.
 
-.. code-block:: python
+.. jupyter-execute::
 
     import numpy as np
 
@@ -97,7 +99,7 @@ a new class that derives from
             super().__init__(bypass_prob)
             self.repeats = repeats
 
-        def _call(self, buf: AudioBuffer):
+        def _call(self, buf: auglib.AudioBuffer):
             # get content of buffer as a numpy array
             # and use np.tile() to repeat it
             signal_org = buf.to_array(copy=False)
@@ -114,15 +116,38 @@ a new class that derives from
 
     transform = Repeat(3)
 
+.. Store transfrom in different variable
+.. so we can reuse it later
+.. jupyter-execute::
+    :hide-code:
+
+    transform1 = transform
+
 A much simpler approach is to use
 :class:`auglib.transform.Function`.
 
-.. code-block:: python
+.. jupyter-execute::
 
     def repeat(signal, sampling_rate, repeats):
         return np.tile(signal, repeats)
 
     transform = auglib.transform.Function(repeat, {'repeats': 3})
+
+
+.. Ensure we get the same results
+.. jupyter-execute::
+    :hide-code:
+
+    with auglib.AudioBuffer.from_array(signal, sampling_rate) as buf1:
+        transform1(buf1)
+        with auglib.AudioBuffer.from_array(signal, sampling_rate) as buf2:
+            transform(buf2)
+            np.testing.assert_almost_equal(
+                buf1._data,
+                buf2._data,
+                decimal=4,
+            )
+            assert len(buf1) == 3 * signal.size
 
 
 .. _`C library`: https://gitlab.audeering.com/tools/auglib
