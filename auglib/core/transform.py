@@ -73,6 +73,7 @@ class Base(audobject.Object):
     def __init__(
             self,
             bypass_prob: Union[float, observe.Base] = None,
+            *,
             preserve_level: Union[bool, observe.Base] = False,
             aux: Union[str, observe.Base, AudioBuffer] = None,
             transform: 'Base' = None,
@@ -182,7 +183,7 @@ class BabbleNoise(Base):
             unit: str = 'seconds',
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob)
+        super().__init__(bypass_prob=bypass_prob)
         self.speech = speech
         self.num_speakers = num_speakers
         self.gain_db = gain_db
@@ -254,7 +255,10 @@ class Compose(Base):
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob, preserve_level)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
         self.transforms = transforms
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
@@ -290,7 +294,10 @@ class Select(Base):
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob, preserve_level)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
         self.transforms = transforms
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
@@ -395,11 +402,11 @@ class Mix(Base):
     ):
 
         super().__init__(
-            bypass_prob,
-            preserve_level,
-            aux,
-            transform,
-            num_repeat,
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+            aux=aux,
+            transform=transform,
+            num_repeat=num_repeat,
         )
         self.gain_base_db = gain_base_db
         self.gain_aux_db = gain_aux_db
@@ -522,7 +529,12 @@ class Append(Base):
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob, preserve_level, aux, transform)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+            aux=aux,
+            transform=transform,
+        )
         self.read_pos_aux = read_pos_aux
         self.read_dur_aux = read_dur_aux or 0
         self.unit = unit
@@ -572,7 +584,10 @@ class AppendValue(Base):
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob, preserve_level)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
         self.duration = duration
         self.value = value
         self.unit = unit
@@ -629,7 +644,10 @@ class Prepend(Base):
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob, preserve_level)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
         self.aux = aux
         self.read_pos_aux = read_pos_aux
         self.read_dur_aux = read_dur_aux or 0
@@ -688,7 +706,7 @@ class PrependValue(Base):
             unit: str = 'seconds',
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob)
+        super().__init__(bypass_prob=bypass_prob)
         self.duration = duration
         self.value = value
         self.unit = unit
@@ -788,7 +806,10 @@ class Trim(Base):
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob, preserve_level)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
         self.start_pos = start_pos
         self.duration = duration or 0
         if fill not in SUPPORTED_FILL_STRATEGIES:
@@ -874,7 +895,10 @@ class Clip(Base):
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob, preserve_level)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
         self.threshold = threshold
         self.soft = soft
         self.normalize = normalize
@@ -927,7 +951,10 @@ class ClipByRatio(Base):
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob, preserve_level)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
         self.ratio = ratio
         self.soft = soft
         self.normalize = normalize
@@ -970,7 +997,10 @@ class NormalizeByPeak(Base):
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob, preserve_level)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
         self.peak_db = peak_db
         self.clip = clip
 
@@ -1020,7 +1050,10 @@ class GainStage(Base):
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob, preserve_level)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
         self.gain_db = gain_db
         self.max_peak_db = max_peak_db
         self.clip = clip
@@ -1075,7 +1108,12 @@ class FFTConvolve(Base):
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob, preserve_level, aux, transform)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+            aux=aux,
+            transform=transform,
+        )
         self.keep_tail = keep_tail
 
     @buffer_length_can_change_decorator
@@ -1118,7 +1156,10 @@ class LowPass(Base):
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob, preserve_level)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
         self.cutoff = cutoff
         self.order = order
         if design not in SUPPORTED_FILTER_DESIGNS:
@@ -1171,7 +1212,10 @@ class HighPass(Base):
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob, preserve_level)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
         self.cutoff = cutoff
         self.order = order
         if design not in SUPPORTED_FILTER_DESIGNS:
@@ -1226,7 +1270,10 @@ class BandPass(Base):
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob, preserve_level)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
         self.center = center
         self.bandwidth = bandwidth
         self.order = order
@@ -1284,7 +1331,10 @@ class BandStop(Base):
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob, preserve_level)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
         self.center = center
         self.bandwidth = bandwidth
         self.order = order
@@ -1335,7 +1385,10 @@ class WhiteNoiseUniform(Base):
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob, preserve_level)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
         self.gain_db = gain_db
         self.snr_db = snr_db
 
@@ -1395,7 +1448,10 @@ class WhiteNoiseGaussian(Base):
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob, preserve_level)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
         self.gain_db = gain_db
         self.snr_db = snr_db
         self.stddev = stddev
@@ -1456,7 +1512,10 @@ class PinkNoise(Base):
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob, preserve_level)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
         self.gain_db = gain_db
         self.snr_db = snr_db
 
@@ -1553,7 +1612,10 @@ class Tone(Base):
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob, preserve_level)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
         self.freq = freq
         self.gain_db = gain_db
         self.snr_db = snr_db
@@ -1673,7 +1735,10 @@ class CompressDynamicRange(Base):
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob, preserve_level)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
         self.threshold_db = threshold_db
         self.ratio = ratio
         self.attack_time = attack_time
@@ -1739,7 +1804,10 @@ class AMRNB(Base):
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob, preserve_level)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
         self.bit_rate = bit_rate
         self.dtx = dtx
 
@@ -1824,7 +1892,10 @@ class Function(Base):
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob, preserve_level)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
         self.function = function
         self.function_args = function_args
 
@@ -1960,7 +2031,10 @@ class Mask(Base):
                 step = step * 2
             step = tuple(step)
 
-        super().__init__(bypass_prob, preserve_level)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
         self.transform = transform
         self.start_pos = start_pos
         self.duration = duration
@@ -2098,7 +2172,10 @@ class Resample(Base):
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: typing.Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob, preserve_level)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
         self.target_rate = target_rate
         self.override = override
 
@@ -2174,7 +2251,10 @@ class Shift(Base):
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: typing.Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob, preserve_level)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
         self.duration = duration
         self.unit = unit
 

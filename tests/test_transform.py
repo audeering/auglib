@@ -63,7 +63,10 @@ def test_Base(sampling_rate, bypass_prob, preserve_level, base, expected):
     class Transform(Base):
 
         def __init__(self, bypass_prob, preserve_level):
-            super().__init__(bypass_prob, preserve_level)
+            super().__init__(
+                bypass_prob=bypass_prob,
+                preserve_level=preserve_level,
+            )
 
         def _call(self, base):
             base._data = base._data + 1
@@ -112,7 +115,11 @@ def test_Base_aux(
     class Transform(Base):
 
         def __init__(self, aux, preserve_level, transform):
-            super().__init__(None, preserve_level, aux, transform)
+            super().__init__(
+                preserve_level=preserve_level,
+                aux=aux,
+                transform=transform,
+            )
 
         def _call(self, base, aux):
             base._data = base._data + aux._data
