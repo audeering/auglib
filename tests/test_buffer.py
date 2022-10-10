@@ -5,6 +5,7 @@ import pytest
 
 import audiofile
 import auglib
+import audobject
 
 
 @pytest.mark.parametrize(
@@ -82,6 +83,38 @@ def test_rms(sampling_rate, signal):
             expected_rms_db,
             decimal=4,
         )
+
+
+def test_resolver(tmpdir):
+
+    with auglib.AudioBuffer(4, 8, unit='samples') as aux:
+
+        error_msg = (
+            "Cannot serialize an instance of "
+            "<class 'auglib.core.buffer.AudioBuffer'>. "
+        )
+        with pytest.raises(ValueError, match=error_msg):
+            auglib.transform.Mix(aux).to_yaml_s()
+
+        error_msg = (
+            "Cannot serialize list if it contains an instance of "
+            "<class 'auglib.core.buffer.AudioBuffer'>. "
+        )
+        with pytest.raises(ValueError, match=error_msg):
+            list_with_aux = auglib.observe.List([aux])
+            auglib.transform.Mix(list_with_aux).to_yaml_s()
+
+        aux_path = os.path.join(tmpdir, 'aux.wav')
+        aux.write(aux_path)
+
+        transform = auglib.transform.Mix(aux_path)
+        yaml_s = transform.to_yaml_s()
+        assert audobject.from_yaml_s(yaml_s) == transform
+
+        list_with_aux_path = auglib.observe.List([aux_path])
+        transform = auglib.transform.Mix(list_with_aux_path)
+        yaml_s = transform.to_yaml_s()
+        assert audobject.from_yaml_s(yaml_s) == transform
 
 
 @pytest.mark.parametrize('sampling_rate', [-10, -10.0, 0, 0.0, 3.4, 10.0])

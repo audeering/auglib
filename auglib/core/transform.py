@@ -16,6 +16,7 @@ from auglib.core.buffer import (
 )
 from auglib.core import observe
 from auglib.core.exception import _check_exception_decorator
+from auglib.core.resolver import AudioBufferResolver
 from auglib.core.seed import seed
 from auglib.core.time import Time
 from auglib.core.utils import (
@@ -70,6 +71,11 @@ class Base(audobject.Object):
         transform: transformation applied to the auxiliary buffer
 
     """
+    @audobject.init_decorator(
+        resolvers={
+            'aux': AudioBufferResolver,
+        }
+    )
     def __init__(
             self,
             bypass_prob: Union[float, observe.Base] = None,

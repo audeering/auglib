@@ -137,7 +137,12 @@ def test_Base_aux(
             t = Transform(aux_buf, preserve_level, transform)
             assert t.bypass_prob is None
             assert t.preserve_level == preserve_level
-            assert t.aux == aux_buf
+            # unless buffer is read from file
+            # we skip the following test
+            # as we cannot serialize a buffer,
+            # which is required to calculate its ID
+            if from_file:
+                assert t.aux == aux_buf
             assert t.transform == transform
             t(base_buf)
             np.testing.assert_almost_equal(

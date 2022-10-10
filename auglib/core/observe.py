@@ -211,6 +211,14 @@ class List(Base):
         [5, 99, 3, 99, 4]
 
     """
+    # import here to avoid circulate import error
+    from auglib.core.resolver import ObservableListResolver
+
+    @audobject.init_decorator(
+        resolvers={
+            'elements': ObservableListResolver,
+        }
+    )
     def __init__(
             self,
             elements: typing.MutableSequence[typing.Any],
