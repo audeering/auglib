@@ -338,6 +338,55 @@ to the input signal.
 |
 
 
+.. _examples-band-pass-filtered-noise:
+
+Band-Pass Filtered Noise
+------------------------
+
+Some augmentations
+like :class:`auglib.transform.WhiteNoiseGaussian`
+generate augmentation signals
+that are added to the incoming signal.
+Those generated augmentation signals
+can be modified
+with the help
+of :class:`auglib.transform.Mix`
+and its ``transform`` argument.
+
+The following example
+adds band-pass filtered white noise
+to the input signal.
+
+.. jupyter-execute::
+
+    auglib.seed(0)
+
+    transform = auglib.transform.Mix(
+        auglib.transform.WhiteNoiseGaussian(),
+        snr_db=15,
+        transform=auglib.transform.BandPass(
+            center=4000,
+            bandwidth=1000,
+        ),
+    )
+    augment = auglib.Augment(transform)
+    signal_augmented = augment(signal, sampling_rate)
+
+.. jupyter-execute::
+    :hide-code:
+
+    plot(signal_augmented, green, 'Band-Pass\nNoise')
+
+.. jupyter-execute::
+    :hide-code:
+
+    Audio(signal_augmented, rate=sampling_rate)
+
+.. empty line for some extra space
+
+|
+
+
 .. _examples-babble-noise:
 
 Babble Noise

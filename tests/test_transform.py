@@ -151,6 +151,48 @@ def test_Base_aux(
             )
 
 
+@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize('base', [[0, 0]])
+@pytest.mark.parametrize(
+    'aux, transform, expected',
+    [
+        (
+            Function(lambda x, sr: x + 1),
+            None,
+            [1, 1],
+        ),
+        (
+            Function(lambda x, sr: x + 1),
+            Function(lambda x, sr: x + 1),
+            [2, 2],
+        ),
+    ]
+)
+def test_Base_aux_transform(sampling_rate, base, aux, transform, expected):
+
+    # Define transform with aux
+    class Transform(Base):
+
+        def __init__(self, aux, transform):
+            super().__init__(
+                aux=aux,
+                transform=transform,
+            )
+
+        def _call(self, base, aux):
+            base._data = base._data + aux._data
+            return base
+
+    with AudioBuffer.from_array(base, sampling_rate) as base_buf:
+        t = Transform(aux, transform)
+        t(base_buf)
+        np.testing.assert_almost_equal(
+            base_buf._data,
+            np.array(expected, dtype=np.float32),
+            decimal=4,
+        )
+
+
 # Test gain and SNR for BabbleNoise
 @pytest.mark.parametrize('duration', [1.0])
 @pytest.mark.parametrize('sampling_rate', [8000])

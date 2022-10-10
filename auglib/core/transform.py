@@ -65,9 +65,14 @@ class Base(audobject.Object):
             of the augmented buffer
             will be the same
             as before augmentation
-        aux: auxiliary buffer
-            from which is read
-            to create the desired transform
+        aux: auxiliary buffer,
+            file,
+            or signal generating transform.
+            If a transform is given
+            it will be applied
+            to a buffer with the same length
+            as the base buffer
+            containing zeros
         transform: transformation applied to the auxiliary buffer
 
     """
@@ -81,7 +86,7 @@ class Base(audobject.Object):
             bypass_prob: Union[float, observe.Base] = None,
             *,
             preserve_level: Union[bool, observe.Base] = False,
-            aux: Union[str, observe.Base, AudioBuffer] = None,
+            aux: Union[str, observe.Base, AudioBuffer, 'Base'] = None,
             transform: 'Base' = None,
             num_repeat: int = None,
     ):
@@ -124,13 +129,16 @@ class Base(audobject.Object):
                     self._call(buf)
                 else:
                     free_aux = False
-                    if isinstance(self.aux, AudioBuffer):
-                        aux = self.aux
-                    else:
-                        aux = observe.observe(self.aux)
-                        if not isinstance(aux, AudioBuffer):
-                            aux = AudioBuffer.read(aux)
-                            free_aux = True
+                    aux = observe.observe(self.aux)
+                    if isinstance(aux, str):
+                        aux = AudioBuffer.read(aux)
+                        free_aux = True
+                    elif isinstance(aux, Base):
+                        # assume aux is transform
+                        generator = aux
+                        aux = AudioBuffer(buf.duration, buf.sampling_rate)
+                        generator(aux)
+                        free_aux = True
                     if self.transform is not None:
                         self.transform(aux)
                     self._call(buf, aux)
@@ -355,7 +363,14 @@ class Mix(Base):
     or random files.
 
     Args:
-        aux: auxiliary buffer
+        aux: auxiliary buffer,
+            file,
+            or signal generating transform.
+            If a transform is given
+            it will be applied
+            to a buffer with the same length
+            as the base buffer
+            containing zeros
         gain_base_db: gain of base buffer
         gain_aux_db: gain of auxiliary buffer.
             Ignored if ``snr_db`` is not ``None``
@@ -390,7 +405,7 @@ class Mix(Base):
     """
     def __init__(
             self,
-            aux: Union[str, observe.Base, AudioBuffer],
+            aux: Union[str, observe.Base, AudioBuffer, Base],
             *,
             gain_base_db: Union[float, observe.Base] = 0.0,
             gain_aux_db: Union[float, observe.Base] = 0.0,
@@ -503,7 +518,14 @@ class Append(Base):
     same sampling rate.
 
     Args:
-        aux: auxiliary buffer
+        aux: auxiliary buffer,
+            file,
+            or signal generating transform.
+            If a transform is given
+            it will be applied
+            to a buffer with the same length
+            as the base buffer
+            containing zeros
         read_pos_aux: read position of auxiliary buffer (see ``unit``)
         read_dur_aux: duration to read from auxiliary buffer
             (see ``unit``).
@@ -527,7 +549,7 @@ class Append(Base):
     """
     def __init__(
             self,
-            aux: Union[str, observe.Base, AudioBuffer],
+            aux: Union[str, observe.Base, AudioBuffer, Base],
             *,
             read_pos_aux: Union[int, float, observe.Base, Time] = 0.0,
             read_dur_aux: Union[int, float, observe.Base, Time] = None,
@@ -616,7 +638,14 @@ class Prepend(Base):
     but must have the same sampling rate.
 
     Args:
-        aux: auxiliary buffer
+        aux: auxiliary buffer,
+            file,
+            or signal generating transform.
+            If a transform is given
+            it will be applied
+            to a buffer with the same length
+            as the base buffer
+            containing zeros
         read_pos_aux: read position of auxiliary buffer
             (see ``unit``)
         read_dur_aux: duration to read from auxiliary buffer
@@ -642,7 +671,7 @@ class Prepend(Base):
     """
     def __init__(
             self,
-            aux: Union[str, observe.Base, AudioBuffer],
+            aux: Union[str, observe.Base, AudioBuffer, Base],
             *,
             read_pos_aux: Union[int, float, observe.Base, Time] = 0.0,
             read_dur_aux: Union[int, float, observe.Base, Time] = None,
@@ -1083,7 +1112,14 @@ class FFTConvolve(Base):
     using an impulse response (FFT-based approach).
 
     Args:
-        aux: auxiliary buffer
+        aux: auxiliary buffer,
+            file,
+            or signal generating transform.
+            If a transform is given
+            it will be applied
+            to a buffer with the same length
+            as the base buffer
+            containing zeros
         keep_tail: keep the tail of the convolution result (extending
             the length of the buffer), or to cut it out (keeping the
             original length of the input)
@@ -1108,7 +1144,7 @@ class FFTConvolve(Base):
     """
     def __init__(
             self,
-            aux: Union[str, observe.Base, AudioBuffer],
+            aux: Union[str, observe.Base, AudioBuffer, Base],
             *,
             keep_tail: Union[bool, observe.Base] = True,
             transform: Base = None,
