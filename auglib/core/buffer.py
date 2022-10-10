@@ -31,8 +31,11 @@ class AudioBuffer:
         unit: literal specifying the format of ``duration``
             (see :meth:`auglib.utils.to_samples`)
 
-    Example:
+    Raises:
+        ValueError: if ``sampling_rate`` is not an integer
+            or not greater than zero
 
+    Example:
         >>> with AudioBuffer(5, 8000, 1.0, unit='samples') as buf:
         ...     buf
         array([[1., 1., 1., 1., 1.]], dtype=float32)

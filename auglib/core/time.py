@@ -86,8 +86,20 @@ class Time(audobject.Object):
                 but ``unit`` is ``'samples'``
             ValueError: if  ``sampling_rate`` is not provided,
                 but ``unit`` is not ``'samples'`` or ``'relative'``
+            ValueError: if ``sampling_rate`` is not an integer
+                or not greater than zero
 
         """
+
+        if sampling_rate is not None:
+            if (
+                    not isinstance(sampling_rate, int)
+                    or sampling_rate <= 0
+            ):
+                raise ValueError(
+                    'Sampling rate must be an integer and greater than zero, '
+                    f'not {sampling_rate} Hz'
+                )
 
         value = observe.observe(self.value)
 

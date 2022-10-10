@@ -20,6 +20,22 @@ import auglib
             1.0, 's', None, None, None, False,
             marks=pytest.mark.xfail(raises=ValueError),
         ),
+        pytest.param(  # sampling rate no integer
+            1.0, 's', None, 8000.0, None, False,
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+        pytest.param(  # sampling rate no integer
+            1.0, 's', None, '8000', None, False,
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+        pytest.param(  # sampling rate not positive
+            1.0, 's', None, 0, None, False,
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+        pytest.param(  # sampling rate not positive
+            1.0, 's', None, -1, None, False,
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
         pytest.param(  # length not set
             0.5, 'relative', None, None, None, False,
             marks=pytest.mark.xfail(raises=ValueError),

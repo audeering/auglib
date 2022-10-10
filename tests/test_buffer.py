@@ -84,6 +84,19 @@ def test_rms(sampling_rate, signal):
         )
 
 
+@pytest.mark.parametrize('sampling_rate', [-10, -10.0, 0, 0.0, 3.4, 10.0])
+@pytest.mark.parametrize('duration', [1])
+@pytest.mark.parametrize('unit', ['seconds', 'samples'])
+def test_sampling_rate_error(sampling_rate, duration, unit):
+
+    error_msg = (
+        'Sampling rate must be an integer and greater than zero, '
+        f'not {sampling_rate} Hz'
+    )
+    with pytest.raises(ValueError, match=error_msg):
+        auglib.AudioBuffer(duration, sampling_rate, unit=unit)
+
+
 def test_shape_error(tmpdir):
 
     signal = np.zeros((2, 8))
@@ -100,5 +113,5 @@ def test_shape_error(tmpdir):
 
 def test_str():
 
-    with auglib.AudioBuffer(4, -8000, unit='samples') as buf:
+    with auglib.AudioBuffer(4, 8000, unit='samples') as buf:
         assert str(buf) == str(buf.to_array())
