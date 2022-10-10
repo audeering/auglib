@@ -34,6 +34,7 @@ class AudioBuffer:
     Raises:
         ValueError: if ``sampling_rate`` is not an integer
             or not greater than zero
+        ValueError: if ``duration`` would result in an empty buffer
 
     Example:
         >>> with AudioBuffer(5, 8000, 1.0, unit='samples') as buf:
@@ -52,7 +53,18 @@ class AudioBuffer:
             *,
             unit: str = 'seconds',
     ):
-        length = to_samples(duration, sampling_rate=sampling_rate, unit=unit)
+        length = to_samples(
+            duration,
+            sampling_rate=sampling_rate,
+            unit=unit,
+            allow_negative=True,
+        )
+        if length <= 0:
+            raise ValueError(
+                f'Empty buffers are not supported '
+                f"(duration: {duration} {unit}, "
+                f"sampling rate: {sampling_rate} Hz)."
+            )
         self._obj = lib.AudioBuffer_new(length, sampling_rate)
         self._data = np.ctypeslib.as_array(
             lib.AudioBuffer_data(self._obj),
@@ -254,7 +266,9 @@ class AudioBuffer:
             sampling_rate: sampling rate in Hz
 
         Raises:
-            ValueError: if signal has a wrong shape
+            ValueError: if ``sampling_rate`` is not an integer
+                or not greater than zero
+            ValueError: if signal has a wrong shape or is empty
 
         Example:
             >>> with AudioBuffer.from_array([1] * 5, 8000) as buf:
@@ -293,7 +307,7 @@ class AudioBuffer:
             offset: start reading at offset in seconds
 
         Raises:
-            ValueError: if input file is not mono
+            ValueError: if signal has a wrong shape or is empty
 
         """
         path = safe_path(path, root=root)

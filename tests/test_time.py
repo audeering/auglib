@@ -16,6 +16,9 @@ import auglib
         (-0.5, 'relative', 8, None, True, -4),
         (2.0, 'relative', 8, None, False, 16),
         (-2.0, 'relative', 8, None, True, -16),
+        (0, 'samples', None, 8000, False, 0),
+        (0, 'seconds', None, 8000, False, 0),
+        (0.0001, 'seconds', None, 8000, False, 0),
         pytest.param(  # sampling rate not set
             1.0, 's', None, None, None, False,
             marks=pytest.mark.xfail(raises=ValueError),

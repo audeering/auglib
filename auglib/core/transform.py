@@ -109,6 +109,7 @@ class Base(audobject.Object):
 
     @_check_exception_decorator
     def __call__(self, buf: AudioBuffer) -> AudioBuffer:
+
         bypass_prob = observe.observe(self.bypass_prob)
         preserve_level = observe.observe(self.preserve_level)
         if (
@@ -1921,6 +1922,14 @@ class Function(Base):
         # we copy the result to the buffer,
         # otherwise we assume an inplace operation
         if y is not None:
+            # we don't support empty buffers
+            if y.size == 0:
+                raise RuntimeError(
+                    'Buffers must be non-empty. '
+                    'Yours is empty '
+                    'after applying the following transform: '
+                    f"'{str(self)}'."
+                )
             # ensure result has correct data type
             y = y.astype(x.dtype)
             # if necessary fit buffer size to result

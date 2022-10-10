@@ -1,3 +1,4 @@
+import re
 import os
 
 import numpy as np
@@ -141,6 +142,43 @@ def test_shape_error(tmpdir):
         auglib.AudioBuffer.from_array(signal, sampling_rate)
 
     with pytest.raises(ValueError):
+        auglib.AudioBuffer.read(path)
+
+
+@pytest.mark.parametrize(
+    'duration, unit, sampling_rate',
+    [
+        (0, 'samples', 8000),
+        (0, 'seconds', 8000),
+        (-1, 'samples', 8000),
+        (-1, 'seconds', 8000),
+        (0.0001, 'seconds', 8000),
+    ],
+)
+def test_size_error(tmpdir, duration, unit, sampling_rate):
+
+    error_msg = (
+        'Empty buffers are not supported '
+        f"(duration: {duration} {unit}, sampling rate: {sampling_rate} Hz)"
+    )
+    with pytest.raises(ValueError, match=re.escape(error_msg)):
+        auglib.AudioBuffer(duration, sampling_rate, unit=unit)
+
+
+def test_size_error_from_file_or_array(tmpdir):
+
+    signal = np.array([[]])
+    sampling_rate = 8000
+    path = os.path.join(tmpdir, 'empty.wav')
+    audiofile.write(path, signal, sampling_rate)
+
+    error_msg = (
+        'Empty buffers are not supported '
+        f"(duration: 0 samples, sampling rate: {sampling_rate} Hz"
+    )
+    with pytest.raises(ValueError, match=re.escape(error_msg)):
+        auglib.AudioBuffer.from_array(signal, sampling_rate)
+    with pytest.raises(ValueError, match=re.escape(error_msg)):
         auglib.AudioBuffer.read(path)
 
 

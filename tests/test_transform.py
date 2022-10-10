@@ -1,4 +1,5 @@
 import os
+import re
 
 import audresample
 import numpy as np
@@ -75,8 +76,6 @@ def test_Base(sampling_rate, bypass_prob, preserve_level, base, expected):
     with AudioBuffer.from_array(base, sampling_rate) as base_buf:
         t = Transform(bypass_prob, preserve_level)
         assert t.bypass_prob == bypass_prob
-        print(preserve_level)
-        print(t.preserve_level)
         assert t.preserve_level == preserve_level
         t(base_buf)
         np.testing.assert_almost_equal(
@@ -609,14 +608,6 @@ def test_PrependValue(
             marks=pytest.mark.xfail(raises=ValueError),
         ),
         # Errors raised by auglib (C++ library)
-        pytest.param(  # empty buffer is not supported
-            0, None, 'samples', [], [],
-            marks=pytest.mark.xfail(raises=RuntimeError),
-        ),
-        pytest.param(  # empty buffer is not supported
-            0, 0, 'samples', [], [],
-            marks=pytest.mark.xfail(raises=RuntimeError),
-        ),
         pytest.param(  # start > buffer length
             4, None, 'samples', [1, 2, 3], None,
             marks=pytest.mark.xfail(raises=RuntimeError),
@@ -1239,6 +1230,36 @@ def test_function():
             buffer._data,
             np.ones(20, dtype=np.float32) * 2,
         )
+
+
+@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize(
+    'base, function, error, error_msg',
+    [
+        (
+            [0, 0],
+            lambda sig, sr: np.array([]),
+            RuntimeError,
+            (
+                'Buffers must be non-empty. '
+                'Yours is empty '
+                'after applying the following transform: '
+                "'$auglib.core.transform.Function"
+            ),
+        ),
+    ],
+)
+def test_Function_errors(
+        sampling_rate,
+        base,
+        function,
+        error,
+        error_msg,
+):
+
+    with AudioBuffer.from_array(base, sampling_rate) as base_buf:
+        with pytest.raises(error, match=re.escape(error_msg)):
+            Function(function)(base_buf)
 
 
 @pytest.mark.parametrize(
