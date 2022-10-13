@@ -174,7 +174,7 @@ randomly from a normal distribution.
 
 .. jupyter-execute::
 
-    auglib.seed(0)
+    auglib.seed(1)
 
     def reverb(
             signal,
