@@ -410,7 +410,7 @@ when using the augmentation in a real application.
 
 .. jupyter-execute::
 
-    auglib.seed(0)
+    auglib.seed(1)
 
     db = audb.load(
         'musan',

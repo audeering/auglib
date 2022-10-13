@@ -27,6 +27,7 @@ from auglib.core.utils import (
 
 
 SUPPORTED_FILL_STRATEGIES = ['none', 'zeros', 'loop']
+SUPPORTED_FILL_POSITIONS = ['right', 'left', 'both']
 SUPPORTED_FILTER_DESIGNS = ['butter']
 SUPPORTED_TONE_SHAPES = ['sine', 'square', 'triangle', 'sawtooth']
 
@@ -185,7 +186,7 @@ class BabbleNoise(Base):
         >>> with AudioBuffer.from_array([0, 0, 0, 0], 8000) as base:
         ...     with AudioBuffer.from_array([1, 0, 0], 8000) as aux:
         ...         BabbleNoise([aux], num_speakers=2)(base)
-        array([[0.5, 0. , 0.5, 0. ]], dtype=float32)
+        array([[0. , 0.5, 0.5, 0. ]], dtype=float32)
 
     """
     def __init__(
@@ -217,22 +218,9 @@ class BabbleNoise(Base):
                 observe.List(self.speech, draw=True),
                 gain_aux_db=to_db(1 / num_repeat),
                 num_repeat=num_repeat,
-                unit='relative',
                 loop_aux=True,
                 # Cycle the input signal
-                # using Trim
-                # as it is more efficient
-                # than Shift
-                # when having a fixed signal duration
-                transform=Trim(
-                    start_pos=Time(
-                        observe.FloatUni(0, 1),
-                        unit='relative',
-                    ),
-                    duration=babble.duration,
-                    fill='loop',
-                    unit='seconds',
-                )
+                transform=Shift(observe.FloatUni(0, babble.duration)),
             )
             transform(babble)
             # Mix the babble noise to aux buffer
@@ -761,83 +749,137 @@ class PrependValue(Base):
 
 
 class Trim(Base):
-    r"""Trim base buffer to desired duration, given a desired starting point.
+    r"""Trim, zero pad, and/or repeat base buffer.
+
+    If ``duration`` is ``None``
+    the signal will be trimmed
+    to the range [``start_pos``, ``end_pos``],
+    whereas the start or end of the signal is used
+    if ``start_pos`` and/or ``end_pos`` are ``None``.
+
+    If ``duration`` is provided
+    and ``fill`` is ``'none'``
+    it will calculate ``start_pos`` or ``end_pos``
+    to match the given duration
+    if the incoming signal is long enough.
+    If ``duration`` is provided,
+    but neither ``start_pos`` or ``end_pos``
+    it will trim a signal with given ``duration``
+    from the center of the signal.
+
+    If ``duration`` is provided
+    and ``fill`` is ``'zeros'`` or ``'loop'``
+    it will return a signal of length ``duration``
+    filling missing values with zeros
+    or the trimmed signal.
+    ``fill_pos`` defines if the signal is filled
+    on the right, left, or both ends.
+
+    The following table shows
+    a few combinations of the arguments
+    and the resulting augmented signal
+    for an ingoing signal of ``[1, 2, 3, 4]``.
+    All time values are given in samples.
+
+    ========= ======= ======== ===== ======== ============
+    start_pos end_pos duration fill  fill_pos outcome
+    ========= ======= ======== ===== ======== ============
+    1         None    None     none  right    [2, 3, 4]
+    None      1       None     none  right    [1, 2, 3]
+    None      None    2        none  right    [2, 3]
+    2         None    4        loop  right    [3, 4, 3, 4]
+    1         1       4        zeros right    [2, 3, 0, 0]
+    3         None    4        zeros both     [0, 4, 0, 0]
+    ========= ======= ======== ===== ======== ============
 
     Args:
-        start_pos: Starting point of the trimmed region, relative to the input
-            buffer (see ``unit``).
-        duration: Target duration of the resulting buffer (see ``unit``). If
-            set to None, the selected section extends until the end of the
-            original buffer.
-        fill: Fill up strategy if the end point of the trimmed region
+        start_pos: starting point of the trimmed region,
+            relative to the start of the input buffer
+            (see ``unit``)
+        end_pos: end point of the trimmed region,
+            relative to the end of the input buffer
+            (see ``unit``).
+            The end point is counted backwards
+            from the end of the signal.
+            If ``end_pos=512`` samples,
+            it will remove the last 512 samples of the input
+        duration: target duration of the resulting buffer
+            (see ``unit``).
+            If set to ``None`` or ``0``,
+            the selected section extends
+            until the end
+            or the beginning
+            of the original buffer
+        fill: fill strategy
+            if the end and/or start point
+            of the trimmed region
             exceeds the buffer.
             Three strategies are available:
             ``'none'`` the signal is not extended,
-            ``'zeros'`` the signal is filled up with 0s,
-            ``'loop'`` the signal is repeated.
-        unit: Literal specifying the format of ``start`` and ``duration`` (see
-            :meth:`auglib.utils.to_samples`).
+            ``'zeros'`` the signal is filled up with zeros,
+            ``'loop'`` the trimmed signal is repeated
+        fill_pos: position at which the selected fill strategy applies.
+            ``'right'`` adds samples to the right,
+            ``'left'`` adds samples to the left,
+            or ``'both'`` adds samples on both sides,
+            equally distributed starting at the right
+        unit: literal specifying the format
+            of ``start_pos``,
+            ``end_pos``,
+            and ``duration``
+            (see :meth:`auglib.utils.to_samples`)
         preserve_level: if ``True``
             the root mean square value
             of the augmented buffer
             will be the same
             as before augmentation
-        bypass_prob: Probability to bypass the transformation.
+        bypass_prob: Probability to bypass the transformation
 
     Raises:
         ValueError: if ``fill`` contains a non-supported value
+        ValueError: if ``fill_pos`` contains a non-supported value
 
     Example:
-        >>> transform = Trim(start_pos=0.75)
-        >>> with AudioBuffer(1.0, 4, value=1.0) as buf:
-        ...     AppendValue(0.5, value=2.0)(buf)
-        ...     transform(buf)
-        array([[1., 1., 1., 1., 2., 2.]], dtype=float32)
-        array([[1., 2., 2.]], dtype=float32)
-        >>> transform = Trim(start_pos=0.75, duration=0.5)
-        >>> with AudioBuffer(1.0, 4, value=1.0) as buf:
-        ...     AppendValue(0.5, value=2.0)(buf)
-        ...     transform(buf)
-        array([[1., 1., 1., 1., 2., 2.]], dtype=float32)
-        array([[1., 2.]], dtype=float32)
-        >>> transform = Trim(start_pos=0.75, duration=2.5, fill='none')
-        >>> with AudioBuffer(1.0, 4, value=1.0) as buf:
-        ...     AppendValue(0.5, value=2.0)(buf)
-        ...     transform(buf)
-        array([[1., 1., 1., 1., 2., 2.]], dtype=float32)
-        array([[1., 2., 2.]], dtype=float32)
-        >>> transform = Trim(start_pos=0.75, duration=2.5, fill='zeros')
-        >>> with AudioBuffer(1.0, 4, value=1.0) as buf:
-        ...     AppendValue(0.5, value=2.0)(buf)
-        ...     transform(buf)
-        array([[1., 1., 1., 1., 2., 2.]], dtype=float32)
-        array([[1., 2., 2., 0., 0., 0., 0., 0., 0., 0.]], dtype=float32)
-        >>> transform = Trim(start_pos=0.75, duration=2.5, fill='loop')
-        >>> with AudioBuffer(1.0, 4, value=1.0) as buf:
-        ...     AppendValue(0.5, value=2.0)(buf)
-        ...     transform(buf)
-        array([[1., 1., 1., 1., 2., 2.]], dtype=float32)
-        array([[1., 2., 2., 1., 1., 1., 1., 2., 2., 1.]], dtype=float32)
-        >>> # use random values and combine different time units
-        >>> seed(0)
-        >>> start_pos = Time(observe.FloatUni(0.0, 0.5), 'relative')
-        >>> duration = Time(observe.FloatUni(1.0, 1.5), 'seconds')
-        >>> transform = Trim(start_pos=start_pos, duration=duration)
-        >>> with AudioBuffer(1.0, 4, value=1.0) as buf:
-        ...     AppendValue(0.5, value=2.0)(buf)
-        ...     transform(buf)
-        ...     transform(buf)
-        array([[1., 1., 1., 1., 2., 2.]], dtype=float32)
-        array([[1., 1., 1., 2., 2.]], dtype=float32)
-        array([[1., 1., 2., 2.]], dtype=float32)
+        >>> with AudioBuffer.from_array([1, 2, 3, 4], 8000) as buf:
+        ...     Trim(start_pos=1, unit='samples')(buf)
+        array([[2., 3., 4.]], dtype=float32)
+        >>> with AudioBuffer.from_array([1, 2, 3, 4], 8000) as buf:
+        ...     Trim(end_pos=1, unit='samples')(buf)
+        array([[1., 2., 3.]], dtype=float32)
+        >>> with AudioBuffer.from_array([1, 2, 3, 4], 8000) as buf:
+        ...     Trim(start_pos=None, duration=2, unit='samples')(buf)
+        array([[2., 3.]], dtype=float32)
+        >>> with AudioBuffer.from_array([1, 2, 3, 4], 8000) as buf:
+        ...     Trim(start_pos=2, duration=4, unit='samples', fill='loop')(buf)
+        array([[3., 4., 3., 4.]], dtype=float32)
+        >>> with AudioBuffer.from_array([1, 2, 3, 4], 8000) as buf:
+        ...     Trim(
+        ...         start_pos=1,
+        ...         end_pos=1,
+        ...         duration=4,
+        ...         unit='samples',
+        ...         fill='zeros',
+        ...     )(buf)
+        array([[2., 3., 0., 0.]], dtype=float32)
+        >>> with AudioBuffer.from_array([1, 2, 3, 4], 8000) as buf:
+        ...     Trim(
+        ...         start_pos=3,
+        ...         duration=4,
+        ...         unit='samples',
+        ...         fill='zeros',
+        ...         fill_pos='both',
+        ...     )(buf)
+        array([[0., 4., 0., 0.]], dtype=float32)
 
     """
     def __init__(
             self,
             *,
             start_pos: Union[int, float, observe.Base, Time] = 0,
+            end_pos: Union[int, float, observe.Base, Time] = None,
             duration: Union[int, float, observe.Base, Time] = None,
             fill: str = 'none',
+            fill_pos: str = 'right',
             unit: str = 'seconds',
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
@@ -846,49 +888,217 @@ class Trim(Base):
             bypass_prob=bypass_prob,
             preserve_level=preserve_level,
         )
-        self.start_pos = start_pos
-        self.duration = duration or 0
         if fill not in SUPPORTED_FILL_STRATEGIES:
             raise ValueError(
                 f"Unknown fill strategy '{fill}'. "
                 "Supported strategies are: "
                 f"{', '.join(SUPPORTED_FILL_STRATEGIES)}."
             )
+        if fill_pos not in SUPPORTED_FILL_POSITIONS:
+            raise ValueError(
+                f"Unknown fill_pos '{fill_pos}'. "
+                "Supported positions are: "
+                f"{', '.join(SUPPORTED_FILL_POSITIONS)}."
+            )
+        self.start_pos = start_pos
+        self.end_pos = end_pos
+        self.duration = duration
         self.fill = fill
+        self.fill_pos = fill_pos
         self.unit = unit
 
     @buffer_length_can_change_decorator
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
 
-        start_pos = to_samples(
-            observe.observe(self.start_pos),
-            sampling_rate=buf.sampling_rate,
-            unit=self.unit,
-            length=len(buf),
-        )
-        duration = to_samples(
-            observe.observe(self.duration),
-            sampling_rate=buf.sampling_rate,
-            unit=self.unit,
-            length=len(buf),
-        )
-        missing = (start_pos + duration) - len(buf)
+        # start_pos | end_pos | duration
+        # --------- | ------- | --------
+        # None      | None    | None/0
+        #
+        # Return signal without trimming
+        if (
+                self.start_pos is None
+                and self.end_pos is None
+                and (
+                    self.duration is None
+                    or self.duration == 0
+                )
+        ):
+            return buf
 
-        if missing > 0:
-            if self.fill == 'zeros':
-                AppendValue(missing, unit='samples')(buf)
-            elif self.fill == 'loop':
-                with AudioBuffer.from_array(
-                    buf.to_array(copy=False),
-                    buf.sampling_rate,
-                ) as aux:
-                    AppendValue(missing, unit='samples')(buf)
-                    Mix(
-                        aux,
-                        write_pos_base=len(aux),
-                        unit='samples',
-                        loop_aux=True,
-                    )(buf)
+        # Convert start_pos, end_pos, duration to samples
+        # and check for meaningful values
+        length = len(buf)
+        if self.start_pos is not None:
+            start_pos = to_samples(
+                observe.observe(self.start_pos),
+                sampling_rate=buf.sampling_rate,
+                unit=self.unit,
+                length=length,
+                allow_negative=True,
+            )
+            if start_pos >= length:
+                raise ValueError(f"'start_pos' must be <{length}.")
+            if start_pos < 0:
+                raise ValueError("'start_pos' must be >=0.")
+        if self.end_pos is not None:
+            end_pos = to_samples(
+                observe.observe(self.end_pos),
+                sampling_rate=buf.sampling_rate,
+                unit=self.unit,
+                length=length,
+                allow_negative=True,
+            )
+            if end_pos >= length:
+                raise ValueError(f"'end_pos' must be <{length}.")
+            if end_pos < 0:
+                raise ValueError("'end_pos' must be >=0.")
+        if self.duration is not None:
+            if self.duration == 0:
+                duration = length
+            else:
+                duration = to_samples(
+                    observe.observe(self.duration),
+                    sampling_rate=buf.sampling_rate,
+                    unit=self.unit,
+                    length=length,
+                    allow_negative=True,
+                )
+            if duration < 0:
+                raise ValueError("'duration' must be >=0.")
+            # duration can become 0 if self.duration is very small
+            if duration == 0:
+                raise ValueError(
+                    "Your combination of "
+                    f"'duration' = {self.duration} {self.unit} "
+                    f"and 'sampling_rate' = {buf.sampling_rate} Hz "
+                    "would lead to an empty buffer "
+                    "which is forbidden."
+                )
+
+        # start_pos | end_pos | duration
+        # --------- | ------- | --------
+        # value     | value   |
+        #
+        # If start_pos and end_pos are given
+        # we need to ensure
+        # that they would not result
+        # in an empty array
+        if (
+                self.start_pos is not None
+                and self.end_pos is not None
+        ):
+            if length - start_pos - end_pos <= 0:
+                raise ValueError(f"'start_pos' + 'end_pos' must be <{length}.")
+
+        # start_pos | end_pos | duration
+        # --------- | ------- | --------
+        #           |         | None
+        #
+        # Calculate duration if not given
+        if self.duration is None:
+            if self.start_pos is None:
+                start_pos = 0
+            elif self.end_pos is None:
+                end_pos = 0
+            duration = len(buf) - start_pos - end_pos
+
+        # start_pos | end_pos | duration
+        # --------- | ------- | --------
+        #           |         | value
+        #
+        # Return trimmed signal based on duration.
+        # If the duration is longer
+        # than the incoming signal
+        # or the trimmed signal
+        # based on start_pos and/or end_pos,
+        # the signal is also filled
+        # according to fill and fill_pos
+        if self.duration is not None:
+
+            def distribute_samples(num_samples):
+                r"""Distribute samples to left and right.
+
+                If ``num_samples`` is zero or negative
+                ``0, 0`` is returned.
+
+                If ``num_samples`` is even
+                more samples are returned on the right side.
+
+                """
+                if num_samples <= 0:
+                    return 0, 0
+                start = int(num_samples / 2)
+                end = int(num_samples / 2)
+                # For even numbers add one sample to the right
+                if num_samples % 2 != 0:
+                    end += num_samples
+                return start, end
+
+            # First trim to [start_pos, end_pos]
+            if (
+                    self.start_pos is None
+                    and self.end_pos is None
+            ):
+                # If signal is longer than duration cut from center
+                start_pos, end_pos = distribute_samples(length - duration)
+            elif self.start_pos is None:
+                start_pos = max(0, length - duration - end_pos)
+            elif self.end_pos is None:
+                end_pos = max(0, length - duration - start_pos)
+            Trim(start_pos=start_pos, end_pos=end_pos, unit='samples')(buf)
+
+            # Check the difference in samples
+            # between current buffer
+            # and desired duration
+            difference = len(buf) - duration
+
+            # Expand buffer if too short
+            # and fill is requested
+            if (
+                    difference < 0
+                    and self.fill != 'none'
+            ):
+
+                if self.fill_pos == 'right':
+                    prepend_samples = 0
+                    append_samples = -difference
+                elif self.fill_pos == 'left':
+                    prepend_samples = -difference
+                    append_samples = 0
+                elif self.fill_pos == 'both':
+                    prepend_samples, append_samples = distribute_samples(
+                        -difference
+                    )
+
+                if self.fill == 'zeros':
+                    # Expand buffer by zeros
+                    prepend_array = np.zeros(prepend_samples)
+                    append_array = np.zeros(append_samples)
+                elif self.fill == 'loop':
+                    # Repeat signal in the expanded parts
+                    repetitions = (
+                        int(max(prepend_samples, append_samples) / len(buf))
+                        + 1
+                    )
+                    repeated_array = np.tile(buf._data, repetitions)
+                    prepend_array = repeated_array[-prepend_samples:]
+                    append_array = repeated_array[:append_samples]
+
+                if prepend_samples > 0:
+                    with AudioBuffer.from_array(
+                        prepend_array,
+                        buf.sampling_rate,
+                    ) as aux:
+                        Prepend(aux)(buf)
+                if append_samples > 0:
+                    with AudioBuffer.from_array(
+                        append_array,
+                        buf.sampling_rate,
+                    ) as aux:
+                        Append(aux)(buf)
+
+            # Set start_pos to 0 for final trim with provided duration
+            start_pos = 0
 
         lib.AudioBuffer_trim(buf._obj, start_pos, duration)
 
@@ -2310,10 +2520,26 @@ class Shift(Base):
         self.unit = unit
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
-        Trim(
-            start_pos=Time(self.duration, unit=self.unit),
-            duration=Time(len(buf), unit='samples'),
-            fill='loop',
-        )(buf)
+        if self.duration is not None:
+            duration = to_samples(
+                observe.observe(self.duration),
+                sampling_rate=buf.sampling_rate,
+                unit=self.unit,
+                length=len(buf),
+            )
+            # Allow shift values that are out-of-bound
+            # of the actual buffer duration
+            start_pos = duration % len(buf)
+            if start_pos == 0:
+                return buf
+            # Append data
+            # that will be removed at the beginning
+            with AudioBuffer.from_array(
+                buf._data[:start_pos],
+                buf.sampling_rate,
+            ) as aux:
+                Append(aux)(buf)
+            # Remove data from beginning
+            Trim(start_pos=start_pos, unit='samples')(buf)
 
         return buf
