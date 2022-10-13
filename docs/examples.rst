@@ -432,7 +432,7 @@ when using the augmentation in a real application.
 .. jupyter-execute::
     :hide-code:
 
-    plot(signal_augmented, green, 'Bable\nNoise')
+    plot(signal_augmented, green, 'Babble\nNoise')
 
 .. jupyter-execute::
     :hide-code:
