@@ -7,6 +7,72 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.11.0 (2022-10-13)
+---------------------------
+
+* Added: ``auglib.transform.BabbleNoise``
+* Added: ``auglib.transform.Prepend``
+* Added: ``auglib.transform.PrependValue``
+* Added: ``auglib.transform.Resample``
+* Added: ``auglib.transform.Shift``
+* Added: ``snr_db`` argument to
+  ``auglib.transform.Mix``
+  ``auglib.transform.PinkNoise``,
+  ``auglib.transform.Tone``,
+  ``auglib.transform.WhiteNoiseGaussian``,
+  ``auglib.transform.WhiteNoiseUniform``
+  to specify the signal-to-noise ratio
+  between the incoming
+  and added signal
+* Added: ``end_pos`` and ``fill_pos`` to
+  ``auglib.transform.Trim``
+  to allow any kind of cropping,
+  zero padding,
+  and signal repetition
+* Added: ``preserve_level`` argument
+  to all transforms.
+  If ``True`` it ensures
+  that the transformed signal
+  has the same root-mean-square value
+  as the incoming signal
+* Added: ``auglib.AudioBuffer.rms()``
+  and ``auglib.AudioBuffer.rms_db()``
+* Added: ``sampling_rate`` argument to
+  ``auglib.AudioBuffer.write()``
+* Added: *Noise with fixed SNR* example
+  in the documentation
+* Added: *Band-Pass Filtered Noise* example
+  in the documentation
+* Changed: allow a transform object as input
+  for the ``aux`` argument
+  in transforms that have this argument
+* Changed: ``auglib.transform.Trim``
+  no longer supports providing a ``start_pos``
+  that is larger than the buffer length
+* Changed: ``auglib.transform.Trim``
+  with argument ``fill='loop'``
+  no longer loops the whole input signal,
+  but only the trimmed version
+  specified by ``start_pos``
+  and/or ``end_pos``.
+  For cycling through a signal
+  use ``auglib.transform.Shift`` instead
+* Changed: raise ``ValueError``
+  if ``sampling_rate`` argument
+  is not greater than zero or not an integer
+* Changed: serializing a transform
+  that contains a buffer as ``aux`` argument
+  will raise a ``ValueError``
+* Changed: when applied to an input signal
+  ``auglib.transform.Function``
+  raises a ``RuntimeError``
+  if it would result in an empty augmented signal
+* Changed: depend on ``audformat>=0.15.2``
+* Fixed: ``read_dur_aux``
+  in ``auglib.transform.Append``
+  does now allow to be ``None``
+
+
 Version 0.10.5 (2022-06-15)
 ---------------------------
 
