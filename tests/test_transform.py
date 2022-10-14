@@ -193,6 +193,92 @@ def test_Base_aux_transform(sampling_rate, base, aux, transform, expected):
         )
 
 
+@pytest.mark.parametrize(
+    'bit_rate', [4750, 5150, 5900, 6700, 7400, 7950, 10200, 12200]
+)
+def test_AMRNB(bit_rate):
+
+    original_wav = 'tests/test-assets/opensmile.wav'
+    target_wav = f'tests/test-assets/opensmile_amrnb_rate{bit_rate}_ffmpeg.wav'
+
+    transform = AMRNB(bit_rate)
+    with AudioBuffer.read(original_wav) as buf:
+        transform(buf)
+        result = buf._data
+        with AudioBuffer.read(target_wav) as target_buf:
+            target = target_buf._data
+            length = min(result.size, target.size)
+            np.testing.assert_allclose(
+                result[:length], target[:length], rtol=0.0, atol=0.065
+            )
+
+
+@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize('base', [[1, 1]])
+@pytest.mark.parametrize(
+    'read_pos_aux, read_dur_aux, unit, aux, expected',
+    [
+        (0, 0, 'samples', [0, 2], [1, 1, 0, 2]),
+        (0, None, 'samples', [0, 2], [1, 1, 0, 2]),
+        (1, 0, 'samples', [0, 2], [1, 1, 2]),
+        (0, 1, 'samples', [0, 2], [1, 1, 0]),
+    ],
+)
+def test_Append(
+        tmpdir,
+        sampling_rate,
+        base,
+        read_pos_aux,
+        read_dur_aux,
+        unit,
+        aux,
+        expected,
+):
+    with AudioBuffer.from_array(base, sampling_rate) as base_buf:
+        with AudioBuffer.from_array(aux, sampling_rate) as aux_buf:
+            auglib.transform.Append(
+                aux_buf,
+                read_pos_aux=read_pos_aux,
+                read_dur_aux=read_dur_aux,
+                unit=unit,
+            )(base_buf)
+            np.testing.assert_equal(
+                base_buf._data,
+                np.array(expected, dtype=np.float32),
+            )
+
+
+@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize('base', [[1, 1]])
+@pytest.mark.parametrize(
+    'duration, unit, value, expected',
+    [
+        (0, 'samples', 0, [1, 1]),
+        (0, 'seconds', 0, [1, 1]),
+        (1, 'samples', 2, [1, 1, 2]),
+        (2, 'samples', 2, [1, 1, 2, 2]),
+    ],
+)
+def test_AppendValue(
+        sampling_rate,
+        base,
+        duration,
+        unit,
+        value,
+        expected,
+):
+    with AudioBuffer.from_array(base, sampling_rate) as base_buf:
+        AppendValue(
+            duration,
+            value,
+            unit=unit,
+        )(base_buf)
+        np.testing.assert_equal(
+            base_buf._data,
+            np.array(expected, dtype=np.float32),
+        )
+
+
 # Test gain and SNR for BabbleNoise
 @pytest.mark.parametrize('duration', [1.0])
 @pytest.mark.parametrize('sampling_rate', [8000])
@@ -277,6 +363,314 @@ def test_BabbleNoise_2(
         )
     for buf in speech_bufs:
         buf.free()
+
+
+@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize(
+    'threshold, normalize, signal, expected_signal',
+    [
+        (1.0, False, [-1.5, -0.5, 0.5, 1.5], [-1.0, -0.5, 0.5, 1.0]),
+        (0.5, False, [-1.5, 0.5], [-0.5, 0.5]),
+        (0.5, True, [-1.5, 0.5], [-1.0, 1.0]),
+        (0.5, True, [-1.5, 0.25], [-1.0, 0.5]),
+    ],
+)
+def test_Clip(sampling_rate, threshold, normalize, signal, expected_signal):
+
+    with AudioBuffer.from_array(signal, sampling_rate) as buf:
+        transform = Clip(
+            threshold=auglib.utils.to_db(threshold),
+            normalize=normalize,
+        )
+        transform(buf)
+        np.testing.assert_almost_equal(
+            buf._data,
+            np.array(expected_signal, dtype=np.float32),
+            decimal=4,
+        )
+
+
+@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize(
+    'ratio, normalize, soft, signal, expected_signal',
+    [
+        (0.5, False, False, [0.5, 2.0], [0.5, 0.5]),
+        (0.5, False, True, [0.5, 2.0], [0.5, 0.5]),
+        (0.5, True, False, [0.5, 2.0], [1.0, 1.0]),
+        (1 / 3, False, False, [0.5, 1.0, 2.0], [0.5, 1.0, 1.0]),
+    ],
+)
+def test_ClipByRatio(
+        sampling_rate,
+        ratio,
+        normalize,
+        soft,
+        signal,
+        expected_signal,
+):
+
+    with AudioBuffer.from_array(signal, sampling_rate) as buf:
+        transform = ClipByRatio(ratio, normalize=normalize, soft=soft)
+        transform(buf)
+        np.testing.assert_almost_equal(
+            buf._data,
+            np.array(expected_signal, dtype=np.float32),
+            decimal=4,
+        )
+
+
+@pytest.mark.parametrize('duration', [1.0])
+@pytest.mark.parametrize('sampling_rate', [8000])
+def test_Compression(duration, sampling_rate):
+    with AudioBuffer(duration, sampling_rate) as buf:
+        Tone(220.0, shape='square')(buf)
+        NormalizeByPeak(peak_db=-3.0)(buf)
+        CompressDynamicRange(-12.0, 20.0, attack_time=0.0, release_time=0.1,
+                             knee_radius_db=6.0, makeup_db=None)(buf)
+        peak1 = buf.peak_db
+    with AudioBuffer(duration, sampling_rate) as buf:
+        Tone(220.0, shape='square')(buf)
+        NormalizeByPeak(peak_db=-3.0)(buf)
+        CompressDynamicRange(-12.0, 20.0, attack_time=0.0, release_time=0.1,
+                             knee_radius_db=6.0, makeup_db=0.0)(buf)
+        peak2 = buf.peak_db
+
+    assert peak1 > peak2
+    assert np.isclose(peak1, -3.0)
+
+
+@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize(
+    'keep_tail, aux, base, expected',
+    [
+        (False, [1, 0, 0], [1, 2, 3], [1, 2, 3]),
+        (False, [0, 1, 0], [1, 2, 3], [0, 1, 2]),
+        (True, [0, 1, 0], [1, 2, 3], [0, 1, 2, 3, 0]),
+        (True, [0, 1, 0, 0], [1, 2, 3], [0, 1, 2, 3, 0, 0]),
+    ],
+)
+def test_FFTConvolve(sampling_rate, keep_tail, aux, base, expected):
+
+    with AudioBuffer.from_array(base, sampling_rate) as base_buf:
+        with AudioBuffer.from_array(aux, sampling_rate) as aux_buf:
+            FFTConvolve(aux_buf, keep_tail=keep_tail)(base_buf)
+            np.testing.assert_almost_equal(
+                base_buf._data,
+                np.array(expected, dtype=np.float32),
+                decimal=4,
+            )
+
+
+# BandPass, BandStop, HighPass, LowPass
+@pytest.mark.parametrize('sr', [8000, 44100])
+@pytest.mark.parametrize('n', [10])
+def test_filter(n, sr):
+    # generate a boxcar signal (step up...step down)
+    sig_in = np.zeros(n * sr, dtype='float32')
+    sig_in[int(n * sr / 4):int(n * sr * 3 / 4)] = 1.0
+
+    b, a = scipy.signal.butter(1, 0.5, 'lowpass')
+    sig_out = scipy.signal.lfilter(b, a, sig_in)
+
+    with AudioBuffer.from_array(sig_in, sampling_rate=sr) as buf:
+        LowPass(0.5 * sr / 2)(buf)
+        np.testing.assert_almost_equal(buf._data, sig_out)
+
+    b, a = scipy.signal.butter(1, 0.5, 'highpass')
+    sig_out = scipy.signal.lfilter(b, a, sig_in)
+
+    with AudioBuffer.from_array(sig_in, sampling_rate=sr) as buf:
+        HighPass(0.5 * sr / 2)(buf)
+        np.testing.assert_almost_equal(buf._data, sig_out)
+
+    b, a = scipy.signal.butter(
+        1,
+        np.array([0.5 - 0.25, 0.5 + 0.25]),
+        'bandpass',
+    )
+    sig_out = scipy.signal.lfilter(b, a, sig_in)
+
+    with AudioBuffer.from_array(sig_in, sampling_rate=sr) as buf:
+        BandPass(0.5 * sr / 2, 0.5 * sr / 2)(buf)
+        np.testing.assert_almost_equal(buf._data, sig_out)
+
+    b, a = scipy.signal.butter(
+        1,
+        (2.0 / sr) * np.array([1000 - 5, 1000 + 5]),
+        'bandstop',
+    )
+    sig_out = scipy.signal.lfilter(b, a, sig_in)
+
+    with AudioBuffer.from_array(sig_in, sampling_rate=sr) as buf:
+        BandStop(1000, 10)(buf)
+        np.testing.assert_almost_equal(buf._data, sig_out)
+
+
+@pytest.mark.parametrize(
+    'filter_obj, params',
+    [
+        (LowPass, [1]),
+        (HighPass, [1]),
+        (BandPass, [1, 1]),
+        (BandStop, [1, 1]),
+    ]
+)
+def test_filter_errors(filter_obj, params):
+    with pytest.raises(ValueError):
+        design = 'non-supported'
+        filter_obj(*params, design=design)
+
+
+def test_Function():
+
+    def func_plus_c(x, sr, c):
+        return x + c
+
+    def func_halve(x, sr):
+        return x[:, ::2]
+
+    def func_times_2(x, sr):  # inplace
+        x *= 2
+
+    with AudioBuffer(20, 16000, unit='samples') as buffer:
+
+        np.testing.assert_equal(
+            buffer._data,
+            np.zeros(20, dtype=np.float32),
+        )
+
+        # add 1 to buffer
+        Function(func_plus_c, {'c': auglib.observe.IntUni(1, 1)})(buffer)
+        np.testing.assert_equal(
+            buffer._data,
+            np.ones(20, dtype=np.float32),
+        )
+
+        # halve buffer size
+        Function(func_halve)(buffer)
+        np.testing.assert_equal(
+            buffer._data,
+            np.ones(10, dtype=np.float32),
+        )
+
+        # multiple by 2
+        Function(func_times_2)(buffer)
+        np.testing.assert_equal(
+            buffer._data,
+            np.ones(10, dtype=np.float32) * 2,
+        )
+
+        # double buffer size
+        Function(lambda x, sr: np.tile(x, 2))(buffer)
+        np.testing.assert_equal(
+            buffer._data,
+            np.ones(20, dtype=np.float32) * 2,
+        )
+
+
+@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize(
+    'base, function, error, error_msg',
+    [
+        (
+            [0, 0],
+            lambda sig, sr: np.array([]),
+            RuntimeError,
+            (
+                'Buffers must be non-empty. '
+                'Yours is empty '
+                'after applying the following transform: '
+                "'$auglib.core.transform.Function"
+            ),
+        ),
+    ],
+)
+def test_Function_errors(
+        sampling_rate,
+        base,
+        function,
+        error,
+        error_msg,
+):
+
+    with AudioBuffer.from_array(base, sampling_rate) as base_buf:
+        with pytest.raises(error, match=re.escape(error_msg)):
+            Function(function)(base_buf)
+
+
+@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize('signal', [np.random.uniform(-0.1, 1.0, 10)])
+@pytest.mark.parametrize('gain', [20.0])
+@pytest.mark.parametrize('max_peak', [None, 10.0])
+@pytest.mark.parametrize('clip', [False, True])
+def test_GainStage(sampling_rate, signal, gain, max_peak, clip):
+
+    with AudioBuffer.from_array(signal, sampling_rate) as buf:
+        GainStage(gain, max_peak_db=max_peak, clip=clip)(buf)
+        if clip:
+            assert np.abs(buf._data).max() <= 1.0
+        elif max_peak is not None:
+            assert np.isclose(np.abs(buf._data).max(), from_db(max_peak))
+        else:
+            assert np.isclose(np.abs(buf._data).max(),
+                              from_db(gain) * np.abs(signal).max())
+
+
+@pytest.mark.parametrize(
+    'signal, sampling_rate, transform',
+    [
+        (
+            np.zeros((1, 10)),
+            8000,
+            Function(lambda x, sr: x + 1),
+        )
+    ]
+)
+@pytest.mark.parametrize(
+    'start_pos, duration, step, invert, expected',
+    [
+        (0, None, None, False, np.zeros((1, 10))),
+        (0, None, None, True, np.ones((1, 10))),
+        (0, 0, None, False, np.ones((1, 10))),
+        (0, 0, None, True, np.zeros((1, 10))),
+        (0, 5, None, False, [[0, 0, 0, 0, 0, 1, 1, 1, 1, 1]]),
+        (0, 5, None, True, [[1, 1, 1, 1, 1, 0, 0, 0, 0, 0]]),
+        (3, 5, None, False, [[1, 1, 1, 0, 0, 0, 0, 0, 1, 1]]),
+        (3, 5, None, True, [[0, 0, 0, 1, 1, 1, 1, 1, 0, 0]]),
+        (3, None, None, False, [[1, 1, 1, 0, 0, 0, 0, 0, 0, 0]]),
+        (3, None, None, True, [[0, 0, 0, 1, 1, 1, 1, 1, 1, 1]]),
+        (3, 0, None, False, np.ones((1, 10))),
+        (3, 0, None, True, np.zeros((1, 10))),
+        (0, None, 2, False, [[0, 0, 1, 1, 0, 0, 1, 1, 0, 0]]),
+        (0, None, 2, True, [[1, 1, 0, 0, 1, 1, 0, 0, 1, 1]]),
+        (0, 0, 2, False, np.ones((1, 10))),
+        (0, 0, 2, True, np.zeros((1, 10))),
+        (3, 5, 2, False, [[1, 1, 1, 0, 0, 1, 1, 0, 1, 1]]),
+        (3, 5, 2, True, [[0, 0, 0, 1, 1, 0, 0, 1, 0, 0]]),
+        (0, None, (1, 3), False, [[0, 1, 1, 1, 0, 1, 1, 1, 0, 1]]),
+        (0, None, (1, 3), True, [[1, 0, 0, 0, 1, 0, 0, 0, 1, 0]]),
+        (0, 0, (1, 3), False, np.ones((1, 10))),
+        (0, 0, (1, 3), True, np.zeros((1, 10))),
+        (3, 5, (1, 3), False, [[1, 1, 1, 0, 1, 1, 1, 0, 1, 1]]),
+        (3, 5, (1, 3), True, [[0, 0, 0, 1, 0, 0, 0, 1, 0, 0]]),
+    ]
+)
+def test_Mask(signal, sampling_rate, transform, start_pos,
+              duration, step, invert, expected):
+
+    mask = Mask(
+        transform,
+        start_pos=start_pos,
+        duration=duration,
+        step=step,
+        invert=invert,
+        unit='samples',
+    )
+
+    with AudioBuffer.from_array(signal, sampling_rate) as buf:
+        mask(buf)
+        augmented_signal = buf.to_array()
+        np.testing.assert_equal(augmented_signal, expected)
 
 
 @pytest.mark.parametrize(
@@ -498,70 +892,100 @@ def test_Mix_2(
             )
 
 
+@pytest.mark.parametrize('sampling_rate', [8000, 44100])
+@pytest.mark.parametrize('signal', [np.linspace(-0.5, 0.5, num=10)])
+def test_Normalize(sampling_rate, signal):
+
+    with AudioBuffer.from_array(signal, sampling_rate) as buf:
+        NormalizeByPeak()(buf)
+        assert np.abs(buf._data).max() == 1.0
+
+
+@pytest.mark.parametrize('duration', [1.0])
 @pytest.mark.parametrize('sampling_rate', [8000])
-@pytest.mark.parametrize('base', [[1, 1]])
 @pytest.mark.parametrize(
-    'read_pos_aux, read_dur_aux, unit, aux, expected',
+    'gain_db, snr_db',
     [
-        (0, 0, 'samples', [0, 2], [1, 1, 0, 2]),
-        (0, None, 'samples', [0, 2], [1, 1, 0, 2]),
-        (1, 0, 'samples', [0, 2], [1, 1, 2]),
-        (0, 1, 'samples', [0, 2], [1, 1, 0]),
-    ],
+        (-10, None),
+        (0, None),
+        (10, None),
+        (None, -10),
+        (None, 0),
+        (None, 10),
+        (0, 10),
+    ]
 )
-def test_Append(
-        tmpdir,
-        sampling_rate,
-        base,
-        read_pos_aux,
-        read_dur_aux,
-        unit,
-        aux,
-        expected,
-):
-    with AudioBuffer.from_array(base, sampling_rate) as base_buf:
-        with AudioBuffer.from_array(aux, sampling_rate) as aux_buf:
-            auglib.transform.Append(
-                aux_buf,
-                read_pos_aux=read_pos_aux,
-                read_dur_aux=read_dur_aux,
-                unit=unit,
-            )(base_buf)
-            np.testing.assert_equal(
-                base_buf._data,
-                np.array(expected, dtype=np.float32),
+def test_PinkNoise(duration, sampling_rate, gain_db, snr_db):
+    seed = 0
+    auglib.seed(seed)
+    transform = PinkNoise(
+        gain_db=gain_db,
+        snr_db=snr_db,
+    )
+
+    with transform(AudioBuffer(duration, sampling_rate)) as noise:
+        with AudioBuffer(
+                len(noise),
+                noise.sampling_rate,
+                unit='samples',
+        ) as expected_noise:
+
+            if gain_db is None:
+                gain_db = 0.0
+
+            # Get the empiric measure of the RMS energy for Pink Noise
+            with AudioBuffer(
+                    len(noise), noise.sampling_rate, unit='samples'
+            ) as tmp_pink_noise:
+                auglib.seed(seed)
+                lib.AudioBuffer_addPinkNoise(
+                    tmp_pink_noise._obj,
+                    0,
+                )
+                noise_volume = rms_db(tmp_pink_noise._data)
+
+                if snr_db is not None:
+                    gain_db = -120 - snr_db - noise_volume
+
+                expected_volume = noise_volume + gain_db
+
+                if snr_db is not None:
+                    lib.AudioBuffer_mix(
+                        expected_noise._obj,
+                        tmp_pink_noise._obj,
+                        0,
+                        gain_db,
+                        0,
+                        0,
+                        0,
+                        False,
+                        False,
+                        False,
+                    )
+                else:
+                    auglib.seed(seed)
+                    lib.AudioBuffer_addPinkNoise(
+                        expected_noise._obj,
+                        gain_db,
+                    )
+
+            # Check volume is correct
+            np.testing.assert_almost_equal(
+                rms_db(expected_noise._data),
+                expected_volume,
+                decimal=1,
             )
 
+            np.testing.assert_almost_equal(
+                rms_db(noise._data),
+                expected_volume,
+                decimal=1,
+            )
 
-@pytest.mark.parametrize('sampling_rate', [8000])
-@pytest.mark.parametrize('base', [[1, 1]])
-@pytest.mark.parametrize(
-    'duration, unit, value, expected',
-    [
-        (0, 'samples', 0, [1, 1]),
-        (0, 'seconds', 0, [1, 1]),
-        (1, 'samples', 2, [1, 1, 2]),
-        (2, 'samples', 2, [1, 1, 2, 2]),
-    ],
-)
-def test_AppendValue(
-        sampling_rate,
-        base,
-        duration,
-        unit,
-        value,
-        expected,
-):
-    with AudioBuffer.from_array(base, sampling_rate) as base_buf:
-        AppendValue(
-            duration,
-            value,
-            unit=unit,
-        )(base_buf)
-        np.testing.assert_equal(
-            base_buf._data,
-            np.array(expected, dtype=np.float32),
-        )
+            np.testing.assert_equal(
+                noise._data,
+                expected_noise._data,
+            )
 
 
 @pytest.mark.parametrize('sampling_rate', [8000])
@@ -628,6 +1052,151 @@ def test_PrependValue(
             base_buf._data,
             np.array(expected, dtype=np.float32),
         )
+
+
+@pytest.mark.parametrize(
+    'signal, original_rate, target_rate',
+    [
+        (
+            np.random.uniform(-1, 1, (1, 16000)).astype(np.float32),
+            16000,
+            8000,
+        ),
+        (
+            np.random.uniform(-1, 1, (1, 16000)).astype(np.float32),
+            16000,
+            16000,
+        ),
+        (
+            np.random.uniform(-1, 1, (1, 8000)).astype(np.float32),
+            8000,
+            16000,
+        ),
+    ]
+)
+@pytest.mark.parametrize(
+    'override',
+    [False, True],
+)
+def test_Resample(signal, original_rate, target_rate, override):
+
+    expected = audresample.resample(signal, original_rate, target_rate)
+
+    transform = auglib.transform.Resample(target_rate, override=override)
+    with AudioBuffer.from_array(signal, original_rate) as buf:
+        transform(buf)
+        resampled = buf.to_array()
+        if override:
+            assert buf.sampling_rate == target_rate
+        else:
+            assert buf.sampling_rate == original_rate
+
+    np.testing.assert_equal(resampled, expected)
+
+
+@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize(
+    'duration, unit, base, expected',
+    [
+        (None, 'samples', [1, 2, 3], [1, 2, 3]),
+        (0, 'samples', [1, 2, 3], [1, 2, 3]),
+        (1, 'samples', [1, 2, 3], [2, 3, 1]),
+        (2, 'samples', [1, 2, 3], [3, 1, 2]),
+        (3, 'samples', [1, 2, 3], [1, 2, 3]),
+        (4, 'samples', [1, 2, 3], [2, 3, 1]),
+    ],
+)
+def test_Shift(sampling_rate, duration, unit, base, expected):
+    with AudioBuffer.from_array(base, sampling_rate) as base_buf:
+        Shift(duration=duration, unit=unit)(base_buf)
+        np.testing.assert_equal(
+            base_buf._data,
+            np.array(expected, dtype=np.float32),
+        )
+
+
+@pytest.mark.parametrize('duration', [1.0])
+@pytest.mark.parametrize('sampling_rate', [96000])
+@pytest.mark.parametrize('frequency', [1000])
+@pytest.mark.parametrize('shape', ['sine', 'square', 'triangle', 'sawtooth'])
+@pytest.mark.parametrize(
+    'gain_db, snr_db',
+    [
+        (-10, None),
+        (0, None),
+        (10, None),
+        (None, -10),
+        (None, 0),
+        (None, 10),
+        (0, 10),
+    ]
+)
+def test_Tone(duration, sampling_rate, frequency, shape, gain_db, snr_db):
+
+    transform = Tone(
+        frequency,
+        shape=shape,
+        gain_db=gain_db,
+        snr_db=snr_db,
+    )
+    with transform(AudioBuffer(duration, sampling_rate)) as tone:
+
+        if gain_db is None:
+            gain_db = 0.0
+
+        # Expected root mean square values,
+        # see https://en.wikipedia.org/wiki/Root_mean_square
+        time = (
+            np.arange(duration * sampling_rate, dtype=float)
+            / sampling_rate
+        )
+        omega = 2 * np.pi * frequency
+        if shape == 'sine':
+            expected_tone = np.sin(omega * time)
+            expected_rms_db = 20 * np.log10(1 / np.sqrt(2))
+        elif shape == 'square':
+            expected_tone = -1 * scipy.signal.square(omega * time, duty=0.5)
+            expected_rms_db = 20 * np.log10(1)
+        elif shape == 'triangle':
+            expected_tone = -1 * scipy.signal.sawtooth(omega * time, width=0.5)
+            expected_rms_db = 20 * np.log10(1 / np.sqrt(3))
+        elif shape == 'sawtooth':
+            expected_tone = scipy.signal.sawtooth(omega * time, width=1)
+            expected_rms_db = 20 * np.log10(1 / np.sqrt(3))
+        # Check reference signal has expected RMS value
+        np.testing.assert_almost_equal(
+            rms_db(expected_tone),
+            expected_rms_db,
+            decimal=2,
+        )
+
+        if snr_db is not None:
+            # We add noise to an empty signal,
+            # which is limited to -120 dB
+            gain_db = -120 - snr_db - rms_db(expected_tone)
+
+        expected_volume = rms_db(expected_tone) + gain_db
+
+        # Add gain to expected tone
+        gain = 10 ** (gain_db / 20)
+        expected_tone *= gain
+
+        # We cannot use np.testing.assert_almost_equal()
+        # for comparing square, triangle, and sawtooth signals
+        # as there might be a shift of one sample
+        # from time to time,
+        # which would let the test fail.
+        assert np.mean(np.abs(tone._data - expected_tone)) < 1e4
+        np.testing.assert_almost_equal(
+            rms_db(tone._data),
+            expected_volume,
+            decimal=2,
+        )
+
+
+def test_Tone_errors():
+    with pytest.raises(ValueError):
+        Tone(440, shape='non-supported')
 
 
 # Trim tests that should be independent of fill
@@ -990,239 +1559,6 @@ def test_Trim_error_init(
         )
 
 
-@pytest.mark.parametrize('n,sr',
-                         [(10, 8000),
-                          (10, 44100)])
-def test_normalize(n, sr):
-
-    with AudioBuffer.from_array(np.linspace(-0.5, 0.5, num=n), sr) as buf:
-        NormalizeByPeak()(buf)
-        assert np.abs(buf._data).max() == 1.0
-
-
-@pytest.mark.parametrize('sampling_rate', [8000])
-@pytest.mark.parametrize(
-    'threshold, normalize, signal, expected_signal',
-    [
-        (1.0, False, [-1.5, -0.5, 0.5, 1.5], [-1.0, -0.5, 0.5, 1.0]),
-        (0.5, False, [-1.5, 0.5], [-0.5, 0.5]),
-        (0.5, True, [-1.5, 0.5], [-1.0, 1.0]),
-        (0.5, True, [-1.5, 0.25], [-1.0, 0.5]),
-    ],
-)
-def test_Clip(sampling_rate, threshold, normalize, signal, expected_signal):
-
-    with AudioBuffer.from_array(signal, sampling_rate) as buf:
-        transform = Clip(
-            threshold=auglib.utils.to_db(threshold),
-            normalize=normalize,
-        )
-        transform(buf)
-        np.testing.assert_almost_equal(
-            buf._data,
-            np.array(expected_signal, dtype=np.float32),
-            decimal=4,
-        )
-
-
-@pytest.mark.parametrize('sampling_rate', [8000])
-@pytest.mark.parametrize(
-    'ratio, normalize, soft, signal, expected_signal',
-    [
-        (0.5, False, False, [0.5, 2.0], [0.5, 0.5]),
-        (0.5, False, True, [0.5, 2.0], [0.5, 0.5]),
-        (0.5, True, False, [0.5, 2.0], [1.0, 1.0]),
-        (1 / 3, False, False, [0.5, 1.0, 2.0], [0.5, 1.0, 1.0]),
-    ],
-)
-def test_ClipByRatio(
-        sampling_rate,
-        ratio,
-        normalize,
-        soft,
-        signal,
-        expected_signal,
-):
-
-    with AudioBuffer.from_array(signal, sampling_rate) as buf:
-        transform = ClipByRatio(ratio, normalize=normalize, soft=soft)
-        transform(buf)
-        np.testing.assert_almost_equal(
-            buf._data,
-            np.array(expected_signal, dtype=np.float32),
-            decimal=4,
-        )
-
-
-@pytest.mark.parametrize('n,sr,gain,max_peak,clip',
-                         [(10, 8000, 20.0, None, False),
-                          (10, 44100, 20.0, None, True),
-                          (10, 44100, 20.0, 10.0, False),
-                          (10, 44100, 20.0, 10.0, True)])
-def test_gain_stage(n, sr, gain, max_peak, clip):
-
-    x = np.random.uniform(-0.1, 1.0, n)
-    with AudioBuffer.from_array(x, sr) as buf:
-        GainStage(gain, max_peak_db=max_peak, clip=clip)(buf)
-        if clip:
-            assert np.abs(buf._data).max() <= 1.0
-        elif max_peak is not None:
-            assert np.isclose(np.abs(buf._data).max(), from_db(max_peak))
-        else:
-            assert np.isclose(np.abs(buf._data).max(),
-                              from_db(gain) * np.abs(x).max())
-
-
-@pytest.mark.parametrize('sampling_rate', [8000])
-@pytest.mark.parametrize(
-    'keep_tail, aux, base, expected',
-    [
-        (False, [1, 0, 0], [1, 2, 3], [1, 2, 3]),
-        (False, [0, 1, 0], [1, 2, 3], [0, 1, 2]),
-        (True, [0, 1, 0], [1, 2, 3], [0, 1, 2, 3, 0]),
-        (True, [0, 1, 0, 0], [1, 2, 3], [0, 1, 2, 3, 0, 0]),
-    ],
-)
-def test_FFTConvolve(sampling_rate, keep_tail, aux, base, expected):
-
-    with AudioBuffer.from_array(base, sampling_rate) as base_buf:
-        with AudioBuffer.from_array(aux, sampling_rate) as aux_buf:
-            FFTConvolve(aux_buf, keep_tail=keep_tail)(base_buf)
-            np.testing.assert_almost_equal(
-                base_buf._data,
-                np.array(expected, dtype=np.float32),
-                decimal=4,
-            )
-
-
-@pytest.mark.parametrize('n,sr',
-                         [(10, 8000),
-                          (10, 44100)])
-def test_filter(n, sr):
-    # generate a boxcar signal (step up...step down)
-    sig_in = np.zeros(n * sr, dtype='float32')
-    sig_in[int(n * sr / 4):int(n * sr * 3 / 4)] = 1.0
-
-    b, a = scipy.signal.butter(1, 0.5, 'lowpass')
-    sig_out = scipy.signal.lfilter(b, a, sig_in)
-
-    with AudioBuffer.from_array(sig_in, sampling_rate=sr) as buf:
-        LowPass(0.5 * sr / 2)(buf)
-        np.testing.assert_almost_equal(buf._data, sig_out)
-
-    b, a = scipy.signal.butter(1, 0.5, 'highpass')
-    sig_out = scipy.signal.lfilter(b, a, sig_in)
-
-    with AudioBuffer.from_array(sig_in, sampling_rate=sr) as buf:
-        HighPass(0.5 * sr / 2)(buf)
-        np.testing.assert_almost_equal(buf._data, sig_out)
-
-    b, a = scipy.signal.butter(
-        1,
-        np.array([0.5 - 0.25, 0.5 + 0.25]),
-        'bandpass',
-    )
-    sig_out = scipy.signal.lfilter(b, a, sig_in)
-
-    with AudioBuffer.from_array(sig_in, sampling_rate=sr) as buf:
-        BandPass(0.5 * sr / 2, 0.5 * sr / 2)(buf)
-        np.testing.assert_almost_equal(buf._data, sig_out)
-
-    b, a = scipy.signal.butter(
-        1,
-        (2.0 / sr) * np.array([1000 - 5, 1000 + 5]),
-        'bandstop',
-    )
-    sig_out = scipy.signal.lfilter(b, a, sig_in)
-
-    with AudioBuffer.from_array(sig_in, sampling_rate=sr) as buf:
-        BandStop(1000, 10)(buf)
-        np.testing.assert_almost_equal(buf._data, sig_out)
-
-
-@pytest.mark.parametrize(
-    'filter_obj, params',
-    [
-        (LowPass, [1]),
-        (HighPass, [1]),
-        (BandPass, [1, 1]),
-        (BandStop, [1, 1]),
-    ]
-)
-def test_filter_errors(filter_obj, params):
-    with pytest.raises(ValueError):
-        design = 'non-supported'
-        filter_obj(*params, design=design)
-
-
-@pytest.mark.parametrize('duration', [1.0])
-@pytest.mark.parametrize('sampling_rate', [8000])
-@pytest.mark.parametrize(
-    'gain_db, snr_db',
-    [
-        (-10, None),
-        (0, None),
-        (10, None),
-        (None, -10),
-        (None, 0),
-        (None, 10),
-        (0, 10),
-    ]
-)
-def test_WhiteNoiseUniform(duration, sampling_rate, gain_db, snr_db):
-
-    seed = 0
-    auglib.seed(seed)
-    transform = WhiteNoiseUniform(
-        gain_db=gain_db,
-        snr_db=snr_db,
-    )
-    with transform(AudioBuffer(duration, sampling_rate)) as noise:
-        with AudioBuffer(
-                len(noise),
-                noise.sampling_rate,
-                unit='samples',
-        ) as expected_noise:
-            if gain_db is None:
-                gain_db = 0.0
-
-            # Approximate value of the uniform white noise energy
-            noise_volume = -4.77125
-            if snr_db is not None:
-                gain_db = -120 - snr_db - noise_volume
-
-            expected_volume = noise_volume + gain_db
-            expected_mean = 0
-
-            # Create expected noise signal
-            auglib.seed(seed)
-            lib.AudioBuffer_addWhiteNoiseUniform(
-                expected_noise._obj,
-                gain_db,
-            )
-            # Double check volume is correct
-            np.testing.assert_almost_equal(
-                rms_db(expected_noise._data),
-                expected_volume,
-                decimal=1,
-            )
-
-            np.testing.assert_equal(
-                noise._data,
-                expected_noise._data,
-            )
-            np.testing.assert_almost_equal(
-                rms_db(noise._data),
-                expected_volume,
-                decimal=1,
-            )
-            np.testing.assert_almost_equal(
-                noise._data.mean(),
-                expected_mean,
-                decimal=1,
-            )
-
-
 @pytest.mark.parametrize('duration', [1.0])
 @pytest.mark.parametrize('sampling_rate', [8000])
 @pytest.mark.parametrize('stddev', [0.1, 0.2, 0.3, 0.4])
@@ -1318,69 +1654,40 @@ def test_WhiteNoiseGaussian(duration, sampling_rate, stddev, gain_db, snr_db):
         (0, 10),
     ]
 )
-def test_PinkNoise(duration, sampling_rate, gain_db, snr_db):
+def test_WhiteNoiseUniform(duration, sampling_rate, gain_db, snr_db):
+
     seed = 0
     auglib.seed(seed)
-    transform = PinkNoise(
+    transform = WhiteNoiseUniform(
         gain_db=gain_db,
         snr_db=snr_db,
     )
-
     with transform(AudioBuffer(duration, sampling_rate)) as noise:
         with AudioBuffer(
                 len(noise),
                 noise.sampling_rate,
                 unit='samples',
         ) as expected_noise:
-
             if gain_db is None:
                 gain_db = 0.0
 
-            # Get the empiric measure of the RMS energy for Pink Noise
-            with AudioBuffer(
-                    len(noise), noise.sampling_rate, unit='samples'
-            ) as tmp_pink_noise:
-                auglib.seed(seed)
-                lib.AudioBuffer_addPinkNoise(
-                    tmp_pink_noise._obj,
-                    0,
-                )
-                noise_volume = rms_db(tmp_pink_noise._data)
+            # Approximate value of the uniform white noise energy
+            noise_volume = -4.77125
+            if snr_db is not None:
+                gain_db = -120 - snr_db - noise_volume
 
-                if snr_db is not None:
-                    gain_db = -120 - snr_db - noise_volume
+            expected_volume = noise_volume + gain_db
+            expected_mean = 0
 
-                expected_volume = noise_volume + gain_db
-
-                if snr_db is not None:
-                    lib.AudioBuffer_mix(
-                        expected_noise._obj,
-                        tmp_pink_noise._obj,
-                        0,
-                        gain_db,
-                        0,
-                        0,
-                        0,
-                        False,
-                        False,
-                        False,
-                    )
-                else:
-                    auglib.seed(seed)
-                    lib.AudioBuffer_addPinkNoise(
-                        expected_noise._obj,
-                        gain_db,
-                    )
-
-            # Check volume is correct
+            # Create expected noise signal
+            auglib.seed(seed)
+            lib.AudioBuffer_addWhiteNoiseUniform(
+                expected_noise._obj,
+                gain_db,
+            )
+            # Double check volume is correct
             np.testing.assert_almost_equal(
                 rms_db(expected_noise._data),
-                expected_volume,
-                decimal=1,
-            )
-
-            np.testing.assert_almost_equal(
-                rms_db(noise._data),
                 expected_volume,
                 decimal=1,
             )
@@ -1389,329 +1696,13 @@ def test_PinkNoise(duration, sampling_rate, gain_db, snr_db):
                 noise._data,
                 expected_noise._data,
             )
-
-
-@pytest.mark.parametrize('duration', [1.0])
-@pytest.mark.parametrize('sampling_rate', [96000])
-@pytest.mark.parametrize('frequency', [1000])
-@pytest.mark.parametrize('shape', ['sine', 'square', 'triangle', 'sawtooth'])
-@pytest.mark.parametrize(
-    'gain_db, snr_db',
-    [
-        (-10, None),
-        (0, None),
-        (10, None),
-        (None, -10),
-        (None, 0),
-        (None, 10),
-        (0, 10),
-    ]
-)
-def test_Tone(duration, sampling_rate, frequency, shape, gain_db, snr_db):
-
-    transform = Tone(
-        frequency,
-        shape=shape,
-        gain_db=gain_db,
-        snr_db=snr_db,
-    )
-    with transform(AudioBuffer(duration, sampling_rate)) as tone:
-
-        if gain_db is None:
-            gain_db = 0.0
-
-        # Expected root mean square values,
-        # see https://en.wikipedia.org/wiki/Root_mean_square
-        time = (
-            np.arange(duration * sampling_rate, dtype=float)
-            / sampling_rate
-        )
-        omega = 2 * np.pi * frequency
-        if shape == 'sine':
-            expected_tone = np.sin(omega * time)
-            expected_rms_db = 20 * np.log10(1 / np.sqrt(2))
-        elif shape == 'square':
-            expected_tone = -1 * scipy.signal.square(omega * time, duty=0.5)
-            expected_rms_db = 20 * np.log10(1)
-        elif shape == 'triangle':
-            expected_tone = -1 * scipy.signal.sawtooth(omega * time, width=0.5)
-            expected_rms_db = 20 * np.log10(1 / np.sqrt(3))
-        elif shape == 'sawtooth':
-            expected_tone = scipy.signal.sawtooth(omega * time, width=1)
-            expected_rms_db = 20 * np.log10(1 / np.sqrt(3))
-        # Check reference signal has expected RMS value
-        np.testing.assert_almost_equal(
-            rms_db(expected_tone),
-            expected_rms_db,
-            decimal=2,
-        )
-
-        if snr_db is not None:
-            # We add noise to an empty signal,
-            # which is limited to -120 dB
-            gain_db = -120 - snr_db - rms_db(expected_tone)
-
-        expected_volume = rms_db(expected_tone) + gain_db
-
-        # Add gain to expected tone
-        gain = 10 ** (gain_db / 20)
-        expected_tone *= gain
-
-        # We cannot use np.testing.assert_almost_equal()
-        # for comparing square, triangle, and sawtooth signals
-        # as there might be a shift of one sample
-        # from time to time,
-        # which would let the test fail.
-        assert np.mean(np.abs(tone._data - expected_tone)) < 1e4
-        np.testing.assert_almost_equal(
-            rms_db(tone._data),
-            expected_volume,
-            decimal=2,
-        )
-
-
-def test_tone_errors():
-    with pytest.raises(ValueError):
-        Tone(440, shape='non-supported')
-
-
-def test_trim_errors():
-    with pytest.raises(ValueError):
-        Trim(fill='non-supported')
-
-
-@pytest.mark.parametrize(
-    'dur,sr',
-    [
-        (1.0, 8000,)
-    ]
-)
-def test_compression(dur, sr):
-    with Tone(220.0, shape='square')(AudioBuffer(dur, sr)) as tone:
-        NormalizeByPeak(peak_db=-3.0)(tone)
-        CompressDynamicRange(-12.0, 20.0, attack_time=0.0, release_time=0.1,
-                             knee_radius_db=6.0, makeup_db=None)(tone)
-        peak1 = tone.peak_db
-    with Tone(220.0, shape='square')(AudioBuffer(dur, sr)) as tone:
-        NormalizeByPeak(peak_db=-3.0)(tone)
-        CompressDynamicRange(-12.0, 20.0, attack_time=0.0, release_time=0.1,
-                             knee_radius_db=6.0, makeup_db=0.0)(tone)
-        peak2 = tone.peak_db
-
-    assert peak1 > peak2
-    assert np.isclose(peak1, -3.0)
-
-
-@pytest.mark.parametrize(
-    'bit_rate', [4750, 5150, 5900, 6700, 7400, 7950, 10200, 12200]
-)
-def test_AMRNB(bit_rate):
-
-    original_wav = 'tests/test-assets/opensmile.wav'
-    target_wav = f'tests/test-assets/opensmile_amrnb_rate{bit_rate}_ffmpeg.wav'
-
-    transform = AMRNB(bit_rate)
-    with AudioBuffer.read(original_wav) as buf:
-        transform(buf)
-        result = buf._data
-        with AudioBuffer.read(target_wav) as target_buf:
-            target = target_buf._data
-            length = min(result.size, target.size)
-            np.testing.assert_allclose(
-                result[:length], target[:length], rtol=0.0, atol=0.065
+            np.testing.assert_almost_equal(
+                rms_db(noise._data),
+                expected_volume,
+                decimal=1,
             )
-
-
-def test_function():
-
-    def func_plus_c(x, sr, c):
-        return x + c
-
-    def func_halve(x, sr):
-        return x[:, ::2]
-
-    def func_times_2(x, sr):  # inplace
-        x *= 2
-
-    with AudioBuffer(20, 16000, unit='samples') as buffer:
-
-        np.testing.assert_equal(
-            buffer._data,
-            np.zeros(20, dtype=np.float32),
-        )
-
-        # add 1 to buffer
-        Function(func_plus_c, {'c': auglib.observe.IntUni(1, 1)})(buffer)
-        np.testing.assert_equal(
-            buffer._data,
-            np.ones(20, dtype=np.float32),
-        )
-
-        # halve buffer size
-        Function(func_halve)(buffer)
-        np.testing.assert_equal(
-            buffer._data,
-            np.ones(10, dtype=np.float32),
-        )
-
-        # multiple by 2
-        Function(func_times_2)(buffer)
-        np.testing.assert_equal(
-            buffer._data,
-            np.ones(10, dtype=np.float32) * 2,
-        )
-
-        # double buffer size
-        Function(lambda x, sr: np.tile(x, 2))(buffer)
-        np.testing.assert_equal(
-            buffer._data,
-            np.ones(20, dtype=np.float32) * 2,
-        )
-
-
-@pytest.mark.parametrize('sampling_rate', [8000])
-@pytest.mark.parametrize(
-    'base, function, error, error_msg',
-    [
-        (
-            [0, 0],
-            lambda sig, sr: np.array([]),
-            RuntimeError,
-            (
-                'Buffers must be non-empty. '
-                'Yours is empty '
-                'after applying the following transform: '
-                "'$auglib.core.transform.Function"
-            ),
-        ),
-    ],
-)
-def test_Function_errors(
-        sampling_rate,
-        base,
-        function,
-        error,
-        error_msg,
-):
-
-    with AudioBuffer.from_array(base, sampling_rate) as base_buf:
-        with pytest.raises(error, match=re.escape(error_msg)):
-            Function(function)(base_buf)
-
-
-@pytest.mark.parametrize(
-    'signal, sampling_rate, transform',
-    [
-        (
-            np.zeros((1, 10)),
-            8000,
-            Function(lambda x, sr: x + 1),
-        )
-    ]
-)
-@pytest.mark.parametrize(
-    'start_pos, duration, step, invert, expected',
-    [
-        (0, None, None, False, np.zeros((1, 10))),
-        (0, None, None, True, np.ones((1, 10))),
-        (0, 0, None, False, np.ones((1, 10))),
-        (0, 0, None, True, np.zeros((1, 10))),
-        (0, 5, None, False, [[0, 0, 0, 0, 0, 1, 1, 1, 1, 1]]),
-        (0, 5, None, True, [[1, 1, 1, 1, 1, 0, 0, 0, 0, 0]]),
-        (3, 5, None, False, [[1, 1, 1, 0, 0, 0, 0, 0, 1, 1]]),
-        (3, 5, None, True, [[0, 0, 0, 1, 1, 1, 1, 1, 0, 0]]),
-        (3, None, None, False, [[1, 1, 1, 0, 0, 0, 0, 0, 0, 0]]),
-        (3, None, None, True, [[0, 0, 0, 1, 1, 1, 1, 1, 1, 1]]),
-        (3, 0, None, False, np.ones((1, 10))),
-        (3, 0, None, True, np.zeros((1, 10))),
-        (0, None, 2, False, [[0, 0, 1, 1, 0, 0, 1, 1, 0, 0]]),
-        (0, None, 2, True, [[1, 1, 0, 0, 1, 1, 0, 0, 1, 1]]),
-        (0, 0, 2, False, np.ones((1, 10))),
-        (0, 0, 2, True, np.zeros((1, 10))),
-        (3, 5, 2, False, [[1, 1, 1, 0, 0, 1, 1, 0, 1, 1]]),
-        (3, 5, 2, True, [[0, 0, 0, 1, 1, 0, 0, 1, 0, 0]]),
-        (0, None, (1, 3), False, [[0, 1, 1, 1, 0, 1, 1, 1, 0, 1]]),
-        (0, None, (1, 3), True, [[1, 0, 0, 0, 1, 0, 0, 0, 1, 0]]),
-        (0, 0, (1, 3), False, np.ones((1, 10))),
-        (0, 0, (1, 3), True, np.zeros((1, 10))),
-        (3, 5, (1, 3), False, [[1, 1, 1, 0, 1, 1, 1, 0, 1, 1]]),
-        (3, 5, (1, 3), True, [[0, 0, 0, 1, 0, 0, 0, 1, 0, 0]]),
-    ]
-)
-def test_mask(signal, sampling_rate, transform, start_pos,
-              duration, step, invert, expected):
-
-    mask = Mask(
-        transform,
-        start_pos=start_pos,
-        duration=duration,
-        step=step,
-        invert=invert,
-        unit='samples',
-    )
-
-    with AudioBuffer.from_array(signal, sampling_rate) as buf:
-        mask(buf)
-        augmented_signal = buf.to_array()
-        np.testing.assert_equal(augmented_signal, expected)
-
-
-@pytest.mark.parametrize(
-    'signal, original_rate, target_rate',
-    [
-        (
-            np.random.uniform(-1, 1, (1, 16000)).astype(np.float32),
-            16000,
-            8000,
-        ),
-        (
-            np.random.uniform(-1, 1, (1, 16000)).astype(np.float32),
-            16000,
-            16000,
-        ),
-        (
-            np.random.uniform(-1, 1, (1, 8000)).astype(np.float32),
-            8000,
-            16000,
-        ),
-    ]
-)
-@pytest.mark.parametrize(
-    'override',
-    [False, True],
-)
-def test_resample(signal, original_rate, target_rate, override):
-
-    expected = audresample.resample(signal, original_rate, target_rate)
-
-    transform = auglib.transform.Resample(target_rate, override=override)
-    with AudioBuffer.from_array(signal, original_rate) as buf:
-        transform(buf)
-        resampled = buf.to_array()
-        if override:
-            assert buf.sampling_rate == target_rate
-        else:
-            assert buf.sampling_rate == original_rate
-
-    np.testing.assert_equal(resampled, expected)
-
-
-@pytest.mark.parametrize('sampling_rate', [8000])
-@pytest.mark.parametrize(
-    'duration, unit, base, expected',
-    [
-        (None, 'samples', [1, 2, 3], [1, 2, 3]),
-        (0, 'samples', [1, 2, 3], [1, 2, 3]),
-        (1, 'samples', [1, 2, 3], [2, 3, 1]),
-        (2, 'samples', [1, 2, 3], [3, 1, 2]),
-        (3, 'samples', [1, 2, 3], [1, 2, 3]),
-        (4, 'samples', [1, 2, 3], [2, 3, 1]),
-    ],
-)
-def test_Shift(sampling_rate, duration, unit, base, expected):
-    with AudioBuffer.from_array(base, sampling_rate) as base_buf:
-        Shift(duration=duration, unit=unit)(base_buf)
-        np.testing.assert_equal(
-            base_buf._data,
-            np.array(expected, dtype=np.float32),
-        )
+            np.testing.assert_almost_equal(
+                noise._data.mean(),
+                expected_mean,
+                decimal=1,
+            )
