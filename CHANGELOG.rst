@@ -7,6 +7,14 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.11.1 (2022-10-17)
+---------------------------
+
+* Fixed: ``preserve_level`` argument was missing for
+  ``auglib.transform.BabbleNoise``
+  and ``auglib.transform.PrependValue``
+
+
 Version 0.11.0 (2022-10-13)
 ---------------------------
 
