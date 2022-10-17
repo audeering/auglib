@@ -390,9 +390,13 @@ class BabbleNoise(Base):
             gain_db: Union[float, observe.Base] = 0.0,
             snr_db: Union[float, observe.Base] = None,
             unit: str = 'seconds',
+            preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob=bypass_prob)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
         self.speech = speech
         self.num_speakers = num_speakers
         self.gain_db = gain_db
