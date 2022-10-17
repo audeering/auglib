@@ -1732,9 +1732,13 @@ class PrependValue(Base):
             value: Union[float, observe.Base] = 0,
             *,
             unit: str = 'seconds',
+            preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
-        super().__init__(bypass_prob=bypass_prob)
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
         self.duration = duration
         self.value = value
         self.unit = unit
