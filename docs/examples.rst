@@ -424,7 +424,6 @@ when using the augmentation in a real application.
         list(db.files),
         num_speakers=auglib.observe.IntUni(3, 7),
         snr_db=auglib.observe.IntUni(13, 20),
-        unit='samples',
     )
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
