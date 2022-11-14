@@ -1414,7 +1414,7 @@ class Mix(Base):
             loop_aux: Union[bool, observe.Base] = False,
             extend_base: Union[bool, observe.Base] = False,
             num_repeat: Union[int, observe.Base] = 1,
-            unit='seconds',
+            unit: str = 'seconds',
             transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
