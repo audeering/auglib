@@ -99,6 +99,7 @@ class Base(audobject.Object):
             as the base buffer
             containing zeros
         transform: transformation applied to the auxiliary buffer
+        num_repeat: number of repetitions
 
     """
     @audobject.init_decorator(
