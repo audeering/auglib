@@ -52,7 +52,7 @@ Let's start with loading an example file to augment.
     files = audb.load_media(
         'emodb',
         'wav/03a01Fa.wav',
-        version='1.1.1',
+        version='1.3.0',
         verbose=False,
     )
     signal, sampling_rate = audiofile.read(files[0], always_2d=True)

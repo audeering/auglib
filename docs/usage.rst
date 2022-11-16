@@ -86,7 +86,7 @@ and apply our augmentation to it.
     files = audb.load_media(
         'emodb',
         'wav/03a01Fa.wav',
-        version='1.1.1',
+        version='1.3.0',
         verbose=False,
     )
     signal, sampling_rate = audiofile.read(files[0], always_2d=True)
@@ -136,7 +136,7 @@ and augment it.
 
     db = audb.load(
         'emodb',
-        version='1.1.1',
+        version='1.3.0',
         media=['wav/03a01Fa.wav', 'wav/03a01Nc.wav', 'wav/03a01Wa.wav'],
         verbose=False,
     )
