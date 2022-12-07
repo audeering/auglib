@@ -20,11 +20,9 @@ Examples
     blue = '#6649ff'
     green = '#55dbb1'
 
-    def plot(signal, color, text, length=None):
+    def plot(signal, color, text):
         signal = np.atleast_2d(signal)
         signal = signal[0, :]
-        if length is None:
-            length = len(signal)
 
         fig, ax = plt.subplots(1, figsize=(8, 1.5))
         audplot.waveform(
@@ -33,9 +31,6 @@ Examples
             color=color,
             ax=ax,
         )
-        xlim = ax.get_xlim()
-        xlim = (xlim[0], length)
-        ax.set_xlim(xlim)
 
 
 .. === Document starts here ===
@@ -541,7 +536,9 @@ using :class:`audtorch.transforms.RandomCrop` instead.
 .. jupyter-execute::
     :hide-code:
 
-    plot(signal_augmented, green, 'Random\nCrop', signal.shape[1])
+    plot(signal_augmented, green, 'Random\nCrop')
+    ax = plt.gca()
+    ax.set_xlim(0, signal.shape[1])
 
 .. jupyter-execute::
     :hide-code:
