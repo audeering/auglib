@@ -7,6 +7,14 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.11.2 (2022-12-08)
+---------------------------
+
+* Changed: require ``audobject >=0.7.6``
+* Fixed: missing ``unit`` attribute
+  in ``auglib.transform.BabbleNoise``
+
+
 Version 0.11.1 (2022-10-17)
 ---------------------------
 
