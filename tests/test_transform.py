@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 import scipy
 
+import audobject
 import auglib
 from auglib import AudioBuffer
 from auglib.core.buffer import lib
@@ -48,6 +49,35 @@ def rms_db(signal):
     return 20 * np.log10(np.sqrt(np.mean(np.square(signal))))
 
 
+# Define transform without aux
+class Transform(Base):
+
+    def __init__(self, bypass_prob, preserve_level):
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
+
+    def _call(self, base):
+        base._data = base._data + 1
+        return base
+
+
+# Define transform with aux
+class TransformAux(Base):
+
+    def __init__(self, aux, *, preserve_level=False, transform=None):
+        super().__init__(
+            preserve_level=preserve_level,
+            aux=aux,
+            transform=transform,
+        )
+
+    def _call(self, base, aux):
+        base._data = base._data + aux._data
+        return base
+
+
 @pytest.mark.parametrize('sampling_rate', [8000])
 @pytest.mark.parametrize(
     'bypass_prob, preserve_level, base, expected',
@@ -60,24 +90,15 @@ def rms_db(signal):
 )
 def test_Base(sampling_rate, bypass_prob, preserve_level, base, expected):
 
-    # Define transform without aux
-    class Transform(Base):
-
-        def __init__(self, bypass_prob, preserve_level):
-            super().__init__(
-                bypass_prob=bypass_prob,
-                preserve_level=preserve_level,
-            )
-
-        def _call(self, base):
-            base._data = base._data + 1
-            return base
+    transform = Transform(bypass_prob, preserve_level)
+    transform = audobject.from_yaml_s(
+        transform.to_yaml_s(include_version=False),
+    )
 
     with AudioBuffer.from_array(base, sampling_rate) as base_buf:
-        t = Transform(bypass_prob, preserve_level)
-        assert t.bypass_prob == bypass_prob
-        assert t.preserve_level == preserve_level
-        t(base_buf)
+        assert transform.bypass_prob == bypass_prob
+        assert transform.preserve_level == preserve_level
+        transform(base_buf)
         np.testing.assert_almost_equal(
             base_buf._data,
             np.array(expected, dtype=np.float32),
@@ -110,40 +131,51 @@ def test_Base_aux(
         expected,
 ):
 
-    # Define transform with aux
-    class Transform(Base):
-
-        def __init__(self, aux, preserve_level, transform):
-            super().__init__(
-                preserve_level=preserve_level,
-                aux=aux,
-                transform=transform,
+    with AudioBuffer.from_array(aux, sampling_rate) as aux_buf:
+        if from_file:
+            path = os.path.join(tmpdir, 'test.wav')
+            aux_buf.write(path)
+            aux_buf.free()
+            aux_buf = path
+        if observe:
+            aux_buf = auglib.observe.List([aux_buf])
+        base_transform = TransformAux(
+            aux_buf,
+            preserve_level=preserve_level,
+            transform=transform,
+        )
+        if observe and not from_file:
+            error_msg = (
+                "Cannot serialize list if it contains an instance "
+                "of <class 'auglib.core.buffer.AudioBuffer'>. "
+                "As a workaround, save buffer to disk and add filename."
             )
+            with pytest.raises(ValueError, match=error_msg):
+                base_transform.to_yaml_s(include_version=False)
 
-        def _call(self, base, aux):
-            base._data = base._data + aux._data
-            return base
-
-    with AudioBuffer.from_array(base, sampling_rate) as base_buf:
-        with AudioBuffer.from_array(aux, sampling_rate) as aux_buf:
-            if from_file:
-                path = os.path.join(tmpdir, 'test.wav')
-                aux_buf.write(path)
-                aux_buf.free()
-                aux_buf = path
-            if observe:
-                aux_buf = auglib.observe.List([aux_buf])
-            t = Transform(aux_buf, preserve_level, transform)
-            assert t.bypass_prob is None
-            assert t.preserve_level == preserve_level
-            # unless buffer is read from file
-            # we skip the following test
-            # as we cannot serialize a buffer,
-            # which is required to calculate its ID
-            if from_file:
-                assert t.aux == aux_buf
-            assert t.transform == transform
-            t(base_buf)
+        elif isinstance(aux_buf, auglib.AudioBuffer):
+            error_msg = (
+                "Cannot serialize an instance "
+                "of <class 'auglib.core.buffer.AudioBuffer'>. "
+                "As a workaround, save buffer to disk and pass filename."
+            )
+            with pytest.raises(ValueError, match=error_msg):
+                base_transform.to_yaml_s(include_version=False)
+        else:
+            base_transform = audobject.from_yaml_s(
+                base_transform.to_yaml_s(include_version=False),
+            )
+        assert base_transform.bypass_prob is None
+        assert base_transform.preserve_level == preserve_level
+        # unless buffer is read from file
+        # we skip the following test
+        # as we cannot serialize a buffer,
+        # which is required to calculate its ID
+        if from_file:
+            assert base_transform.aux == aux_buf
+        assert base_transform.transform == transform
+        with AudioBuffer.from_array(base, sampling_rate) as base_buf:
+            base_transform(base_buf)
             np.testing.assert_almost_equal(
                 base_buf._data,
                 np.array(expected, dtype=np.float32),
@@ -170,22 +202,13 @@ def test_Base_aux(
 )
 def test_Base_aux_transform(sampling_rate, base, aux, transform, expected):
 
-    # Define transform with aux
-    class Transform(Base):
-
-        def __init__(self, aux, transform):
-            super().__init__(
-                aux=aux,
-                transform=transform,
-            )
-
-        def _call(self, base, aux):
-            base._data = base._data + aux._data
-            return base
+    transform = TransformAux(aux, transform=transform)
+    transform = audobject.from_yaml_s(
+        transform.to_yaml_s(include_version=False),
+    )
 
     with AudioBuffer.from_array(base, sampling_rate) as base_buf:
-        t = Transform(aux, transform)
-        t(base_buf)
+        transform(base_buf)
         np.testing.assert_almost_equal(
             base_buf._data,
             np.array(expected, dtype=np.float32),
@@ -202,6 +225,10 @@ def test_AMRNB(bit_rate):
     target_wav = f'tests/test-assets/opensmile_amrnb_rate{bit_rate}_ffmpeg.wav'
 
     transform = AMRNB(bit_rate)
+    transform = audobject.from_yaml_s(
+        transform.to_yaml_s(include_version=False),
+    )
+
     with AudioBuffer.read(original_wav) as buf:
         transform(buf)
         result = buf._data
@@ -234,14 +261,24 @@ def test_Append(
         aux,
         expected,
 ):
-    with AudioBuffer.from_array(base, sampling_rate) as base_buf:
-        with AudioBuffer.from_array(aux, sampling_rate) as aux_buf:
-            auglib.transform.Append(
-                aux_buf,
-                read_pos_aux=read_pos_aux,
-                read_dur_aux=read_dur_aux,
-                unit=unit,
-            )(base_buf)
+    with AudioBuffer.from_array(aux, sampling_rate) as aux_buf:
+
+        transform = auglib.transform.Append(
+            aux_buf,
+            read_pos_aux=read_pos_aux,
+            read_dur_aux=read_dur_aux,
+            unit=unit,
+        )
+        error_msg = (
+            "Cannot serialize an instance "
+            "of <class 'auglib.core.buffer.AudioBuffer'>. "
+            "As a workaround, save buffer to disk and pass filename."
+        )
+        with pytest.raises(ValueError, match=error_msg):
+            transform.to_yaml_s(include_version=False)
+
+        with AudioBuffer.from_array(base, sampling_rate) as base_buf:
+            transform(base_buf)
             np.testing.assert_equal(
                 base_buf._data,
                 np.array(expected, dtype=np.float32),
@@ -267,12 +304,17 @@ def test_AppendValue(
         value,
         expected,
 ):
+    transform = AppendValue(
+        duration,
+        value,
+        unit=unit,
+    )
+    transform = audobject.from_yaml_s(
+        transform.to_yaml_s(include_version=False)
+    )
+
     with AudioBuffer.from_array(base, sampling_rate) as base_buf:
-        AppendValue(
-            duration,
-            value,
-            unit=unit,
-        )(base_buf)
+        transform(base_buf)
         np.testing.assert_equal(
             base_buf._data,
             np.array(expected, dtype=np.float32),
@@ -316,6 +358,10 @@ def test_BabbleNoise_1(
             gain_db=gain_db,
             snr_db=snr_db,
         )
+        transform = audobject.from_yaml_s(
+            transform.to_yaml_s(include_version=False),
+        )
+
         with transform(AudioBuffer(duration, sampling_rate)) as noise:
 
             if snr_db is not None:
@@ -354,6 +400,10 @@ def test_BabbleNoise_2(
 
     speech_bufs = [AudioBuffer.from_array(s, sampling_rate) for s in speech]
     transform = BabbleNoise(speech_bufs, num_speakers=num_speakers)
+    transform = audobject.from_yaml_s(
+        transform.to_yaml_s(include_version=False),
+    )
+
     with AudioBuffer(duration, sampling_rate, unit='samples') as noise:
         transform(noise)
         np.testing.assert_almost_equal(
@@ -377,11 +427,15 @@ def test_BabbleNoise_2(
 )
 def test_Clip(sampling_rate, threshold, normalize, signal, expected_signal):
 
+    transform = Clip(
+        threshold=auglib.utils.to_db(threshold),
+        normalize=normalize,
+    )
+    transform = audobject.from_yaml_s(
+        transform.to_yaml_s(include_version=False),
+    )
+
     with AudioBuffer.from_array(signal, sampling_rate) as buf:
-        transform = Clip(
-            threshold=auglib.utils.to_db(threshold),
-            normalize=normalize,
-        )
         transform(buf)
         np.testing.assert_almost_equal(
             buf._data,
@@ -409,8 +463,12 @@ def test_ClipByRatio(
         expected_signal,
 ):
 
+    transform = ClipByRatio(ratio, normalize=normalize, soft=soft)
+    transform = audobject.from_yaml_s(
+        transform.to_yaml_s(include_version=False),
+    )
+
     with AudioBuffer.from_array(signal, sampling_rate) as buf:
-        transform = ClipByRatio(ratio, normalize=normalize, soft=soft)
         transform(buf)
         np.testing.assert_almost_equal(
             buf._data,
@@ -422,17 +480,40 @@ def test_ClipByRatio(
 @pytest.mark.parametrize('duration', [1.0])
 @pytest.mark.parametrize('sampling_rate', [8000])
 def test_Compression(duration, sampling_rate):
+    transform = CompressDynamicRange(
+        -12.0,
+        20.0,
+        attack_time=0.0,
+        release_time=0.1,
+        knee_radius_db=6.0,
+        makeup_db=None,
+    )
+    transform = audobject.from_yaml_s(
+        transform.to_yaml_s(include_version=False),
+    )
+
     with AudioBuffer(duration, sampling_rate) as buf:
         Tone(220.0, shape='square')(buf)
         NormalizeByPeak(peak_db=-3.0)(buf)
-        CompressDynamicRange(-12.0, 20.0, attack_time=0.0, release_time=0.1,
-                             knee_radius_db=6.0, makeup_db=None)(buf)
+        transform(buf)
         peak1 = buf.peak_db
+
+    transform = CompressDynamicRange(
+        -12.0,
+        20.0,
+        attack_time=0.0,
+        release_time=0.1,
+        knee_radius_db=6.0,
+        makeup_db=0.0,
+    )
+    transform = audobject.from_yaml_s(
+        transform.to_yaml_s(include_version=False),
+    )
+
     with AudioBuffer(duration, sampling_rate) as buf:
         Tone(220.0, shape='square')(buf)
         NormalizeByPeak(peak_db=-3.0)(buf)
-        CompressDynamicRange(-12.0, 20.0, attack_time=0.0, release_time=0.1,
-                             knee_radius_db=6.0, makeup_db=0.0)(buf)
+        transform(buf)
         peak2 = buf.peak_db
 
     assert peak1 > peak2
@@ -451,9 +532,18 @@ def test_Compression(duration, sampling_rate):
 )
 def test_FFTConvolve(sampling_rate, keep_tail, aux, base, expected):
 
-    with AudioBuffer.from_array(base, sampling_rate) as base_buf:
-        with AudioBuffer.from_array(aux, sampling_rate) as aux_buf:
-            FFTConvolve(aux_buf, keep_tail=keep_tail)(base_buf)
+    with AudioBuffer.from_array(aux, sampling_rate) as aux_buf:
+        transform = FFTConvolve(aux_buf, keep_tail=keep_tail)
+        error_msg = (
+            "Cannot serialize an instance "
+            "of <class 'auglib.core.buffer.AudioBuffer'>. "
+            "As a workaround, save buffer to disk and pass filename."
+        )
+        with pytest.raises(ValueError, match=error_msg):
+            transform.to_yaml_s(include_version=False)
+
+        with AudioBuffer.from_array(base, sampling_rate) as base_buf:
+            transform(base_buf)
             np.testing.assert_almost_equal(
                 base_buf._data,
                 np.array(expected, dtype=np.float32),
@@ -469,20 +559,33 @@ def test_filter(n, sr):
     sig_in = np.zeros(n * sr, dtype='float32')
     sig_in[int(n * sr / 4):int(n * sr * 3 / 4)] = 1.0
 
+    # Lowpass
     b, a = scipy.signal.butter(1, 0.5, 'lowpass')
     sig_out = scipy.signal.lfilter(b, a, sig_in)
 
+    transform = LowPass(0.5 * sr / 2)
+    transform = audobject.from_yaml_s(
+        transform.to_yaml_s(include_version=False),
+    )
+
     with AudioBuffer.from_array(sig_in, sampling_rate=sr) as buf:
-        LowPass(0.5 * sr / 2)(buf)
+        transform(buf)
         np.testing.assert_almost_equal(buf._data, sig_out)
 
+    # Highpass
     b, a = scipy.signal.butter(1, 0.5, 'highpass')
     sig_out = scipy.signal.lfilter(b, a, sig_in)
 
+    transform = HighPass(0.5 * sr / 2)
+    transform = audobject.from_yaml_s(
+        transform.to_yaml_s(include_version=False),
+    )
+
     with AudioBuffer.from_array(sig_in, sampling_rate=sr) as buf:
-        HighPass(0.5 * sr / 2)(buf)
+        transform(buf)
         np.testing.assert_almost_equal(buf._data, sig_out)
 
+    # Bandpass
     b, a = scipy.signal.butter(
         1,
         np.array([0.5 - 0.25, 0.5 + 0.25]),
@@ -490,10 +593,16 @@ def test_filter(n, sr):
     )
     sig_out = scipy.signal.lfilter(b, a, sig_in)
 
+    transform = BandPass(0.5 * sr / 2, 0.5 * sr / 2)
+    transform = audobject.from_yaml_s(
+        transform.to_yaml_s(include_version=False),
+    )
+
     with AudioBuffer.from_array(sig_in, sampling_rate=sr) as buf:
-        BandPass(0.5 * sr / 2, 0.5 * sr / 2)(buf)
+        transform(buf)
         np.testing.assert_almost_equal(buf._data, sig_out)
 
+    # Bandstop
     b, a = scipy.signal.butter(
         1,
         (2.0 / sr) * np.array([1000 - 5, 1000 + 5]),
@@ -501,8 +610,13 @@ def test_filter(n, sr):
     )
     sig_out = scipy.signal.lfilter(b, a, sig_in)
 
+    transform = BandStop(1000, 10)
+    transform = audobject.from_yaml_s(
+        transform.to_yaml_s(include_version=False),
+    )
+
     with AudioBuffer.from_array(sig_in, sampling_rate=sr) as buf:
-        BandStop(1000, 10)(buf)
+        transform(buf)
         np.testing.assert_almost_equal(buf._data, sig_out)
 
 
@@ -523,11 +637,12 @@ def test_filter_errors(filter_obj, params):
 
 def test_Function():
 
+    def func_double(x, sr):
+        import numpy as np
+        return np.tile(x, 2)
+
     def func_plus_c(x, sr, c):
         return x + c
-
-    def func_halve(x, sr):
-        return x[:, ::2]
 
     def func_times_2(x, sr):  # inplace
         x *= 2
@@ -540,28 +655,44 @@ def test_Function():
         )
 
         # add 1 to buffer
-        Function(func_plus_c, {'c': auglib.observe.IntUni(1, 1)})(buffer)
+        transform = Function(func_plus_c, {'c': auglib.observe.IntUni(1, 1)})
+        transform = audobject.from_yaml_s(
+            transform.to_yaml_s(include_version=False),
+        )
+        transform(buffer)
         np.testing.assert_equal(
             buffer._data,
             np.ones(20, dtype=np.float32),
         )
 
         # halve buffer size
-        Function(func_halve)(buffer)
+        transform = Function(lambda x, sr: x[:, ::2])
+        transform = audobject.from_yaml_s(
+            transform.to_yaml_s(include_version=False),
+        )
+        transform(buffer)
         np.testing.assert_equal(
             buffer._data,
             np.ones(10, dtype=np.float32),
         )
 
         # multiple by 2
-        Function(func_times_2)(buffer)
+        transform = Function(func_times_2)
+        transform = audobject.from_yaml_s(
+            transform.to_yaml_s(include_version=False),
+        )
+        transform(buffer)
         np.testing.assert_equal(
             buffer._data,
             np.ones(10, dtype=np.float32) * 2,
         )
 
         # double buffer size
-        Function(lambda x, sr: np.tile(x, 2))(buffer)
+        transform = Function(func_double)
+        transform = audobject.from_yaml_s(
+            transform.to_yaml_s(include_version=False),
+        )
+        transform(buffer)
         np.testing.assert_equal(
             buffer._data,
             np.ones(20, dtype=np.float32) * 2,
@@ -605,8 +736,13 @@ def test_Function_errors(
 @pytest.mark.parametrize('clip', [False, True])
 def test_GainStage(sampling_rate, signal, gain, max_peak, clip):
 
+    transform = GainStage(gain, max_peak_db=max_peak, clip=clip)
+    transform = audobject.from_yaml_s(
+        transform.to_yaml_s(include_version=False),
+    )
+
     with AudioBuffer.from_array(signal, sampling_rate) as buf:
-        GainStage(gain, max_peak_db=max_peak, clip=clip)(buf)
+        transform(buf)
         if clip:
             assert np.abs(buf._data).max() <= 1.0
         elif max_peak is not None:
@@ -666,6 +802,7 @@ def test_Mask(signal, sampling_rate, transform, start_pos,
         invert=invert,
         unit='samples',
     )
+    mask.to_yaml_s(include_version=False)
 
     with AudioBuffer.from_array(signal, sampling_rate) as buf:
         mask(buf)
@@ -693,18 +830,39 @@ def test_Mix_1(tmpdir, base_dur, aux_dur, sr, unit):
     with AudioBuffer(aux_dur, sr, value=1.0, unit=unit) as aux:
 
         # default mix
+        transform = Mix(aux)
+        error_msg = (
+            "Cannot serialize an instance "
+            "of <class 'auglib.core.buffer.AudioBuffer'>. "
+            "As a workaround, save buffer to disk and pass filename."
+        )
+        with pytest.raises(ValueError, match=error_msg):
+            transform.to_yaml_s(include_version=False)
 
         with AudioBuffer(base_dur, sr, unit=unit) as base:
-            Mix(aux)(base)
+            transform(base)
             expected_mix = np.concatenate(
                 [np.ones(n_min), np.zeros(n_base - n_min)]
             )
             np.testing.assert_equal(base._data, expected_mix)
 
         # clipping
+        transform = Mix(
+            aux,
+            gain_aux_db=to_db(2),
+            loop_aux=True,
+            clip_mix=True,
+        )
+        error_msg = (
+            "Cannot serialize an instance "
+            "of <class 'auglib.core.buffer.AudioBuffer'>. "
+            "As a workaround, save buffer to disk and pass filename."
+        )
+        with pytest.raises(ValueError, match=error_msg):
+            transform.to_yaml_s(include_version=False)
 
         with AudioBuffer(base_dur, sr, unit=unit) as base:
-            Mix(aux, gain_aux_db=to_db(2), loop_aux=True, clip_mix=True)(base)
+            transform(base)
             expected_mix = np.ones(n_base)
             np.testing.assert_equal(base._data, expected_mix)
 
@@ -715,27 +873,47 @@ def test_Mix_1(tmpdir, base_dur, aux_dur, sr, unit):
         expected_mix += np.concatenate(
             [values[n:], np.zeros(n_base - len(values[n:]))]
         )
+
     # Shift aux by increasing read_pos_aux
-    with AudioBuffer(base_dur, sr, unit=unit) as base:
-        with AudioBuffer.from_array(values, sr) as aux:
-            Mix(
-                aux,
-                read_pos_aux=auglib.observe.List(values),
-                unit='samples',
-                num_repeat=len(values),
-            )(base)
-            np.testing.assert_equal(base._data, expected_mix)
-    # Shift aux by observe list of buffers
-    with AudioBuffer(base_dur, sr, unit=unit) as base:
-        Mix(
-            auglib.observe.List(
-                [
-                    AudioBuffer.from_array(values[n:], sr)
-                    for n in range(len(values))
-                ]
-            ),
+    with AudioBuffer.from_array(values, sr) as aux:
+        transform = Mix(
+            aux,
+            read_pos_aux=auglib.observe.List(values),
+            unit='samples',
             num_repeat=len(values),
-        )(base)
+        )
+        error_msg = (
+            "Cannot serialize an instance "
+            "of <class 'auglib.core.buffer.AudioBuffer'>. "
+            "As a workaround, save buffer to disk and pass filename."
+        )
+        with pytest.raises(ValueError, match=error_msg):
+            transform.to_yaml_s(include_version=False)
+
+        with AudioBuffer(base_dur, sr, unit=unit) as base:
+            transform(base)
+            np.testing.assert_equal(base._data, expected_mix)
+
+    # Shift aux by observe list of buffers
+    transform = Mix(
+        auglib.observe.List(
+            [
+                AudioBuffer.from_array(values[n:], sr)
+                for n in range(len(values))
+            ]
+        ),
+        num_repeat=len(values),
+    )
+    error_msg = (
+        "Cannot serialize list if it contains an instance "
+        "of <class 'auglib.core.buffer.AudioBuffer'>. "
+        "As a workaround, save buffer to disk and add filename."
+    )
+    with pytest.raises(ValueError, match=error_msg):
+        transform.to_yaml_s(include_version=False)
+
+    with AudioBuffer(base_dur, sr, unit=unit) as base:
+        transform(base)
         np.testing.assert_equal(base._data, expected_mix)
 
 
@@ -897,7 +1075,11 @@ def test_Mix_2(
 def test_Normalize(sampling_rate, signal):
 
     with AudioBuffer.from_array(signal, sampling_rate) as buf:
-        NormalizeByPeak()(buf)
+        transform = NormalizeByPeak()
+        transform = audobject.from_yaml_s(
+            transform.to_yaml_s(include_version=False),
+        )
+        transform(buf)
         assert np.abs(buf._data).max() == 1.0
 
 
@@ -921,6 +1103,9 @@ def test_PinkNoise(duration, sampling_rate, gain_db, snr_db):
     transform = PinkNoise(
         gain_db=gain_db,
         snr_db=snr_db,
+    )
+    transform = audobject.from_yaml_s(
+        transform.to_yaml_s(include_version=False),
     )
 
     with transform(AudioBuffer(duration, sampling_rate)) as noise:
@@ -1009,14 +1194,24 @@ def test_Prepend(
         aux,
         expected,
 ):
-    with AudioBuffer.from_array(base, sampling_rate) as base_buf:
-        with AudioBuffer.from_array(aux, sampling_rate) as aux_buf:
-            Prepend(
-                aux_buf,
-                read_pos_aux=read_pos_aux,
-                read_dur_aux=read_dur_aux,
-                unit=unit,
-            )(base_buf)
+    with AudioBuffer.from_array(aux, sampling_rate) as aux_buf:
+
+        transform = Prepend(
+            aux_buf,
+            read_pos_aux=read_pos_aux,
+            read_dur_aux=read_dur_aux,
+            unit=unit,
+        )
+        error_msg = (
+            "Cannot serialize an instance "
+            "of <class 'auglib.core.buffer.AudioBuffer'>. "
+            "As a workaround, save buffer to disk and pass filename."
+        )
+        with pytest.raises(ValueError, match=error_msg):
+            transform.to_yaml_s(include_version=False)
+
+        with AudioBuffer.from_array(base, sampling_rate) as base_buf:
+            transform(base_buf)
             np.testing.assert_equal(
                 base_buf._data,
                 np.array(expected, dtype=np.float32),
@@ -1042,12 +1237,17 @@ def test_PrependValue(
         value,
         expected,
 ):
+    transform = PrependValue(
+        duration,
+        value,
+        unit=unit,
+    )
+    transform = audobject.from_yaml_s(
+        transform.to_yaml_s(include_version=False),
+    )
+
     with AudioBuffer.from_array(base, sampling_rate) as base_buf:
-        PrependValue(
-            duration,
-            value,
-            unit=unit,
-        )(base_buf)
+        transform(base_buf)
         np.testing.assert_equal(
             base_buf._data,
             np.array(expected, dtype=np.float32),
@@ -1083,6 +1283,10 @@ def test_Resample(signal, original_rate, target_rate, override):
     expected = audresample.resample(signal, original_rate, target_rate)
 
     transform = auglib.transform.Resample(target_rate, override=override)
+    transform = audobject.from_yaml_s(
+        transform.to_yaml_s(include_version=False),
+    )
+
     with AudioBuffer.from_array(signal, original_rate) as buf:
         transform(buf)
         resampled = buf.to_array()
@@ -1107,8 +1311,14 @@ def test_Resample(signal, original_rate, target_rate, override):
     ],
 )
 def test_Shift(sampling_rate, duration, unit, base, expected):
+
+    transform = Shift(duration=duration, unit=unit)
+    transform = audobject.from_yaml_s(
+        transform.to_yaml_s(include_version=False),
+    )
+
     with AudioBuffer.from_array(base, sampling_rate) as base_buf:
-        Shift(duration=duration, unit=unit)(base_buf)
+        transform(base_buf)
         np.testing.assert_equal(
             base_buf._data,
             np.array(expected, dtype=np.float32),
@@ -1139,6 +1349,10 @@ def test_Tone(duration, sampling_rate, frequency, shape, gain_db, snr_db):
         gain_db=gain_db,
         snr_db=snr_db,
     )
+    transform = audobject.from_yaml_s(
+        transform.to_yaml_s(include_version=False),
+    )
+
     with transform(AudioBuffer(duration, sampling_rate)) as tone:
 
         if gain_db is None:
@@ -1223,14 +1437,18 @@ def test_Trim(
         signal,
         expected_signal,
 ):
+    transform = Trim(
+        start_pos=start_pos,
+        end_pos=end_pos,
+        duration=duration,
+        fill=fill,
+        unit=unit,
+    )
+    transform = audobject.from_yaml_s(
+        transform.to_yaml_s(include_version=False),
+    )
+
     with AudioBuffer.from_array(signal, sampling_rate) as buf:
-        transform = Trim(
-            start_pos=start_pos,
-            end_pos=end_pos,
-            duration=duration,
-            fill=fill,
-            unit=unit,
-        )
         transform(buf)
         np.testing.assert_equal(buf._data, np.array(expected_signal))
 
@@ -1280,15 +1498,19 @@ def test_Trim_fill_none(
         duration,
         expected_signal,
 ):
+    transform = Trim(
+        start_pos=start_pos,
+        end_pos=end_pos,
+        duration=duration,
+        fill=fill,
+        fill_pos=fill_pos,
+        unit=unit,
+    )
+    transform = audobject.from_yaml_s(
+        transform.to_yaml_s(include_version=False),
+    )
+
     with AudioBuffer.from_array(signal, sampling_rate) as buf:
-        transform = Trim(
-            start_pos=start_pos,
-            end_pos=end_pos,
-            duration=duration,
-            fill=fill,
-            fill_pos=fill_pos,
-            unit=unit,
-        )
         transform(buf)
         np.testing.assert_equal(buf._data, np.array(expected_signal))
 
@@ -1343,15 +1565,19 @@ def test_Trim_fill_zeros(
         fill_pos,
         expected_signal,
 ):
+    transform = Trim(
+        start_pos=start_pos,
+        end_pos=end_pos,
+        duration=duration,
+        fill=fill,
+        fill_pos=fill_pos,
+        unit=unit,
+    )
+    transform = audobject.from_yaml_s(
+        transform.to_yaml_s(include_version=False),
+    )
+
     with AudioBuffer.from_array(signal, sampling_rate) as buf:
-        transform = Trim(
-            start_pos=start_pos,
-            end_pos=end_pos,
-            duration=duration,
-            fill=fill,
-            fill_pos=fill_pos,
-            unit=unit,
-        )
         transform(buf)
         np.testing.assert_equal(buf._data, np.array(expected_signal))
 
@@ -1425,15 +1651,19 @@ def test_Trim_fill_loop(
         fill_pos,
         expected_signal,
 ):
+    transform = Trim(
+        start_pos=start_pos,
+        end_pos=end_pos,
+        duration=duration,
+        fill=fill,
+        fill_pos=fill_pos,
+        unit=unit,
+    )
+    transform = audobject.from_yaml_s(
+        transform.to_yaml_s(include_version=False),
+    )
+
     with AudioBuffer.from_array(signal, sampling_rate) as buf:
-        transform = Trim(
-            start_pos=start_pos,
-            end_pos=end_pos,
-            duration=duration,
-            fill=fill,
-            fill_pos=fill_pos,
-            unit=unit,
-        )
         transform(buf)
         np.testing.assert_equal(buf._data, np.array(expected_signal))
 
@@ -1511,14 +1741,19 @@ def test_Trim_error_call(
         error,
         error_msg,
 ):
-    with AudioBuffer.from_array(signal, sampling_rate) as buf:
-        with pytest.raises(error, match=re.escape(error_msg)):
-            Trim(
-                start_pos=start_pos,
-                end_pos=end_pos,
-                duration=duration,
-                unit=unit,
-            )(buf)
+    with pytest.raises(error, match=re.escape(error_msg)):
+        transform = Trim(
+            start_pos=start_pos,
+            end_pos=end_pos,
+            duration=duration,
+            unit=unit,
+        )
+        transform = audobject.from_yaml_s(
+            transform.to_yaml_s(include_version=False),
+        )
+
+        with AudioBuffer.from_array(signal, sampling_rate) as buf:
+            transform(buf)
 
 
 @pytest.mark.parametrize(
@@ -1578,11 +1813,16 @@ def test_WhiteNoiseGaussian(duration, sampling_rate, stddev, gain_db, snr_db):
 
     seed = 0
     auglib.seed(seed)
+
     transform = WhiteNoiseGaussian(
         stddev=stddev,
         gain_db=gain_db,
         snr_db=snr_db,
     )
+    transform = audobject.from_yaml_s(
+        transform.to_yaml_s(include_version=False),
+    )
+
     with transform(AudioBuffer(duration, sampling_rate)) as noise:
         with AudioBuffer(
                 len(noise),
@@ -1658,10 +1898,15 @@ def test_WhiteNoiseUniform(duration, sampling_rate, gain_db, snr_db):
 
     seed = 0
     auglib.seed(seed)
+
     transform = WhiteNoiseUniform(
         gain_db=gain_db,
         snr_db=snr_db,
     )
+    transform = audobject.from_yaml_s(
+        transform.to_yaml_s(include_version=False),
+    )
+
     with transform(AudioBuffer(duration, sampling_rate)) as noise:
         with AudioBuffer(
                 len(noise),

@@ -402,6 +402,7 @@ class BabbleNoise(Base):
         self.num_speakers = num_speakers
         self.gain_db = gain_db
         self.snr_db = snr_db
+        self.unit = unit
 
     def _call(self, buf: AudioBuffer) -> AudioBuffer:
         with AudioBuffer(
