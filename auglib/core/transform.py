@@ -6,6 +6,7 @@ from typing import Callable, Optional, Sequence, Union
 import numpy as np
 
 import audeer
+import audmath
 import audobject
 import audresample
 
@@ -26,6 +27,13 @@ from auglib.core.utils import (
 )
 
 
+SUPPORTED_FADE_SHAPES = [
+    'tukey',
+    'kaiser',
+    'linear',
+    'exponential',
+    'logarithmic',
+]
 SUPPORTED_FILL_STRATEGIES = ['none', 'zeros', 'loop']
 SUPPORTED_FILL_POSITIONS = ['right', 'left', 'both']
 SUPPORTED_FILTER_DESIGNS = ['butter']
@@ -788,6 +796,176 @@ class CompressDynamicRange(Base):
                                              knee_radius_db,
                                              makeup_db,
                                              clip)
+        return buf
+
+
+class Fade(Base):
+    r"""Fade-in and fade-out of audio buffer.
+
+    A fade is a gradual increase (fade-in)
+    or decrease (fade-out)
+    in the level
+    of an audio signal.
+    If ``in_db`` is greater than -120 dB
+    the fade-in will start from the corresponding level,
+    otherwise from silence.
+    If ``out_db`` is greater than -120 dB
+    the fade-out will end at the corresponding level,
+    otherwise from silence.
+
+    The shape of the fade-in and fade-out
+    is selected via ``in_shape`` and ``out_shape``.
+    The following figure shows all available shapes
+    by the example of a fade-in.
+
+    .. jupyter-execute::
+        :hide-code:
+
+        import auglib
+        import matplotlib.pyplot as plt
+        import matplotlib.ticker as mtick
+        import numpy as np
+        import seaborn as sns
+
+        for shape in auglib.core.transform.SUPPORTED_FADE_SHAPES:
+            transform = auglib.transform.Fade(
+                in_dur=101,
+                in_shape=shape,
+                out_dur=0,
+                unit='samples',
+            )
+            augment = auglib.Augment(transform)
+            augmented_signal = augment(np.ones(101), 1000)
+            plt.plot(augmented_signal[0], label=shape)
+        plt.ylabel('Magnitude')
+        plt.xlabel('Fade-in Length')
+        plt.legend()
+        plt.grid(alpha=0.4)
+        ax = plt.gca()
+        ax.xaxis.set_major_formatter(mtick.PercentFormatter())
+        ax.tick_params(axis=u'both', which=u'both',length=0)
+        fig = plt.gcf()
+        fig.set_size_inches(5.12, 3.84)
+        plt.xlim([-1.2, 100.2])
+        plt.ylim([-0.02, 1])
+        sns.despine(left=True, bottom=True)
+
+    Args:
+        in_dur: duration of fade-in
+        out_dur: duration of fade-out
+        in_shape: shape of fade-in
+        out_shape: shape of fade-out
+        in_db: level in dB the fade-in should start at,
+            -120 dB or less is equivalent
+            to an amplitude of 0
+        out_db: level in dB the fade-out should end at,
+            -120 dB or less is equivalent
+            to an amplitude of 0
+        unit: literal specifying the format of ``duration``
+            (see :meth:`auglib.utils.to_samples`).
+        preserve_level: if ``True``
+            the root mean square value
+            of the augmented buffer
+            will be the same
+            as before augmentation
+        bypass_prob: probability to bypass the transformation
+
+    Raises:
+        ValueError: if ``in_shape`` or ``out_shape``
+            contains a non-supported value
+        ValueError: if ``in_db`` or ``out_db``
+            are greater or equal to 0
+
+    Example:
+        >>> with AudioBuffer.from_array([1, 1, 1, 1, 1, 1], 8000) as buf:
+        ...     Fade(in_dur=1, out_dur=1, unit='samples')(buf)
+        array([[0., 1., 1., 1., 1., 0.]], dtype=float32)
+
+    """
+    def __init__(
+            self,
+            *,
+            in_dur: Union[int, float, observe.Base, Time] = 0.1,
+            out_dur: Union[int, float, observe.Base, Time] = 0.1,
+            in_shape: str = 'tukey',
+            out_shape: str = 'tukey',
+            in_db: float = -120,
+            out_db: float = -120,
+            unit: str = 'seconds',
+            preserve_level: Union[bool, observe.Base] = False,
+            bypass_prob: Union[float, observe.Base] = None,
+    ):
+        super().__init__(
+            bypass_prob=bypass_prob,
+            preserve_level=preserve_level,
+        )
+        for shape in [in_shape, out_shape]:
+            if shape not in SUPPORTED_FADE_SHAPES:
+                raise ValueError(
+                    f"Unknown fade shape '{shape}'. "
+                    "Supported designs are: "
+                    f"{', '.join(SUPPORTED_FADE_SHAPES)}."
+                )
+        for level in [in_db, out_db]:
+            if level >= 0:
+                raise ValueError(
+                    'Fading level needs to be below 0 dB, '
+                    f'not {level} dB.'
+                )
+        self.in_dur = in_dur
+        self.out_dur = out_dur
+        self.in_shape = in_shape
+        self.out_shape = out_shape
+        self.in_db = in_db
+        self.out_db = out_db
+        self.unit = unit
+
+    def _call(self, buf: AudioBuffer) -> AudioBuffer:
+
+        in_shape = observe.observe(self.in_shape)
+        out_shape = observe.observe(self.out_shape)
+        in_db = observe.observe(self.in_db)
+        out_db = observe.observe(self.out_db)
+        in_samples = to_samples(
+            observe.observe(self.in_dur),
+            sampling_rate=buf.sampling_rate,
+            length=len(buf),
+            unit=self.unit,
+        )
+        out_samples = to_samples(
+            observe.observe(self.out_dur),
+            sampling_rate=buf.sampling_rate,
+            length=len(buf),
+            unit=self.unit,
+        )
+
+        fade_in = audmath.window(in_samples, shape=in_shape, half='left')
+        fade_out = audmath.window(out_samples, shape=out_shape, half='right')
+
+        # Adjust start level of fade-in
+        # and/or end level of fade-out
+        # if requested
+        if in_db > -120:
+            offset = from_db(in_db)
+            fade_in = fade_in * (1 - offset) + offset
+        if out_db > -120:
+            offset = from_db(out_db)
+            fade_out = fade_out * (1 - offset) + offset
+
+        fade_in_win = np.concatenate(
+            [
+                fade_in[:len(buf)],
+                np.ones(max(0, len(buf) - in_samples)),
+            ]
+        ).astype('float32')
+        fade_out_win = np.concatenate(
+            [
+                np.ones(max(0, len(buf) - out_samples)),
+                fade_out[-len(buf):],
+            ]
+        ).astype('float32')
+        buf._data = fade_in_win * fade_out_win * buf._data
+
         return buf
 
 

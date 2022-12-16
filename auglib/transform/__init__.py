@@ -166,6 +166,7 @@ from auglib.core.transform import (
     ClipByRatio,
     Compose,
     CompressDynamicRange,
+    Fade,
     FFTConvolve,
     Function,
     GainStage,

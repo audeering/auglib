@@ -69,6 +69,12 @@ CompressDynamicRange
 .. autoclass:: CompressDynamicRange
     :members:
 
+Fade
+----
+
+.. autoclass:: Fade
+    :members:
+
 FFTConvolve
 -----------
 
