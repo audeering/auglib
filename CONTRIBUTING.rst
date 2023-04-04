@@ -101,7 +101,7 @@ by following the `Setup Conan`_ instructions.
 Clone and build a static version of the `C++ auglib library`_
 in release mode::
 
-    git clone --depth 1 --branch master https://gitlab.audeering.com/tools/auglib
+    git clone --depth 1 --branch main https://gitlab.audeering.com/tools/auglib
     cd auglib
     bash build-soundtouch.sh
     mkdir build
