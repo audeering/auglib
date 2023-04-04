@@ -2,6 +2,7 @@ audb
 audiomentations
 audplot >=1.4.5
 jupyter-sphinx
+pandas <2.0.0
 pedalboard >=0.4.0
 praat-parselmouth
 pydub  # required by audiomentations
