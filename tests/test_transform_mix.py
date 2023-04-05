@@ -151,25 +151,10 @@ def test_Mix_2(
     aux_values = np.array(range(aux_duration))
     base_value = 0.1
 
-    # Skip tests for loop_aux=True and read_dur_aux not None
-    # as this is broken at the moment, see
-    # https://gitlab.audeering.com/tools/pyauglib/-/issues/47
-    if (
-            loop_aux
-            and read_dur_aux is not None
-    ):
-        return
-
-    # Skip test for read_dur_aux longer than len(aux)
-    # and gain_base_db different from 0
-    # as this is borken at the moment, see
-    # https://gitlab.audeering.com/tools/pyauglib/-/issues/76
-    if (
-            gain_base_db != 0
-            and read_dur_aux is not None
-            and read_dur_aux > len(aux_values)
-    ):
-        return
+    # Expand aux buffer for loop_aux
+    # to simulate looping
+    if loop_aux:
+        aux_values = np.concatenate([aux_values] * 2)
 
     with auglib.AudioBuffer.from_array(aux_values, sampling_rate) as aux:
         with auglib.AudioBuffer(
@@ -231,19 +216,6 @@ def test_Mix_2(
             expected_mix[mix_start:mix_start + len_mix_aux] += (
                 gain_aux * aux_values
             )
-            # If aux should be looped,
-            # we have to repeat adding aux to the mix
-            mix_start += len_mix_aux
-            if loop_aux:
-                while mix_start < len(expected_mix):
-                    mix_end = min(
-                        mix_start + len_mix_aux,
-                        len(expected_mix),
-                    )
-                    expected_mix[mix_start:mix_end] += (
-                        gain_aux * aux_values[:mix_end - mix_start]
-                    )
-                    mix_start += len_mix_aux
 
             transform = auglib.transform.Mix(
                 aux,
