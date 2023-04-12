@@ -18,10 +18,10 @@
     :caption: API Documentation
     :hidden:
 
-    api
-    api-observe
-    api-transform
-    api-utils
+    api/auglib
+    api/auglib.observe
+    api/auglib.transform
+    api/auglib.utils
     genindex
 
 .. toctree::

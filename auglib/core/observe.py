@@ -41,7 +41,7 @@ class Bool(Base):
         Returns:
             boolean
 
-        Example:
+        Examples:
             >>> import auglib
             >>> auglib.seed(1)
             >>> o = Bool(prob_true=0.5)
@@ -63,7 +63,7 @@ class FloatNorm(Base):
         minimum: lower bound
         maximum: upper bound
 
-    Example:
+    Examples:
         >>> import auglib
         >>> auglib.seed(1)
         >>> o = FloatNorm(mean=0.0, std=1.0, minimum=0.0)
@@ -147,7 +147,7 @@ class IntUni(Base):
         low: low interval (inclusive)
         high: high interval (inclusive)
 
-    Example:
+    Examples:
         >>> import auglib
         >>> auglib.seed(1)
         >>> o = IntUni(low=0, high=5)
@@ -194,7 +194,7 @@ class List(Base):
     Raises:
         ValueError: when trying to ``shuffle`` and ``draw`` at the same time
 
-    Example:
+    Examples:
         >>> import auglib
         >>> auglib.seed(1)
         >>> o = List([0, 'b', 'c'])
@@ -289,7 +289,7 @@ def observe(
     Returns:
         observed value
 
-    Example:
+    Examples:
         >>> import auglib
         >>> auglib.seed(1)
         >>> observe(99)

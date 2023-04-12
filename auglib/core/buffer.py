@@ -36,7 +36,7 @@ class AudioBuffer:
             or not greater than zero
         ValueError: if ``duration`` would result in an empty buffer
 
-    Example:
+    Examples:
         >>> with AudioBuffer(5, 8000, 1.0, unit='samples') as buf:
         ...     buf
         array([[1., 1., 1., 1., 1.]], dtype=float32)
@@ -190,7 +190,7 @@ class AudioBuffer:
         Returns:
             array with shape ``(1, samples)``
 
-        Example:
+        Examples:
             >>> buf = AudioBuffer(5, 8000, unit='samples')
             >>> x = buf.to_array()
             >>> x
@@ -270,7 +270,7 @@ class AudioBuffer:
                 or not greater than zero
             ValueError: if signal has a wrong shape or is empty
 
-        Example:
+        Examples:
             >>> with AudioBuffer.from_array([1] * 5, 8000) as buf:
             ...     buf
             array([[1., 1., 1., 1., 1.]], dtype=float32)

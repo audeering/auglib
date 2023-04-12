@@ -136,7 +136,7 @@ class Augment(audinterface.Process, audobject.Object):
 
     .. _`hidden arguments`: https://audeering.github.io/audobject/usage.html#hidden-arguments
 
-    Example:
+    Examples:
         >>> import audb
         >>> import audeer
         >>> import audiofile

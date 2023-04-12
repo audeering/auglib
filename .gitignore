@@ -7,3 +7,4 @@ dist/
 venv/
 .coverage
 cache/
+docs/api/

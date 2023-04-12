@@ -1,5 +1,6 @@
 import datetime
-from subprocess import check_output
+import os
+import shutil
 
 import audeer
 
@@ -16,9 +17,14 @@ title = '{} Documentation'.format(project)
 # General -----------------------------------------------------------------
 
 master_doc = 'index'
-extensions = []
 source_suffix = '.rst'
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints']
+exclude_patterns = [
+    'api-src',
+    'build',
+    'tests',
+    'Thumbs.db',
+    '.DS_Store',
+]
 pygments_style = None
 extensions = [
     'jupyter_sphinx',  # executing code blocks
@@ -27,9 +33,15 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',  # support for Google-style docstrings
+    'sphinx.ext.autosummary',
     'sphinx_autodoc_typehints',
     'sphinx_copybutton',  # for "copy to clipboard" buttons
 ]
+templates_path = ['_templates']
+
+# Disable auto-generation of TOC entries in the API
+# https://github.com/sphinx-doc/sphinx/issues/6316
+toc_object_entries = False
 
 copybutton_prompt_text = r'>>> |\.\.\. '
 copybutton_prompt_is_regexp = True
@@ -67,3 +79,15 @@ linkcheck_ignore = [
     r'https://sail.usc.edu/',
     'https://sphinx-doc.org/',
 ]
+
+
+# Copy API (sub-)module RST files to docs/api/ folder ---------------------
+audeer.rmdir('api')
+audeer.mkdir('api')
+api_src_files = audeer.list_file_names('api-src')
+api_dst_files = [
+    audeer.path('api', os.path.basename(src_file))
+    for src_file in api_src_files
+]
+for src_file, dst_file in zip(api_src_files, api_dst_files):
+    shutil.copyfile(src_file, dst_file)

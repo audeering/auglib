@@ -23,7 +23,7 @@ class Time(audobject.Object):
     Raises:
         ValueError: if ``unit`` is not supported
 
-    Example:
+    Examples:
         >>> Time(0.5, 'seconds')(sampling_rate=8)
         4
         >>> Time(1000, 'ms')(sampling_rate=8)

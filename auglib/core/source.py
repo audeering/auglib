@@ -27,7 +27,7 @@ class FromArray(Source):  # pragma: no cover
         x: array with audio samples
         sampling_rate: sampling rate in Hz
 
-    Example:
+    Examples:
         >>> with FromArray([1] * 5, 8000)() as buf:
         ...     buf
         array([[1., 1., 1., 1., 1.]], dtype=float32)

@@ -20,7 +20,7 @@ def from_db(x_db: typing.Union[float, observe.Base]) -> float:
     Returns:
         input gain
 
-    Example:
+    Examples:
         >>> from_db(-3)
         0.7079457843841379
 
@@ -54,7 +54,7 @@ def to_db(x: typing.Union[float, observe.Base]) -> float:
     Returns:
         input gain in dB
 
-    Example:
+    Examples:
         >>> to_db(2)
         6.020599913279624
 
@@ -118,7 +118,7 @@ def to_samples(
         ValueError: if  ``sampling_rate`` is not provided,
             but ``unit`` is not ``'samples'`` or ``'relative'``
 
-    Example:
+    Examples:
         >>> to_samples(0.5, sampling_rate=10)
         5
         >>> to_samples(0.5, length=20, unit='relative')

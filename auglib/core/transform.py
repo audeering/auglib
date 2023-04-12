@@ -206,7 +206,7 @@ class AMRNB(Base):
             as before augmentation
         bypass_prob: probability to bypass the transformation
 
-    Example:
+    Examples:
         >>> with AudioBuffer(0.5, 8000, unit='seconds', value=0.5) as buf:
         ...     AMRNB(7400)(buf).peak
         0.02783203125
@@ -263,7 +263,7 @@ class Append(Base):
             as before augmentation
         bypass_prob: probability to bypass the transformation
 
-    Example:
+    Examples:
         >>> with AudioBuffer.from_array([1, 2, 3, 4], 8000) as buf:
         ...     with AudioBuffer.from_array([5, 6], 8000) as aux:
         ...         Append(aux)(buf)
@@ -321,7 +321,7 @@ class AppendValue(Base):
             as before augmentation
         bypass_prob: probability to bypass the transformation
 
-    Example:
+    Examples:
         >>> with AudioBuffer.from_array([1, 2, 3, 4], 8000) as buf:
         ...     AppendValue(2, 5, unit='samples')(buf)
         array([[1., 2., 3., 4., 5., 5.]], dtype=float32)
@@ -383,7 +383,7 @@ class BabbleNoise(Base):
             as before augmentation
         bypass_prob: probability to bypass the transformation
 
-    Example:
+    Examples:
         >>> seed(0)
         >>> with AudioBuffer.from_array([0, 0, 0, 0], 8000) as base:
         ...     with AudioBuffer.from_array([1, 0, 0], 8000) as aux:
@@ -460,7 +460,7 @@ class BandPass(Base):
     Raises:
         ValueError: if ``design`` contains a non-supported value
 
-    Example:
+    Examples:
         >>> with AudioBuffer.from_array([1, 2], 8000) as buf:
         ...     BandPass(2000, 1000)(buf)
         array([[0.2928932 , 0.58578646]], dtype=float32)
@@ -521,7 +521,7 @@ class BandStop(Base):
     Raises:
         ValueError: if ``design`` contains a non-supported value
 
-    Example:
+    Examples:
         >>> with AudioBuffer.from_array([1, 2], 8000) as buf:
         ...     BandStop(2000, 1000)(buf)
         array([[0.70710677, 1.4142135 ]], dtype=float32)
@@ -583,7 +583,7 @@ class Clip(Base):
             as before augmentation
         bypass_prob: probability to bypass the transformation
 
-    Example:
+    Examples:
         >>> with AudioBuffer.from_array([1, 2, 3, 4], 8000) as buf:
         ...     Clip(threshold=to_db(2))(buf)
         array([[1., 2., 2., 2.]], dtype=float32)
@@ -639,7 +639,7 @@ class ClipByRatio(Base):
             as before augmentation
         bypass_prob: probability to bypass the transformation
 
-    Example:
+    Examples:
         >>> with AudioBuffer.from_array([1, 2, 3, 4], 8000) as buf:
         ...     ClipByRatio(0.25)(buf)
         array([[1., 2., 3., 3.]], dtype=float32)
@@ -682,7 +682,7 @@ class Compose(Base):
             as before augmentation
         bypass_prob: probability to bypass the transformation
 
-    Example:
+    Examples:
         >>> with AudioBuffer.from_array([0.5, -0.5, 0.5, -0.5], 8000) as buf:
         ...     Compose([GainStage(12), Clip()])(buf)
         array([[ 1., -1.,  1., -1.]], dtype=float32)
@@ -747,7 +747,7 @@ class CompressDynamicRange(Base):
             as before augmentation
         bypass_prob: probability to bypass the transformation
 
-    Example:
+    Examples:
         >>> with AudioBuffer.from_array([0.5, 0.5], 8000) as buf:
         ...     CompressDynamicRange(-6, 0.5)(buf)
         array([[0.56034607,  0.56034607]], dtype=float32)
@@ -876,7 +876,7 @@ class Fade(Base):
         ValueError: if ``in_db`` or ``out_db``
             are greater or equal to 0
 
-    Example:
+    Examples:
         >>> with AudioBuffer.from_array([1, 1, 1, 1, 1, 1], 8000) as buf:
         ...     Fade(in_dur=1, out_dur=1, unit='samples')(buf)
         array([[0., 1., 1., 1., 1., 0.]], dtype=float32)
@@ -993,7 +993,7 @@ class FFTConvolve(Base):
             as before augmentation
         bypass_prob: probability to bypass the transformation
 
-    Example:
+    Examples:
         >>> with AudioBuffer.from_array([1, 2, 3, 4], 8000) as buf:
         ...     with AudioBuffer.from_array([0, 1], 8000) as aux:
         ...         FFTConvolve(aux)(buf)
@@ -1073,7 +1073,7 @@ class Function(Base):
             as before augmentation
         bypass_prob: probability to bypass the transformation
 
-    Example:
+    Examples:
         >>> buf = AudioBuffer.from_array([1, 2, 3, 4], 8000)
         >>> def plus_c(x, sr, c):
         ...     x += c
@@ -1175,7 +1175,7 @@ class GainStage(Base):
             as before augmentation
         bypass_prob: probability to bypass the transformation
 
-    Example:
+    Examples:
         >>> with AudioBuffer.from_array([1, 2, 3, 4], 8000) as buf:
         ...     GainStage(to_db(2))(buf)
         array([[2., 4., 6., 8.]], dtype=float32)
@@ -1230,7 +1230,7 @@ class HighPass(Base):
     Raises:
         ValueError: if ``design`` contains a non-supported value
 
-    Example:
+    Examples:
         >>> with AudioBuffer.from_array([1, 2], 8000) as buf:
         ...     HighPass(3500, order=4)(buf)
         array([[ 0.0009335 , -0.00464588]], dtype=float32)
@@ -1286,7 +1286,7 @@ class LowPass(Base):
     Raises:
         ValueError: if ``design`` contains a non-supported value
 
-    Example:
+    Examples:
         >>> with AudioBuffer.from_array([1, 2], 8000) as buf:
         ...     LowPass(100)(buf)
         array([[0.03780475, 0.14836061]], dtype=float32)
@@ -1357,7 +1357,7 @@ class Mask(Base):
             as before augmentation
         bypass_prob: probability to bypass the transformation
 
-    Example:
+    Examples:
         >>> with AudioBuffer.from_array([1, 1, 1, 1, 1, 1], 8000) as buf:
         ...     Mask(
         ...         GainStage(to_db(2)),
@@ -1573,7 +1573,7 @@ class Mix(Base):
             as before augmentation
         bypass_prob: probability to bypass the transformation
 
-    Example:
+    Examples:
         >>> with AudioBuffer.from_array([1, 2, 3, 4], 8000) as buf:
         ...     with AudioBuffer.from_array([1, 1], 8000) as aux:
         ...         Mix(aux, num_repeat=2)(buf)
@@ -1701,7 +1701,7 @@ class NormalizeByPeak(Base):
             as before augmentation
         bypass_prob: probability to bypass the transformation
 
-    Example:
+    Examples:
         >>> with AudioBuffer.from_array([0.5, -0.5, 0.5, -0.5], 8000) as buf:
         ...     NormalizeByPeak()(buf)
         array([[ 1., -1.,  1., -1.]], dtype=float32)
@@ -1746,7 +1746,7 @@ class PinkNoise(Base):
             as before augmentation
         bypass_prob: probability to bypass the transformation
 
-    Example:
+    Examples:
         >>> seed(0)
         >>> with AudioBuffer.from_array([0, 0], 8000) as buf:
         ...     PinkNoise()(buf)
@@ -1834,7 +1834,7 @@ class Prepend(Base):
             as before augmentation
         bypass_prob: probability to bypass the transformation
 
-    Example:
+    Examples:
         >>> with AudioBuffer.from_array([1, 2, 3, 4], 8000) as buf:
         ...     with AudioBuffer.from_array([5, 6], 8000) as aux:
         ...         Prepend(aux)(buf)
@@ -1900,7 +1900,7 @@ class PrependValue(Base):
             as before augmentation
         bypass_prob: probability to bypass the transformation
 
-    Example:
+    Examples:
         >>> with AudioBuffer.from_array([1, 2, 3, 4], 8000) as buf:
         ...     PrependValue(2, 5, unit='samples')(buf)
         array([[5., 5., 1., 2., 3., 4.]], dtype=float32)
@@ -1961,7 +1961,7 @@ class Resample(Base):
             as before augmentation
         bypass_prob: probability to bypass the transformation
 
-    Example:
+    Examples:
         >>> with AudioBuffer.from_array([0, 0, 0, 0], 16000) as buf:
         ...     Resample(8000)(buf)
         array([[0., 0.]], dtype=float32)
@@ -2032,7 +2032,7 @@ class Select(Base):
             as before augmentation
         bypass_prob: probability to bypass the transformation
 
-    Example:
+    Examples:
         >>> seed(0)
         >>> with AudioBuffer.from_array([1, 2, 3, 4], 8000) as buf:
         ...     with AudioBuffer.from_array([0., 0.], 8000) as aux:
@@ -2079,7 +2079,7 @@ class Shift(Base):
             as before augmentation
         bypass_prob: probability to bypass the transformation
 
-    Example:
+    Examples:
         >>> with AudioBuffer.from_array([1, 2, 3, 4], 8000) as buf:
         ...     Shift(1, unit='samples')(buf)
         array([[2., 3., 4., 1.]], dtype=float32)
@@ -2156,7 +2156,7 @@ class Tone(Base):
     Raises:
         ValueError: if ``shape`` contains a non-supported value
 
-    Example:
+    Examples:
         >>> with AudioBuffer.from_array([0, 0, 0, 0], 8000) as buf:
         ...     Tone(2000, shape='sine')(buf)
         array([[ 0.000000e+00,  1.000000e+00, -8.742278e-08, -1.000000e+00]],
@@ -2340,7 +2340,7 @@ class Trim(Base):
         ValueError: if ``fill`` contains a non-supported value
         ValueError: if ``fill_pos`` contains a non-supported value
 
-    Example:
+    Examples:
         >>> with AudioBuffer.from_array([1, 2, 3, 4], 8000) as buf:
         ...     Trim(start_pos=1, unit='samples')(buf)
         array([[2., 3., 4.]], dtype=float32)
@@ -2621,7 +2621,7 @@ class WhiteNoiseGaussian(Base):
             as before augmentation
         bypass_prob: probability to bypass the transformation
 
-    Example:
+    Examples:
         >>> seed(0)
         >>> with AudioBuffer.from_array([0, 0], 8000) as buf:
         ...     WhiteNoiseGaussian()(buf)
@@ -2686,7 +2686,7 @@ class WhiteNoiseUniform(Base):
             as before augmentation
         bypass_prob: probability to bypass the transformation
 
-    Example:
+    Examples:
         >>> seed(0)
         >>> with AudioBuffer.from_array([0, 0], 8000) as buf:
         ...     WhiteNoiseUniform()(buf)
