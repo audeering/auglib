@@ -7,6 +7,27 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.12.0 (2023-04-12)
+---------------------------
+
+* Added: ``auglib.transform.Fade``
+* Changed: use version 2.0.3 of the ``auglib`` C++ library
+* Changed: split API documentation into sub-pages
+  for each function/class
+* Changed: if ``loop_aux`` is ``True``
+  in ``auglib.transform.Mix``
+  the ``aux`` buffer is now first looped
+  before ``read_pos_aux``
+  and ``read_dur_aux``
+  are applied
+* Fixed: ``gain_base_db``
+  in ``auglib.transform.Mix``
+  was not applied
+  to all samples of the ``base`` buffer
+  starting at the length of the ``aux`` buffer
+  and ending at ``read_dur_aux``
+
+
 Version 0.11.2 (2022-12-08)
 ---------------------------
 
