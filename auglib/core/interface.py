@@ -687,13 +687,11 @@ def _fix_segments(
     new_ends = []
 
     for (start, end), signal in y.items():
-        start_i = int(round(start.total_seconds() * sampling_rate))
-        end_i = int(round(end.total_seconds() * sampling_rate))
-        duration_i = end_i - start_i
+        duration = end - start
         new_starts.append(start + delta)
-        delta += pd.to_timedelta(
-            (signal.shape[1] - duration_i) / sampling_rate,
-            unit='s',
+        delta += (
+            pd.to_timedelta(signal.shape[1] / sampling_rate, unit='s')
+            - duration
         )
         new_ends.append(end + delta)
 

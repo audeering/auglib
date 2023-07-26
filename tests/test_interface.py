@@ -195,6 +195,32 @@ import auglib
             ),
             np.array([[0., 1., 1., 1., 0.]]),
         ),
+        (  # Ensure start values do not change
+           # see
+           # https://gitlab.audeering.com/tools/pyauglib/-/merge_requests/206
+            audformat.segmented_index(
+                ['f1.wav'],
+                ['0 days 00:00:00.511437'],
+                ['0 days 00:00:00.711437'],
+            ),
+            np.zeros((1, 16000)),
+            16000,
+            auglib.transform.Function(lambda x, _: x + 1),
+            False,
+            audformat.segmented_index(
+                ['f1.wav'],
+                ['0 days 00:00:00.511437'],
+                ['0 days 00:00:00.711437'],
+            ),
+            np.concatenate(
+                [
+                    np.zeros((1, 8183)),
+                    np.ones((1, 3200)),
+                    np.zeros((1, 4617)),
+                ],
+                axis=1,
+            )
+        ),
         pytest.param(  # out of border segment
             audformat.segmented_index('f1.wav', '0.1s', '1.1s'),
             np.zeros((1, 10)),
