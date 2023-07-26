@@ -9,6 +9,7 @@ import audformat
 import audinterface
 from audinterface.core.utils import preprocess_signal
 import audiofile
+import audmath
 import audobject
 
 import auglib
@@ -747,6 +748,6 @@ def _insert_segments_into_signal(
     r"""Insert segments into signal"""
 
     for (start, end), segment in y.items():
-        start_i = int(round(start.total_seconds() * sampling_rate))
+        start_i = audmath.samples(start.total_seconds(), sampling_rate)
         end_i = start_i + segment.shape[1]
         signal[:, start_i:end_i] = segment
