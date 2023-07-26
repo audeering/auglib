@@ -252,8 +252,10 @@ class AudioBuffer:
                  normalize=normalize)
 
     @staticmethod
-    def from_array(x: Union[np.ndarray, Sequence[float]],
-                   sampling_rate: int) -> 'AudioBuffer':
+    def from_array(
+            x: Union[np.ndarray, Sequence[float]],
+            sampling_rate: int,
+    ) -> 'AudioBuffer':
         r"""Create buffer from an array.
 
         Only mono audio is supported,
@@ -263,7 +265,10 @@ class AudioBuffer:
 
         Args:
             x: array with audio samples with shape ``(N, )`` or ``(1, N)``
-            sampling_rate: sampling rate in Hz
+                sampling_rate: sampling rate in Hz
+
+        Returns:
+            audio buffer
 
         Raises:
             ValueError: if ``sampling_rate`` is not an integer
