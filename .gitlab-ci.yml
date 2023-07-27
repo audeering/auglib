@@ -77,8 +77,10 @@ pages:
 pypi:
   extends: .pytest
   stage: pypi
+  before_script:
+    - pip install build twine virtualenv
   script:
-    - python setup.py sdist bdist_wheel
+    - python -m build
     - python -m twine upload --repository local dist/*
   only:
     refs:
