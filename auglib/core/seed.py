@@ -14,7 +14,6 @@ def seed(seed: int):
         seed: seed number
 
     """
-
     random.seed(seed)
     np.random.seed(seed)
     if seed == 0:

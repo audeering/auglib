@@ -1,17 +1,14 @@
-from typing import Union, Sequence
+from typing import Sequence
+from typing import Union
 
 import numpy as np
 
-from auglib.core import (
-    observe,
-    transform,
-)
 import audeer
 
-from auglib.core.buffer import (
-    AudioBuffer,
-    Source,
-)
+from auglib.core import observe
+from auglib.core import transform
+from auglib.core.buffer import AudioBuffer
+from auglib.core.buffer import Source
 
 
 @audeer.deprecated(

@@ -11,3 +11,4 @@ sphinx
 sphinx-audeering-theme>=1.1.0
 sphinx-autodoc-typehints
 sphinx-copybutton
+toml

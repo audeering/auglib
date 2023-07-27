@@ -1,6 +1,6 @@
-import auglib.observe as observe
-
 import audeer
+
+import auglib.observe as observe
 
 
 @audeer.deprecated(

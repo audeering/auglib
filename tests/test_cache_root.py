@@ -3,6 +3,7 @@ import os
 import pytest
 
 import audeer
+
 import auglib
 
 

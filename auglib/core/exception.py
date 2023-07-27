@@ -1,14 +1,14 @@
-import sys
-import warnings
-import traceback
-from functools import wraps
 import ctypes
+from functools import wraps
+import sys
+import traceback
+import warnings
 
 from auglib.core.api import lib
 
 
 class ExceptionHandling:
-    r"""Exception handling strategies"""
+    r"""Exception handling strategies."""
     SILENT = 'silent'
     WARNING = 'warning'
     STACKTRACE = 'stacktrace'

@@ -1,6 +1,8 @@
 import pytest
 
-from auglib.utils import to_samples, to_db, from_db
+from auglib.utils import from_db
+from auglib.utils import to_db
+from auglib.utils import to_samples
 
 
 @pytest.mark.parametrize(

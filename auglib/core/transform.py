@@ -1,7 +1,9 @@
-import ctypes
 from functools import wraps
 import typing
-from typing import Callable, Optional, Sequence, Union
+from typing import Callable
+from typing import Optional
+from typing import Sequence
+from typing import Union
 
 import numpy as np
 
@@ -10,21 +12,16 @@ import audmath
 import audobject
 import audresample
 
-from auglib.core.api import lib
-from auglib.core.buffer import (
-    AudioBuffer,
-    rms_db,
-)
 from auglib.core import observe
+from auglib.core.api import lib
+from auglib.core.buffer import AudioBuffer
+from auglib.core.buffer import rms_db
 from auglib.core.exception import _check_exception_decorator
 from auglib.core.resolver import AudioBufferResolver
-from auglib.core.seed import seed
 from auglib.core.time import Time
-from auglib.core.utils import (
-    from_db,
-    to_db,
-    to_samples,
-)
+from auglib.core.utils import from_db
+from auglib.core.utils import to_db
+from auglib.core.utils import to_samples
 
 
 SUPPORTED_FADE_SHAPES = [
@@ -139,6 +136,7 @@ class Base(audobject.Object):
 
         Args:
             buf: audio buffer
+            aux: auxiliary buffer
 
         Raises:
             NotImplementedError: raised if not overwritten in child class
@@ -186,15 +184,18 @@ class Base(audobject.Object):
 
 
 class AMRNB(Base):
-    r"""Encode-decode the buffer using Adaptive Multi-Rate (AMR) lossy codec
-    (Narrow Band version).
+    r"""Encode-decode buffer using AMRNB codec.
+
+    AMRNB stands for Adaptive Multi-Rate (Narrow Band version).
 
     .. note:: The input signal must be narrow-band (it must be sampled at
         8kHz).
 
-    .. note:: Supported bit rates: 4750, 5150, 5900, 6700, 7400, 7950, 10200,
-        12200. Any positive bit rate is allowed, but it wil be internally
-        converted to the closest among those listed above.
+    .. note:: Supported bit rates:
+        4750, 5150, 5900, 6700, 7400, 7950, 10200, 12200.
+        Any positive bit rate is allowed,
+        but it will be internally converted
+        to the closest among those listed above.
 
     Args:
         bit_rate: target bit rate of the encoded stream (in bits per second)
@@ -708,7 +709,10 @@ class Compose(Base):
 
 
 class CompressDynamicRange(Base):
-    r"""Compress the dynamic range of the buffer by attenuating any sample
+    r"""Compress the dynamic range.
+
+    The dyanmic range of the buffer is compressed
+    by attenuating any sample
     whose amplitude exceeds a certain ``threshold_db``.
     The intensity of the attenuation is determined by the ``ratio`` parameter
     (the higher the ratio, the stronger the gain reduction). To avoid heavy
@@ -970,8 +974,9 @@ class Fade(Base):
 
 
 class FFTConvolve(Base):
-    r"""Convolve the audio buffer (base) with another buffer (auxiliary)
-    using an impulse response (FFT-based approach).
+    r"""Convolve buffer with another buffer.
+
+    The convolution is done by a FFT-based approach.
 
     Args:
         aux: auxiliary buffer,
@@ -1044,7 +1049,7 @@ class Function(Base):
     or a new :class:`numpy.ndarray`
     that will be written back to the buffer.
     If necessary,
-    the size of the audio buffer will be shrinked or expanded
+    the size of the audio buffer will be shrunk or expanded
     to fit the returned array.
 
     Note that the object is not serializable
@@ -1152,8 +1157,7 @@ class Function(Base):
 
 
 class GainStage(Base):
-    r"""Scale the buffer by the linear factor that corresponds
-    to ``gain_dB`` (in decibels).
+    r"""Scale buffer by linear factor.
 
     .. note:: If ``max_peak_db`` is not ``None`` and the resulting peak level
         exceeds the given value, the actual gain is adjusted so that the

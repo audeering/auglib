@@ -1,5 +1,5 @@
-import os
 import ctypes
+import os
 
 
 lib_root = os.path.dirname(os.path.realpath(__file__))

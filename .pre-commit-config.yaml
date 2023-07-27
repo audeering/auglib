@@ -1,0 +1,24 @@
+# Configuration of checks run by pre-commit
+#
+# The tests are executed in the CI pipeline,
+# see CONTRIBUTING.rst for further instructions.
+# You can also run the checks directly at the terminal, e.g.
+#
+# $ pre-commit install
+# $ pre-commit run --all-files
+#
+#
+default_language_version:
+  python: python3.8
+
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.0.276
+    hooks:
+      - id: ruff
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.4
+    hooks:
+      - id: codespell
+        additional_dependencies:
+          - tomli

@@ -1,6 +1,5 @@
-import pytest
-
 import audb
+import pytest
 
 import auglib
 

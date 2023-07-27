@@ -2,10 +2,8 @@ import typing
 
 import audeer
 
-from auglib.core import (
-    buffer,
-    observe,
-)
+from auglib.core import buffer
+from auglib.core import observe
 
 
 @audeer.deprecated(

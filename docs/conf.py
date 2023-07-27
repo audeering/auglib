@@ -2,16 +2,21 @@ import datetime
 import os
 import shutil
 
+import toml
+
 import audeer
+
+
+config = toml.load(audeer.path('..', 'pyproject.toml'))
 
 
 # Project -----------------------------------------------------------------
 
-project = 'auglib'
+project = config['project']['name']
+author = ', '.join(author['name'] for author in config['project']['authors'])
 copyright = f'2019-{datetime.date.today().year} audEERING GmbH'
-author = 'Johannes Wagner, Hagen Wierstorf'
 version = audeer.git_repo_version()
-title = '{} Documentation'.format(project)
+title = 'Documentation'
 
 
 # General -----------------------------------------------------------------

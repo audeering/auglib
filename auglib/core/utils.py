@@ -2,13 +2,12 @@ import random
 import typing
 
 import numpy as np
-import pandas as pd
 
 import audeer
 
-from auglib.core.api import lib
 from auglib.core import observe
 from auglib.core import time
+from auglib.core.api import lib
 
 
 def from_db(x_db: typing.Union[float, observe.Base]) -> float:

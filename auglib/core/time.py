@@ -4,7 +4,6 @@ import pandas as pd
 
 import audobject
 
-from auglib.core.seed import seed
 from auglib.core import observe
 
 
@@ -90,7 +89,6 @@ class Time(audobject.Object):
                 or not greater than zero
 
         """
-
         if sampling_rate is not None:
             if (
                     not isinstance(sampling_rate, int)

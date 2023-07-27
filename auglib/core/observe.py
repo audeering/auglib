@@ -261,15 +261,15 @@ class List(Base):
         else:
             return observe(self._next())
 
-    def __iter__(self):
+    def __iter__(self):  # noqa: D105
         self._counter = 0
         self._iter = True
         return self
 
-    def __len__(self):
+    def __len__(self):  # noqa: D105
         return len(self.elements)
 
-    def __next__(self):
+    def __next__(self):  # noqa: D105
         if not self._iter:
             raise StopIteration()
         return self()
@@ -319,7 +319,7 @@ def _truncnorm(
     is within the given boundary.
 
     Args:
-        loc: mean of distribution
+        mu: mean of distribution
         sigma: standard deviation of distribution
         minimum: lowest value to be returned
         maximum: highest number to be returned

@@ -217,8 +217,10 @@ class Augment(audinterface.Process, audobject.Object):
             self,
     ) -> str:
         r"""Short flavor ID.
+
         This just truncates the ID
         to its last eight characters.
+
         """
         return self.id[-8:]
 
@@ -409,7 +411,6 @@ class Augment(audinterface.Process, audobject.Object):
             description: str,
     ) -> pd.Index:
         r"""Augment segments and store augmented files to cache."""
-
         files = index.get_level_values(0).unique()
         augmented_files = _augmented_files(
             files,
@@ -452,7 +453,6 @@ class Augment(audinterface.Process, audobject.Object):
             index: pd.Index,
     ) -> typing.Tuple[np.ndarray, int, pd.Index]:
         r"""Augment file at every segment."""
-
         signal, sampling_rate = audiofile.read(file, always_2d=True)
         augmented_signal, augmented_rate, augmented_index = \
             self._augment_signal(signal, sampling_rate, index)
@@ -466,7 +466,6 @@ class Augment(audinterface.Process, audobject.Object):
             index: pd.Index,
     ) -> pd.Index:
         r"""Augment file and store to cache."""
-
         signal, sampling_rate, augmented_index = self._augment_file(
             file,
             index,
@@ -506,7 +505,6 @@ class Augment(audinterface.Process, audobject.Object):
             index: pd.Index,
     ) -> typing.Tuple[np.ndarray, int, pd.Index]:
         r"""Augment signal at every segment in index."""
-
         signal, augmented_rate = preprocess_signal(
             signal,
             sampling_rate=sampling_rate,
@@ -596,9 +594,12 @@ class Augment(audinterface.Process, audobject.Object):
             sampling_rate: int,
             transform: auglib.transform.Base,
     ) -> np.ndarray:
-        r"""Internal processing function: creates audio buffer
-        and runs it through the transformation object."""
+        r"""Internal processing function.
 
+        Creates audio buffer
+        and runs it through the transformation object.
+
+        """
         signal = np.atleast_2d(signal)
         max_samples = 0
         buffers = []
@@ -627,7 +628,6 @@ def _apply_nat_mask(
         mask: np.ndarray,
 ) -> pd.Index:
     r"""Within mask set end level to NaT."""
-
     ends = index.get_level_values(
         audformat.define.IndexField.END
     ).to_series()
@@ -650,8 +650,7 @@ def _augmented_files(
         cache_root: str,
         remove_root: str = None,
 ) -> typing.Sequence[str]:
-    r"""Return cache file names by joining with the cache directory"""
-
+    r"""Return cache file names by joining with the cache directory."""
     cache_root = audeer.safe_path(cache_root)
     if remove_root is None:
         def join(path1: str, path2: str) -> str:
@@ -682,7 +681,6 @@ def _fix_segments(
         sampling_rate: int,
 ) -> pd.Series:
     r"""Align index with signal samples."""
-
     delta = pd.to_timedelta(0)
     new_starts = []
     new_ends = []
@@ -705,7 +703,6 @@ def _index_duration(
         index: pd.Index,
 ) -> pd.TimedeltaIndex:
     r"""Calculate segment duration."""
-
     starts = index.get_level_values(audformat.define.IndexField.START)
     ends = index.get_level_values(audformat.define.IndexField.END)
 
@@ -717,7 +714,6 @@ def _invert_index(
         duration: pd.Timedelta,
 ) -> pd.Index:
     r"""Invert an index with start and end timestamps."""
-
     ends = index.get_level_values(audformat.define.IndexField.START)
     starts = index.get_level_values(audformat.define.IndexField.END)
 
@@ -745,8 +741,7 @@ def _insert_segments_into_signal(
         signal: np.ndarray,
         sampling_rate: int,
 ):
-    r"""Insert segments into signal"""
-
+    r"""Insert segments into signal."""
     for (start, end), segment in y.items():
         start_i = audmath.samples(start.total_seconds(), sampling_rate)
         end_i = start_i + segment.shape[1]

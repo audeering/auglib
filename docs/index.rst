@@ -1,5 +1,3 @@
-.. pyauglib documentation master file
-
 .. include:: ../README.rst
 
 .. toctree::

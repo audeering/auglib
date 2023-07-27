@@ -116,7 +116,7 @@ a new class that derives from
 
     transform = Repeat(3)
 
-.. Store transfrom in different variable
+.. Store transform in different variable
 .. so we can reuse it later
 .. jupyter-execute::
     :hide-code:
@@ -154,35 +154,33 @@ A much simpler approach is to use
 
 
 """
-from auglib.core.transform import (
-    Base,
-    BabbleNoise,
-    AMRNB,
-    Append,
-    AppendValue,
-    BandPass,
-    BandStop,
-    Clip,
-    ClipByRatio,
-    Compose,
-    CompressDynamicRange,
-    Fade,
-    FFTConvolve,
-    Function,
-    GainStage,
-    HighPass,
-    LowPass,
-    Mask,
-    Mix,
-    NormalizeByPeak,
-    PinkNoise,
-    Prepend,
-    PrependValue,
-    Resample,
-    Select,
-    Shift,
-    Tone,
-    Trim,
-    WhiteNoiseGaussian,
-    WhiteNoiseUniform
-)
+from auglib.core.transform import AMRNB
+from auglib.core.transform import Append
+from auglib.core.transform import AppendValue
+from auglib.core.transform import BabbleNoise
+from auglib.core.transform import BandPass
+from auglib.core.transform import BandStop
+from auglib.core.transform import Base
+from auglib.core.transform import Clip
+from auglib.core.transform import ClipByRatio
+from auglib.core.transform import Compose
+from auglib.core.transform import CompressDynamicRange
+from auglib.core.transform import Fade
+from auglib.core.transform import FFTConvolve
+from auglib.core.transform import Function
+from auglib.core.transform import GainStage
+from auglib.core.transform import HighPass
+from auglib.core.transform import LowPass
+from auglib.core.transform import Mask
+from auglib.core.transform import Mix
+from auglib.core.transform import NormalizeByPeak
+from auglib.core.transform import PinkNoise
+from auglib.core.transform import Prepend
+from auglib.core.transform import PrependValue
+from auglib.core.transform import Resample
+from auglib.core.transform import Select
+from auglib.core.transform import Shift
+from auglib.core.transform import Tone
+from auglib.core.transform import Trim
+from auglib.core.transform import WhiteNoiseGaussian
+from auglib.core.transform import WhiteNoiseUniform

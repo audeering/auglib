@@ -1,11 +1,12 @@
 import os
-from typing import Union, Sequence
+from typing import Sequence
+from typing import Union
 import warnings
 
-import audiofile as af
 import numpy as np
 
 import audeer
+import audiofile as af
 import audobject
 
 from auglib.core import observe
@@ -77,23 +78,23 @@ class AudioBuffer:
         if value:
             self._data += observe.observe(value)
 
-    def __enter__(self):
+    def __enter__(self):  # noqa: D105
         return self
 
-    def __eq__(self, other: 'AudioBuffer'):
+    def __eq__(self, other: 'AudioBuffer'):  # noqa: D105
         return self.sampling_rate == other.sampling_rate and \
             np.array_equal(self._data, other._data)
 
-    def __exit__(self, *args):
+    def __exit__(self, *args):  # noqa: D105
         self.free()
 
-    def __len__(self):
+    def __len__(self):  # noqa: D105
         return lib.AudioBuffer_size(self._obj)
 
-    def __repr__(self):
+    def __repr__(self):  # noqa: D105
         return repr(self.to_array(copy=False))
 
-    def __str__(self):
+    def __str__(self):  # noqa: D105
         return str(self.to_array(copy=False))
 
     @property
@@ -265,7 +266,7 @@ class AudioBuffer:
 
         Args:
             x: array with audio samples with shape ``(N, )`` or ``(1, N)``
-                sampling_rate: sampling rate in Hz
+            sampling_rate: sampling rate in Hz
 
         Returns:
             audio buffer
@@ -332,10 +333,7 @@ class AudioBuffer:
 # as a workaround we raise the deprecation warning in __init__
 # This happens when deriving from this class.
 class Source(audobject.Object):  # pragma: no cover
-    r"""Base class for objects that create an
-    :class:`auglib.AudioBuffer`.
-
-    """
+    r"""Base class for objects that create an audio buffer."""
     def __init__(self):
         message = (
             'Source is deprecated and will be removed '
@@ -366,10 +364,7 @@ class Source(audobject.Object):  # pragma: no cover
 # as a workaround we raise the deprecation warning in __init__
 # This happens when deriving from this class.
 class Sink(audobject.Object):  # pragma: no cover
-    r"""Base class for objects that consume an
-    :class:`auglib.AudioBuffer`.
-
-    """
+    r"""Base class for objects that consume an audio buffer."""
     def __init__(self):
         message = (
             'Sink is deprecated and will be removed '

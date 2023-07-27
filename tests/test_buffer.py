@@ -1,12 +1,13 @@
-import re
 import os
+import re
 
 import numpy as np
 import pytest
 
 import audiofile
-import auglib
 import audobject
+
+import auglib
 
 
 @pytest.mark.parametrize(

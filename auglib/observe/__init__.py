@@ -52,12 +52,10 @@ we can do:
 
 
 """
-from auglib.core.observe import (
-    Base,
-    Bool,
-    FloatNorm,
-    FloatUni,
-    IntUni,
-    List,
-    observe,
-)
+from auglib.core.observe import Base
+from auglib.core.observe import Bool
+from auglib.core.observe import FloatNorm
+from auglib.core.observe import FloatUni
+from auglib.core.observe import IntUni
+from auglib.core.observe import List
+from auglib.core.observe import observe

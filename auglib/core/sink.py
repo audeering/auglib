@@ -3,10 +3,8 @@ from typing import Union
 import audeer
 
 from auglib.core import observe
-from auglib.core.buffer import (
-    AudioBuffer,
-    Sink,
-)
+from auglib.core.buffer import AudioBuffer
+from auglib.core.buffer import Sink
 
 
 @audeer.deprecated(
@@ -20,7 +18,7 @@ class Write(Sink):  # pragma: no cover
         path: file name of output audio file. The format (WAV, FLAC, OGG)
             will be inferred from the file name
         root: optional root directory
-        precision: precision of writen file, can be `'16bit'`, `'24bit'`,
+        precision: precision of written file, can be `'16bit'`, `'24bit'`,
             `'32bit'`. Only available for WAV files
         normalize (bool, optional): normalize audio data before writing
 
@@ -42,9 +40,7 @@ class Write(Sink):  # pragma: no cover
     alternative='auglib.AudioBuffer.play',
 )
 class Play(Sink):  # pragma: no cover
-    r"""Play back buffer.
-
-    """
+    r"""Play back buffer."""
     def __init__(self):
         pass
 

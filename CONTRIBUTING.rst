@@ -29,25 +29,64 @@ This way, your installation always stays up-to-date, even if you pull new
 changes from the Gitlab repository.
 
 
+Coding Convention
+-----------------
+
+We follow the PEP8_ convention for Python code
+and check for correct syntax with ruff_.
+In addition,
+we check for common spelling errors with codespell_.
+Both tools and possible exceptions
+are defined in :file:`pyproject.toml`.
+
+The checks are executed in the CI using `pre-commit`_.
+You can enable those checks locally by executing::
+
+    pip install pre-commit  # consider system wide installation
+    pre-commit install
+    pre-commit run --all-files
+
+Afterwards ruff_ and codespell_ are executed
+every time you create a commit.
+
+You can also install ruff_ and codespell_
+and call it directly::
+
+    pip install ruff codespell  # consider system wide installation
+    ruff check .
+    codespell
+
+It can be restricted to specific folders::
+
+    ruff check audfoo/ tests/
+    codespell audfoo/ tests/
+
+
+.. _codespell: https://github.com/codespell-project/codespell/
+.. _PEP8: http://www.python.org/dev/peps/pep-0008/
+.. _pre-commit: https://pre-commit.com
+.. _ruff: https://beta.ruff.rs
+
+
 Building the Documentation
 --------------------------
 
-If you make changes to the documentation, you can re-create the HTML pages
-using Sphinx_.
+If you make changes to the documentation,
+you can re-create the HTML pages using Sphinx_.
 You can install it and a few other necessary packages with::
 
-    pip install -r requirements.txt
     pip install -r docs/requirements.txt
 
 To create the HTML pages, use::
 
     python -m sphinx docs/ build/sphinx/html -b html
 
-The generated files will be available in the directory ``build/sphinx/html/``.
+The generated files will be available
+in the directory :file:`build/sphinx/html/`.
 
 It is also possible to automatically check if all links are still valid::
 
-    python -m sphinx docs/ build/sphinx/linkcheck -b linkcheck
+    python -m sphinx docs/ build/sphinx/html -b linkcheck
 
 .. _Sphinx: https://www.sphinx-doc.org
 
