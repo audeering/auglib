@@ -711,7 +711,7 @@ class Compose(Base):
 class CompressDynamicRange(Base):
     r"""Compress the dynamic range.
 
-    The dyanmic range of the buffer is compressed
+    The dynamic range of the buffer is compressed
     by attenuating any sample
     whose amplitude exceeds a certain ``threshold_db``.
     The intensity of the attenuation is determined by the ``ratio`` parameter

@@ -26,6 +26,19 @@ python-3.8:
   extends: .pytest
   stage: test
 
+linter:
+  stage: test
+  image: docker.audeering.com/audeering/python-3.8:latest
+  before_script:
+    - pip install pre-commit
+    - pre-commit install --install-hooks
+  script:
+    - pre-commit run --all-files
+  cache:
+    key: pre-commit
+    paths:
+      - .cache/pre-commit
+
 docs:
   extends: .pytest
   stage: test
