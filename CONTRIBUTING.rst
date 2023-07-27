@@ -49,7 +49,7 @@ It is also possible to automatically check if all links are still valid::
 
     python -m sphinx docs/ build/sphinx/linkcheck -b linkcheck
 
-.. _Sphinx: https://sphinx-doc.org/
+.. _Sphinx: https://www.sphinx-doc.org
 
 
 Running the Tests

@@ -77,7 +77,7 @@ html_title = title
 
 linkcheck_ignore = [
     r'https://sail.usc.edu/',
-    'https://sphinx-doc.org/',
+    'https://www.sphinx-doc.org',
 ]
 
 
