@@ -7,6 +7,17 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.12.1 (2023-07-27)
+---------------------------
+
+* Changed: require ``audmath >=1.3.0``
+* Changed: require ``audinterface >=1.0.4``
+* Changed: use ``audmath.samples()``
+  to convert from duration to samples
+* Fixed: add missing "Returns" section
+  to documentation of ``auglib.AudioBuffer.from_array()``
+
+
 Version 0.12.0 (2023-04-12)
 ---------------------------
 
