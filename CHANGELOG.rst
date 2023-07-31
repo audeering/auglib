@@ -7,6 +7,15 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.12.2 (2023-07-31)
+---------------------------
+
+* Fixed: changes to the correction
+  of ``start`` and ``end``
+  in ``auglib.Augment.augment()``
+  as introduced in ``auglib`` v0.12.1
+
+
 Version 0.12.1 (2023-07-27)
 ---------------------------
 
