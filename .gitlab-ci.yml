@@ -14,7 +14,7 @@ include:
     file: '/.gitlab-ci-artifactory-token.yml'
 
 .pytest:
-  image: docker.audeering.com/audeering/python-3.8:latest
+  image: docker.audeering.com/audeering/python-3.10:latest
   before_script:
     - python -V
   script:
@@ -22,13 +22,13 @@ include:
     - pip install -r tests/requirements.txt
     - python -m pytest
 
-python-3.8:
+python-3.10:
   extends: .pytest
   stage: test
 
 linter:
   stage: test
-  image: docker.audeering.com/audeering/python-3.8:latest
+  image: docker.audeering.com/audeering/python-3.10:latest
   before_script:
     - pip install pre-commit
     - pre-commit install --install-hooks
