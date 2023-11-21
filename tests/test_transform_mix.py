@@ -7,116 +7,140 @@ import auglib
 
 
 @pytest.mark.parametrize(
-    'base_dur,aux_dur,sr,unit',
+    'base_dur, aux_dur, sampling_rate, unit',
     [
         (1.0, 1.0, 8000, None),
         (16000, 8000, 16000, 'samples'),
         (500, 1000, 44100, 'ms'),
     ],
 )
-def test_Mix_1(tmpdir, base_dur, aux_dur, sr, unit):
+def test_mix_1(tmpdir, base_dur, aux_dur, sampling_rate, unit):
 
     unit = unit or 'seconds'
-    n_base = auglib.utils.to_samples(base_dur, sampling_rate=sr, unit=unit)
-    n_aux = auglib.utils.to_samples(aux_dur, sampling_rate=sr, unit=unit)
+    n_base = auglib.utils.to_samples(
+        base_dur,
+        sampling_rate=sampling_rate,
+        unit=unit,
+    )
+    n_aux = auglib.utils.to_samples(
+        aux_dur,
+        sampling_rate=sampling_rate,
+        unit=unit,
+    )
 
     n_min = min(n_base, n_aux)
 
-    # init auxiliary buffer
-    with auglib.AudioBuffer(aux_dur, sr, value=1.0, unit=unit) as aux:
+    # init base and auxiliary signals
+    base = np.zeros((1, n_base))
+    aux = np.ones((1, n_aux))
 
-        # default mix
-        transform = auglib.transform.Mix(aux)
-        error_msg = (
-            "Cannot serialize an instance "
-            "of <class 'auglib.core.buffer.AudioBuffer'>. "
-            "As a workaround, save buffer to disk and pass filename."
-        )
-        with pytest.raises(ValueError, match=error_msg):
-            transform.to_yaml_s(include_version=False)
-
-        with auglib.AudioBuffer(base_dur, sr, unit=unit) as base:
-            transform(base)
-            expected_mix = np.concatenate(
-                [np.ones(n_min), np.zeros(n_base - n_min)]
-            )
-            np.testing.assert_equal(base._data, expected_mix)
-
-        # clipping
-        transform = auglib.transform.Mix(
-            aux,
-            gain_aux_db=audmath.db(2),
-            loop_aux=True,
-            clip_mix=True,
-        )
-        error_msg = (
-            "Cannot serialize an instance "
-            "of <class 'auglib.core.buffer.AudioBuffer'>. "
-            "As a workaround, save buffer to disk and pass filename."
-        )
-        with pytest.raises(ValueError, match=error_msg):
-            transform.to_yaml_s(include_version=False)
-
-        with auglib.AudioBuffer(base_dur, sr, unit=unit) as base:
-            transform(base)
-            expected_mix = np.ones(n_base)
-            np.testing.assert_equal(base._data, expected_mix)
-
-    # Test for repeated execution.
-    values = [0, 1, 2, 3, 4]
-    expected_mix = np.zeros(n_base)
-    for n in range(len(values)):
-        expected_mix += np.concatenate(
-            [values[n:], np.zeros(n_base - len(values[n:]))]
-        )
-
-    # Shift aux by increasing read_pos_aux
-    with auglib.AudioBuffer.from_array(values, sr) as aux:
-        transform = auglib.transform.Mix(
-            aux,
-            read_pos_aux=auglib.observe.List(values),
-            unit='samples',
-            num_repeat=len(values),
-        )
-        error_msg = (
-            "Cannot serialize an instance "
-            "of <class 'auglib.core.buffer.AudioBuffer'>. "
-            "As a workaround, save buffer to disk and pass filename."
-        )
-        with pytest.raises(ValueError, match=error_msg):
-            transform.to_yaml_s(include_version=False)
-
-        with auglib.AudioBuffer(base_dur, sr, unit=unit) as base:
-            transform(base)
-            np.testing.assert_equal(base._data, expected_mix)
-
-    # Shift aux by observe list of buffers
-    transform = auglib.transform.Mix(
-        auglib.observe.List(
-            [
-                auglib.AudioBuffer.from_array(values[n:], sr)
-                for n in range(len(values))
-            ]
-        ),
-        num_repeat=len(values),
-    )
+    # default mix
+    transform = auglib.transform.Mix(aux)
     error_msg = (
-        "Cannot serialize list if it contains an instance "
-        "of <class 'auglib.core.buffer.AudioBuffer'>. "
-        "As a workaround, save buffer to disk and add filename."
+        "Cannot serialize an instance "
+        "of <class 'numpy.ndarray'>. "
+        "As a workaround, save signal to disk and pass filename."
     )
     with pytest.raises(ValueError, match=error_msg):
         transform.to_yaml_s(include_version=False)
 
-    with auglib.AudioBuffer(base_dur, sr, unit=unit) as base:
-        transform(base)
-        np.testing.assert_equal(base._data, expected_mix)
+    expected_mix = np.concatenate(
+        [np.ones((1, n_min)), np.zeros((1, n_base - n_min))],
+        axis=1,
+    )
+    expected_mix = expected_mix.astype(auglib.core.transform.DTYPE)
+    np.testing.assert_array_equal(
+        transform(base),
+        expected_mix,
+        strict=True,
+    )
+
+    # clipping
+    transform = auglib.transform.Mix(
+        aux,
+        gain_aux_db=audmath.db(2),
+        loop_aux=True,
+        clip_mix=True,
+    )
+    error_msg = (
+        "Cannot serialize an instance "
+        "of <class 'numpy.ndarray'>. "
+        "As a workaround, save signal to disk and pass filename."
+    )
+    with pytest.raises(ValueError, match=error_msg):
+        transform.to_yaml_s(include_version=False)
+
+    expected_mix = np.ones(
+        (1, n_base),
+        dtype=auglib.core.transform.DTYPE,
+    )
+    np.testing.assert_array_equal(
+        transform(base),
+        expected_mix,
+        strict=True,
+    )
+
+    # Test for repeated execution.
+    values = np.array([[0, 1, 2, 3, 4]])
+    expected_mix = np.zeros((1, n_base))
+    for n in range(values.shape[1]):
+        expected_mix += np.concatenate(
+                [
+                    values[:, n:],
+                    np.zeros((1, n_base - values[:, n:].shape[1]))
+                ],
+                axis=1,
+        )
+    expected_mix = expected_mix.astype(auglib.core.transform.DTYPE)
+
+    # Shift aux by increasing read_pos_aux
+    transform = auglib.transform.Mix(
+        values,
+        read_pos_aux=auglib.observe.List(values[0]),
+        unit='samples',
+        num_repeat=values.shape[1],
+    )
+    error_msg = (
+        "Cannot serialize an instance "
+        "of <class 'numpy.ndarray'>. "
+        "As a workaround, save signal to disk and pass filename."
+    )
+    with pytest.raises(ValueError, match=error_msg):
+        transform.to_yaml_s(include_version=False)
+
+    np.testing.assert_array_equal(
+        transform(base),
+        expected_mix,
+        strict=True,
+    )
+
+    # Shift aux by observe list of signals
+    transform = auglib.transform.Mix(
+        auglib.observe.List(
+            [
+                values[:, n:]
+                for n in range(values.shape[1])
+            ]
+        ),
+        num_repeat=values.shape[1],
+    )
+    error_msg = (
+        "Cannot serialize list if it contains an instance "
+        "of <class 'numpy.ndarray'>. "
+        "As a workaround, save signal to disk and add filename."
+    )
+    with pytest.raises(ValueError, match=error_msg):
+        transform.to_yaml_s(include_version=False)
+
+    np.testing.assert_array_equal(
+        transform(base),
+        expected_mix,
+        strict=True,
+    )
 
 
-# All duration are given in samples for this test
 @pytest.mark.parametrize('base_duration', [5, 10])
 @pytest.mark.parametrize('aux_duration', [5, 10])
-@pytest.mark.parametrize('sampling_rate', [8000])
 @pytest.mark.parametrize('write_pos_base', [0, 1])
 @pytest.mark.parametrize('extend_base', [False, True])
 @pytest.mark.parametrize('read_pos_aux', [0, 1])
@@ -134,10 +158,9 @@ def test_Mix_1(tmpdir, base_dur, aux_dur, sr, unit):
         (0, 10),
     ]
 )
-def test_Mix_2(
+def test_mix_2(
         base_duration,
         aux_duration,
-        sampling_rate,
         write_pos_base,
         extend_base,
         read_pos_aux,
@@ -148,91 +171,132 @@ def test_Mix_2(
         snr_db,
 ):
 
-    aux_values = np.array(range(aux_duration))
+    aux = np.array([range(aux_duration)])
     base_value = 0.1
+    base = base_value * np.ones((1, base_duration))
 
-    # Expand aux buffer for loop_aux
+    # To calculate the expected mix
+    # we manipulate the aux signal
+    # and store it in a different variable
+    aux_expected = aux.copy()
+
+    # Shrink aux to selected region
+    if read_dur_aux is not None and read_dur_aux > 0:
+        end = read_pos_aux + read_dur_aux
+        aux_expected = aux_expected[:, read_pos_aux:end]
+    else:
+        aux_expected = aux_expected[:, read_pos_aux:]
+
+    # Expand aux signal for loop_aux
     # to simulate looping
-    if loop_aux:
-        aux_values = np.concatenate([aux_values] * 2)
+    has_looped = False
+    if loop_aux and aux_expected.shape[1] < base_duration:
+        aux_expected = np.concatenate([aux_expected] * 3, axis=1)
+        has_looped = True
 
-    with auglib.AudioBuffer.from_array(aux_values, sampling_rate) as aux:
-        with auglib.AudioBuffer(
-                base_duration,
-                sampling_rate,
-                value=base_value,
-                unit='samples',
-        ) as base:
+    # Number of samples available for mix in base
+    len_mix_base = base.shape[1] - write_pos_base
 
-            # Number of samples read for mix from aux
-            if (
-                    read_dur_aux is None
-                    or read_dur_aux == 0
-            ):
-                len_mix_aux = len(aux) - read_pos_aux
-            else:
-                len_mix_aux = read_dur_aux
+    # Number of samples read for mix from aux
+    if (
+            read_dur_aux is None
+            or read_dur_aux == 0
+    ):
+        len_mix_aux = max(
+            [
+                aux_expected.shape[1],
+                len_mix_base,
+            ]
+        )
+    else:
+        len_mix_aux = read_dur_aux
 
-            # Number of samples available for mix in base
-            len_mix_base = len(base) - write_pos_base
-
-            # If number of samples available for mix in base
-            # is smaller than the number of samples read from aux
-            # we pad zeros to base if extend_base is `True`.
-            # Otherwise we trim the aux signal.
-            gain_base = auglib.utils.from_db(gain_base_db)
-            expected_mix = gain_base * base_value * np.ones(len(base))
-            if len_mix_aux > len_mix_base:
-                if extend_base:
-                    expected_mix = np.concatenate(
-                        [expected_mix, np.zeros(len_mix_aux - len_mix_base)],
-                    )
-                else:
-                    len_mix_aux = len_mix_base
-
-            # read_dur_aux is allowed to extend aux buffer,
-            # in this case zeros are padded at the end.
-            # Those zeros will NOT be included in the RMS_dB calculation
-            len_mix_aux = min(
-                len(aux) - read_pos_aux,
-                len_mix_aux,
+    # If number of samples available for mix in base
+    # is smaller than the number of samples read from aux
+    # we pad zeros to base if extend_base is `True`.
+    # Otherwise we trim the aux signal.
+    gain_base = auglib.utils.from_db(gain_base_db)
+    expected_mix = gain_base * base_value * np.ones(base.shape)
+    if len_mix_aux > len_mix_base:
+        if (
+                extend_base and not has_looped
+                or (
+                    extend_base
+                    and read_dur_aux is not None
+                    and read_dur_aux > base_duration
+                )
+        ):
+            expected_mix = np.concatenate(
+                [expected_mix, np.zeros((1, len_mix_aux - len_mix_base))],
+                axis=1,
             )
-            aux_values = aux_values[read_pos_aux:read_pos_aux + len_mix_aux]
+        else:
+            len_mix_aux = len_mix_base
 
-            # As we use a fixed signal for `base`
-            # the RMS_db value is independent of signal length
-            rms_db_base = audmath.db(audmath.rms(gain_base * base_value))
-            rms_db_aux = audmath.db(audmath.rms(aux_values))
+    # read_dur_aux is allowed to extend aux signal,
+    # in this case zeros are padded at the end.
+    # Those zeros will NOT be included in the RMS_dB calculation
+    len_mix_aux = min(
+        aux_expected.shape[1],
+        len_mix_aux,
+    )  # this seems to be not needed
+    # len_mix_aux = len_mix_aux - write_pos_base
+    if (
+            loop_aux
+            and write_pos_base > 0
+            and base_duration > aux_duration
+    ):
+        len_mix_aux = min([len_mix_aux, len_mix_base])
+    aux_expected = aux_expected[:, :len_mix_aux]
 
-            # Get gain factor for aux
-            if gain_aux_db is None:
-                gain_aux_db = 0.0
-            if snr_db is not None:
-                gain_aux_db = rms_db_base - snr_db - rms_db_aux
-            gain_aux = auglib.utils.from_db(gain_aux_db)
+    # As we use a fixed signal for `base`
+    # the RMS_db value is independent of signal length
+    rms_base_start = write_pos_base
+    rms_base_end = min(
+        [base_duration, aux_expected.shape[1] + write_pos_base]
+    )
+    rms_aux_end = min(
+        base_duration - write_pos_base, aux_expected.shape[1]
+    )
 
-            # Add aux values to expected mix
-            mix_start = write_pos_base
-            expected_mix[mix_start:mix_start + len_mix_aux] += (
-                gain_aux * aux_values
-            )
+    rms_db_base = audmath.db(  # includes already gain_base_db
+        audmath.rms(expected_mix[:, rms_base_start:rms_base_end])
+    )
+    rms_db_aux = audmath.db(
+        audmath.rms(aux_expected[:, :rms_aux_end])
+    )
 
-            transform = auglib.transform.Mix(
-                aux,
-                gain_base_db=gain_base_db,
-                gain_aux_db=gain_aux_db,
-                snr_db=snr_db,
-                write_pos_base=write_pos_base,
-                read_pos_aux=read_pos_aux,
-                read_dur_aux=read_dur_aux,
-                extend_base=extend_base,
-                unit='samples',
-                loop_aux=loop_aux,
-            )
-            transform(base)
+    # Get gain factor for aux
+    if gain_aux_db is None:
+        gain_aux_db = 0.0
+    if snr_db is not None:
+        gain_aux_db = rms_db_base - snr_db - rms_db_aux
+    gain_aux = auglib.utils.from_db(gain_aux_db)
 
-            np.testing.assert_almost_equal(
-                base._data,
-                expected_mix,
-                decimal=5,
-            )
+    # Add aux values to expected mix
+    mix_start = write_pos_base
+    expected_mix[:, mix_start:mix_start + len_mix_aux] += (
+        gain_aux * aux_expected
+    )
+
+    expected_mix = expected_mix.astype(auglib.core.transform.DTYPE)
+    transform = auglib.transform.Mix(
+        aux,
+        gain_base_db=gain_base_db,
+        gain_aux_db=gain_aux_db,
+        snr_db=snr_db,
+        write_pos_base=write_pos_base,
+        read_pos_aux=read_pos_aux,
+        read_dur_aux=read_dur_aux,
+        extend_base=extend_base,
+        unit='samples',
+        loop_aux=loop_aux,
+    )
+    augmented_signal = transform(base)
+    assert augmented_signal.dtype == expected_mix.dtype
+    assert augmented_signal.shape == expected_mix.shape
+    np.testing.assert_almost_equal(
+        augmented_signal,
+        expected_mix,
+        decimal=5,
+    )

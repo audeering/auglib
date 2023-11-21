@@ -1,9 +1,8 @@
 audb
 audmath >=1.1.0
-# To avoid https://github.com/tholo/pytest-flake8/issues/87
-flake8 <5.0.0
+# Allow the usage of `strict` in `np.testing.assert_array_equal()`
+numpy >=1.24.0
 pytest
 pytest-cov
 pytest-doctestplus
-pytest-flake8
 scipy

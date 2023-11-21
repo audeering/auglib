@@ -8,7 +8,7 @@ import auglib
 
 @pytest.mark.parametrize('sampling_rate', [8000])
 @pytest.mark.parametrize(
-    'duration, unit, base, expected',
+    'duration, unit, signal, expected',
     [
         (None, 'samples', [1, 2, 3], [1, 2, 3]),
         (0, 'samples', [1, 2, 3], [1, 2, 3]),
@@ -18,16 +18,24 @@ import auglib
         (4, 'samples', [1, 2, 3], [2, 3, 1]),
     ],
 )
-def test_Shift(sampling_rate, duration, unit, base, expected):
+def test_shift(sampling_rate, duration, unit, signal, expected):
 
-    transform = auglib.transform.Shift(duration=duration, unit=unit)
+    signal = np.array(signal)
+    expected = np.array(
+        expected,
+        dtype=auglib.core.transform.DTYPE,
+    )
+    transform = auglib.transform.Shift(
+        duration=duration,
+        sampling_rate=sampling_rate,
+        unit=unit,
+    )
     transform = audobject.from_yaml_s(
         transform.to_yaml_s(include_version=False),
     )
 
-    with auglib.AudioBuffer.from_array(base, sampling_rate) as base_buf:
-        transform(base_buf)
-        np.testing.assert_equal(
-            base_buf._data,
-            np.array(expected, dtype=np.float32),
-        )
+    np.testing.assert_array_equal(
+        transform(signal),
+        expected,
+        strict=True,
+    )

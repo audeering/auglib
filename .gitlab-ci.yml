@@ -16,6 +16,7 @@ include:
 .pytest:
   image: docker.audeering.com/audeering/python-3.10:latest
   before_script:
+    - apt-get install -y ffmpeg sox libavcodec-extra59
     - python -V
   script:
     - pip install -r requirements.txt

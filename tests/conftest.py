@@ -1,12 +1,14 @@
-import audb
+import numpy as np
 import pytest
+
+import audb
 
 import auglib
 
 
 class Ones(auglib.transform.Base):
-    def _call(self, buf: auglib.AudioBuffer):
-        buf._data.fill(1)
+    def _call(self, base: np.ndarray):
+        return np.ones(base.shape)
 
 
 # Add access to audEERING data repos

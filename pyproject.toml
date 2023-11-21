@@ -34,6 +34,7 @@ dependencies = [
     'audmath >=1.3.0',
     'audobject >=0.7.6',
     'sounddevice',  # remove with 1.0.0
+    'scipy',
 ]
 # Get version dynamically from git
 # (needs setuptools_scm tools config below)
@@ -73,7 +74,8 @@ addopts = '''
     --cov-fail-under=100
     --cov-report term-missing
     --ignore=docs/
-    --ignore=cwrapper/
+    --ignore=misc/
+    --ignore=benchmarks/
 '''
 
 
@@ -151,6 +153,7 @@ section-order = [
 ]
 [tool.ruff.isort.sections]
 'audeering' = [
+    'audb',
     'auglibackend',
     'audeer',
     'audformat',

@@ -1,13 +1,9 @@
-import random
 import typing
 
 import numpy as np
 
-import audeer
-
 from auglib.core import observe
 from auglib.core import time
-from auglib.core.api import lib
 
 
 def from_db(x_db: typing.Union[float, observe.Base]) -> float:
@@ -29,19 +25,37 @@ def from_db(x_db: typing.Union[float, observe.Base]) -> float:
     return x
 
 
-@audeer.deprecated(removal_version='1.0.0', alternative='auglib.seed')
-def random_seed(seed: int):  # pragma: no cover
-    r"""(Re-)initialize random generator.
-
-    The random generator is shared among all audio classes.
+def get_peak(signal: np.ndarray) -> float:
+    r"""Find the peak of a signal.
 
     Args:
-        seed: seed number (0 for random initialization)
+        signal: input signal
+
+    Returns:
+        peak as positive value
 
     """
-    random.seed(None if seed == 0 else seed)
-    np.random.seed(None if seed == 0 else seed)
-    lib.auglib_random_seed(seed)
+    minimum = np.min(signal)
+    maximum = np.max(signal)
+    if abs(minimum) > maximum:
+        peak = abs(minimum)
+    else:
+        peak = maximum
+    return peak
+
+
+def rms_db(signal: np.ndarray):
+    r"""Root mean square in dB.
+
+    Very soft signals are limited
+    to a value of -120 dB.
+
+    """
+    # It is:
+    # 20 * log10(rms) = 10 * log10(power)
+    # which saves us from calculating sqrt()
+    power = np.mean(np.square(signal))
+    return 10 * np.log10(max(1e-12, power))
 
 
 def to_db(x: typing.Union[float, observe.Base]) -> float:

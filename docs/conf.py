@@ -41,6 +41,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx_autodoc_typehints',
     'sphinx_copybutton',  # for "copy to clipboard" buttons
+    'matplotlib.sphinxext.plot_directive',
 ]
 templates_path = ['_templates']
 
@@ -67,6 +68,10 @@ intersphinx_mapping = {
     'torch': ('https://pytorch.org/docs/stable/', None),
 }
 
+# Matplot plot_directive settings
+plot_html_show_source_link = False
+plot_html_show_formats = False
+plot_formats = ['png']
 
 # HTML --------------------------------------------------------------------
 

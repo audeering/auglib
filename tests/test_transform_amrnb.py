@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+import audiofile
 import audobject
 
 import auglib
@@ -19,12 +20,12 @@ def test_AMRNB(bit_rate):
         transform.to_yaml_s(include_version=False),
     )
 
-    with auglib.AudioBuffer.read(original_wav) as buf:
-        transform(buf)
-        result = buf._data
-        with auglib.AudioBuffer.read(target_wav) as target_buf:
-            target = target_buf._data
-            length = min(result.size, target.size)
-            np.testing.assert_allclose(
-                result[:length], target[:length], rtol=0.0, atol=0.065
-            )
+    signal, _ = audiofile.read(original_wav, always_2d=True)
+    expected_signal, _ = audiofile.read(target_wav, always_2d=True)
+    length = min(signal.shape[1], expected_signal.shape[1])
+    np.testing.assert_allclose(
+        transform(signal)[:, :length],
+        expected_signal[:, :length],
+        rtol=0.0,
+        atol=0.065,
+    )

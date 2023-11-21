@@ -7,30 +7,49 @@ import audobject
 import auglib
 
 
-@pytest.mark.parametrize('sr', [8000, 44100])
-@pytest.mark.parametrize('n', [10])
-def test_bandstop(n, sr):
+@pytest.mark.parametrize('sampling_rate', [8000, 44100])
+@pytest.mark.parametrize('duration', [10])
+def test_bandstop(duration, sampling_rate):
 
     # generate a boxcar signal (step up...step down)
-    sig_in = np.zeros(n * sr, dtype='float32')
-    sig_in[int(n * sr / 4):int(n * sr * 3 / 4)] = 1.0
+    signal = np.zeros(duration * sampling_rate, dtype='float32')
+    start = int(duration * sampling_rate * 1 / 4)
+    end = int(duration * sampling_rate * 3 / 4)
+    signal[start:end] = 1.0
 
-    # Bandstop
+    center = 1000
+    bandwidth = 10
+    order = 1
+
+    # Expected bandstop
+    lowcut = center - bandwidth / 2
+    highcut = center + bandwidth / 2
     b, a = scipy.signal.butter(
-        1,
-        (2.0 / sr) * np.array([1000 - 5, 1000 + 5]),
-        'bandstop',
+        order,
+        [lowcut, highcut],
+        btype='bandstop',
+        fs=sampling_rate,
     )
-    sig_out = scipy.signal.lfilter(b, a, sig_in)
+    expected_signal = scipy.signal.lfilter(b, a, signal)
+    expected_signal = expected_signal.astype(auglib.core.transform.DTYPE)
 
-    transform = auglib.transform.BandStop(1000, 10)
+    transform = auglib.transform.BandStop(
+        center,
+        bandwidth,
+        sampling_rate=sampling_rate,
+        order=order,
+    )
     transform = audobject.from_yaml_s(
         transform.to_yaml_s(include_version=False),
     )
 
-    with auglib.AudioBuffer.from_array(sig_in, sampling_rate=sr) as buf:
-        transform(buf)
-        np.testing.assert_almost_equal(buf._data, sig_out)
+    augmented_signal = transform(signal)
+    assert augmented_signal.dtype == expected_signal.dtype
+    assert augmented_signal.shape == expected_signal.shape
+    np.testing.assert_almost_equal(
+        augmented_signal,
+        expected_signal,
+    )
 
 
 def test_bandstop_errors():

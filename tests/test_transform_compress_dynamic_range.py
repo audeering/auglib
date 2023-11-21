@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+import audmath
 import audobject
 
 import auglib
@@ -8,42 +9,49 @@ import auglib
 
 @pytest.mark.parametrize('duration', [1.0])
 @pytest.mark.parametrize('sampling_rate', [8000])
-def test_Compression(duration, sampling_rate):
+@pytest.mark.parametrize('threshold', [-12])
+@pytest.mark.parametrize(
+    'signal_peak_db, ratio, makeup_db, clip, expected_peak_db',
+    [
+        (-3, 20.0, None, False, -3),
+        (10, 20.0, None, False, 10),
+        (-3, 2.0, 0.0, False, -3),
+        (10, 2.0, 0.0, False, 10),
+        (-3, 2.0, 10.0, False, 7),
+        (10, 2.0, 0.0, True, 0),
+        (-3, 2.0, 0.0, True, -3),
+        (-3, 2.0, 4.0, True, 0),
+    ]
+)
+def test_compress_dynamic_range(
+    duration,
+    sampling_rate,
+    threshold,
+    signal_peak_db,
+    ratio,
+    makeup_db,
+    clip,
+    expected_peak_db,
+):
+
+    signal = np.zeros((1, int(duration * sampling_rate)))
+    signal = auglib.transform.Tone(220.0, shape='square')(signal)
+    signal = auglib.transform.NormalizeByPeak(peak_db=signal_peak_db)(signal)
+
     transform = auglib.transform.CompressDynamicRange(
-        -12.0,
-        20.0,
+        threshold,
+        ratio,
         attack_time=0.0,
         release_time=0.1,
         knee_radius_db=6.0,
-        makeup_db=None,
+        makeup_db=makeup_db,
+        sampling_rate=sampling_rate,
+        clip=clip,
     )
     transform = audobject.from_yaml_s(
         transform.to_yaml_s(include_version=False),
     )
 
-    with auglib.AudioBuffer(duration, sampling_rate) as buf:
-        auglib.transform.Tone(220.0, shape='square')(buf)
-        auglib.transform.NormalizeByPeak(peak_db=-3.0)(buf)
-        transform(buf)
-        peak1 = buf.peak_db
-
-    transform = auglib.transform.CompressDynamicRange(
-        -12.0,
-        20.0,
-        attack_time=0.0,
-        release_time=0.1,
-        knee_radius_db=6.0,
-        makeup_db=0.0,
-    )
-    transform = audobject.from_yaml_s(
-        transform.to_yaml_s(include_version=False),
-    )
-
-    with auglib.AudioBuffer(duration, sampling_rate) as buf:
-        auglib.transform.Tone(220.0, shape='square')(buf)
-        auglib.transform.NormalizeByPeak(peak_db=-3.0)(buf)
-        transform(buf)
-        peak2 = buf.peak_db
-
-    assert peak1 > peak2
-    assert np.isclose(peak1, -3.0)
+    augmented_signal = transform(signal)
+    peak = audmath.db(np.max(np.abs(augmented_signal)))
+    assert np.isclose(peak, expected_peak_db, atol=1e-02)

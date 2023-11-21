@@ -2,13 +2,12 @@ import numpy as np
 import pytest
 
 import audmath
-import audobject
 
 import auglib
 
 
 # Test gain and SNR for BabbleNoise
-@pytest.mark.parametrize('duration', [1.0])
+@pytest.mark.parametrize('duration', [0.01, 1.0])
 @pytest.mark.parametrize('sampling_rate', [8000])
 @pytest.mark.parametrize('num_speakers', [1, 3])
 @pytest.mark.parametrize(
@@ -23,7 +22,7 @@ import auglib
         (0, 10),
     ]
 )
-def test_BabbleNoise_1(
+def test_babble_noise_1(
         duration,
         sampling_rate,
         num_speakers,
@@ -32,76 +31,119 @@ def test_BabbleNoise_1(
 ):
     auglib.seed(0)
 
-    with auglib.AudioBuffer(
-            duration,
-            sampling_rate,
-            value=1,
-    ) as speech:
+    speech = np.ones((1, int(duration * sampling_rate)))
 
-        transform = auglib.transform.BabbleNoise(
-            [speech],
-            num_speakers=num_speakers,
-            gain_db=gain_db,
-            snr_db=snr_db,
+    transform = auglib.transform.BabbleNoise(
+        [speech],
+        num_speakers=num_speakers,
+        gain_db=gain_db,
+        snr_db=snr_db,
+        sampling_rate=sampling_rate,
+    )
+
+    signal = np.zeros((1, int(duration * sampling_rate)))
+
+    if snr_db is not None:
+        gain_db = -120 - snr_db
+    gain = audmath.inverse_db(gain_db)
+    expected_babble = (
+        gain
+        * np.ones(
+            (1, int(duration * sampling_rate)),
+            dtype=auglib.core.transform.DTYPE,
         )
-        transform = audobject.from_yaml_s(
-            transform.to_yaml_s(include_version=False),
-        )
+    )
 
-        with transform(auglib.AudioBuffer(duration, sampling_rate)) as noise:
-
-            if snr_db is not None:
-                gain_db = -120 - snr_db
-            gain = audmath.inverse_db(gain_db)
-            expected_noise = gain * np.ones(int(duration * sampling_rate))
-
-            np.testing.assert_almost_equal(
-                noise._data,
-                expected_noise,
-                decimal=4,
-            )
+    babble = transform(signal)
+    assert babble.dtype == expected_babble.dtype
+    np.testing.assert_almost_equal(
+        babble,
+        expected_babble,
+        decimal=4,
+    )
 
 
 # Test shorter speech signals for BabbleNoise
 @pytest.mark.parametrize('sampling_rate', [8000])
 @pytest.mark.parametrize(
     # NOTE: expected signal depends on seed
-    'speech, num_speakers, duration, expected_noise',
+    'signal, speech, num_speakers, expected_babble',
     [
-        ([[1, 0], ], 1, 3, [0, 1, 0]),
-        ([[1, 0], ], 1, 4, [1, 0, 1, 0]),
-        ([[1, 0, 0], ], 1, 3, [0, 0, 1]),
-        ([[0, 1], ], 3, 3, [2 / 3, 1 / 3, 2 / 3]),
+        ([0, 0, 0], [[1, 0], ], 1, [0, 1, 0]),
+        ([0, 0, 0, 0], [[1, 0], ], 1, [1, 0, 1, 0]),
+        ([0, 0, 0], [[1, 0, 0], ], 1, [0, 0, 1]),
+        ([0, 0, 0], [[0, 1], ], 3, [2 / 3, 1 / 3, 2 / 3]),
+        ([0, 0, 0], [[[1, 0]], ], 1, [0, 1, 0]),
+        ([0, 0, 0, 0], [[[1, 0]], ], 1, [1, 0, 1, 0]),
+        ([0, 0, 0], [[[1, 0, 0]], ], 1, [0, 0, 1]),
+        ([0, 0, 0], [[[0, 1]], ], 3, [2 / 3, 1 / 3, 2 / 3]),
+        ([[0, 0, 0]], [[1, 0], ], 1, [[0, 1, 0]]),
+        ([[0, 0, 0, 0]], [[1, 0], ], 1, [[1, 0, 1, 0]]),
+        ([[0, 0, 0]], [[1, 0, 0], ], 1, [[0, 0, 1]]),
+        ([[0, 0, 0]], [[0, 1], ], 3, [[2 / 3, 1 / 3, 2 / 3]]),
+        ([[0, 0, 0]], [[[1, 0]], ], 1, [[0, 1, 0]]),
+        ([[0, 0, 0, 0]], [[[1, 0]], ], 1, [[1, 0, 1, 0]]),
+        ([[0, 0, 0]], [[[1, 0, 0]], ], 1, [[0, 0, 1]]),
+        ([[0, 0, 0]], [[[0, 1]], ], 3, [[2 / 3, 1 / 3, 2 / 3]]),
     ],
 )
-def test_BabbleNoise_2(
+def test_babble_noise_2(
         sampling_rate,
+        signal,
         speech,
         num_speakers,
-        duration,
-        expected_noise,
+        expected_babble,
 ):
     seed = 0
     auglib.seed(seed)
+    signal = np.array(signal)
+    speech = [np.array(s) for s in speech]
+    expected_babble = np.array(
+        expected_babble,
+        dtype=auglib.core.transform.DTYPE,
+    )
 
-    speech_bufs = [
-        auglib.AudioBuffer.from_array(s, sampling_rate)
-        for s in speech
-    ]
     transform = auglib.transform.BabbleNoise(
-        speech_bufs,
+        speech,
         num_speakers=num_speakers,
     )
-    transform = audobject.from_yaml_s(
-        transform.to_yaml_s(include_version=False),
+
+    babble = transform(signal)
+    assert babble.dtype == expected_babble.dtype
+    np.testing.assert_almost_equal(
+        babble,
+        expected_babble,
+        decimal=4,
     )
 
-    with auglib.AudioBuffer(duration, sampling_rate, unit='samples') as noise:
-        transform(noise)
-        np.testing.assert_almost_equal(
-            noise._data,
-            np.array(expected_noise, dtype=np.float32),
-            decimal=4,
-        )
-    for buf in speech_bufs:
-        buf.free()
+
+@pytest.mark.parametrize(
+    'speech, expected_error, expected_error_msg',
+    [
+        (
+            [np.array([0, 1])],
+            ValueError,
+            "Cannot serialize list "
+            "if it contains an instance of <class 'numpy.ndarray'>. "
+            "As a workaround, save signal to disk and add filename.",
+        ),
+        (
+            [np.array([[0, 1]])],
+            ValueError,
+            "Cannot serialize list "
+            "if it contains an instance of <class 'numpy.ndarray'>. "
+            "As a workaround, save signal to disk and add filename.",
+        ),
+        (
+            [np.array([[0, 1]]), np.array([[0, 1]])],
+            ValueError,
+            "Cannot serialize list "
+            "if it contains an instance of <class 'numpy.ndarray'>. "
+            "As a workaround, save signal to disk and add filename.",
+        ),
+    ]
+)
+def test_babble_noise_error(speech, expected_error, expected_error_msg):
+    with pytest.raises(expected_error, match=expected_error_msg):
+        transform = auglib.transform.BabbleNoise(speech)
+        transform.to_yaml_s(include_version=False)

@@ -12,7 +12,7 @@ import auglib
 @pytest.mark.parametrize('sampling_rate', [8000])
 @pytest.mark.parametrize('fill', ['none', 'zeros', 'loop'])
 @pytest.mark.parametrize(
-    'start_pos, end_pos, duration, unit, signal, expected_signal',
+    'start_pos, end_pos, duration, unit, signal, expected',
     [
         (0, None, None, 'samples', [1, 2, 3], [1, 2, 3]),
         (0, None, 0, 'samples', [1, 2, 3], [1, 2, 3]),
@@ -30,22 +30,30 @@ def test_Trim(
         duration,
         unit,
         signal,
-        expected_signal,
+        expected,
 ):
+    signal = np.array(signal)
+    expected = np.array(
+        expected,
+        dtype=auglib.core.transform.DTYPE,
+    )
     transform = auglib.transform.Trim(
         start_pos=start_pos,
         end_pos=end_pos,
         duration=duration,
         fill=fill,
+        sampling_rate=sampling_rate,
         unit=unit,
     )
     transform = audobject.from_yaml_s(
         transform.to_yaml_s(include_version=False),
     )
 
-    with auglib.AudioBuffer.from_array(signal, sampling_rate) as buf:
-        transform(buf)
-        np.testing.assert_equal(buf._data, np.array(expected_signal))
+    np.testing.assert_array_equal(
+        transform(signal),
+        expected,
+        strict=True,
+    )
 
 
 # Trim, fill='none'
@@ -55,7 +63,7 @@ def test_Trim(
 @pytest.mark.parametrize('fill', ['none'])
 @pytest.mark.parametrize('fill_pos', ['right', 'left', 'both'])
 @pytest.mark.parametrize(
-    'start_pos, end_pos, duration, expected_signal',
+    'start_pos, end_pos, duration, expected',
     [
         (None, None, None, [1, 2, 3, 4]),
         (None, None, 0, [1, 2, 3, 4]),
@@ -91,23 +99,32 @@ def test_Trim_fill_none(
         start_pos,
         end_pos,
         duration,
-        expected_signal,
+        expected,
 ):
+    signal = np.array(signal)
+    expected = np.array(
+        expected,
+        dtype=auglib.core.transform.DTYPE,
+    )
     transform = auglib.transform.Trim(
         start_pos=start_pos,
         end_pos=end_pos,
         duration=duration,
         fill=fill,
         fill_pos=fill_pos,
+        sampling_rate=sampling_rate,
         unit=unit,
     )
     transform = audobject.from_yaml_s(
         transform.to_yaml_s(include_version=False),
     )
 
-    with auglib.AudioBuffer.from_array(signal, sampling_rate) as buf:
-        transform(buf)
-        np.testing.assert_equal(buf._data, np.array(expected_signal))
+    np.testing.assert_array_equal(
+        transform(signal),
+        expected,
+        strict=True,
+    )
+
 
 
 # Trim, fill='zeros'
@@ -116,7 +133,7 @@ def test_Trim_fill_none(
 @pytest.mark.parametrize('signal', [[1, 2, 3, 4]])
 @pytest.mark.parametrize('fill', ['zeros'])
 @pytest.mark.parametrize(
-    'start_pos, end_pos, duration, fill_pos, expected_signal',
+    'start_pos, end_pos, duration, fill_pos, expected',
     [
         (None, None, 2, 'right', [2, 3]),
         (None, None, 3, 'right', [1, 2, 3]),
@@ -158,23 +175,32 @@ def test_Trim_fill_zeros(
         end_pos,
         duration,
         fill_pos,
-        expected_signal,
+        expected,
 ):
+    signal = np.array(signal)
+    expected = np.array(
+        expected,
+        dtype=auglib.core.transform.DTYPE,
+    )
     transform = auglib.transform.Trim(
         start_pos=start_pos,
         end_pos=end_pos,
         duration=duration,
         fill=fill,
         fill_pos=fill_pos,
+        sampling_rate=sampling_rate,
         unit=unit,
     )
     transform = audobject.from_yaml_s(
         transform.to_yaml_s(include_version=False),
     )
 
-    with auglib.AudioBuffer.from_array(signal, sampling_rate) as buf:
-        transform(buf)
-        np.testing.assert_equal(buf._data, np.array(expected_signal))
+    np.testing.assert_array_equal(
+        transform(signal),
+        expected,
+        strict=True,
+    )
+
 
 
 # Trim, fill='loop'
@@ -183,7 +209,7 @@ def test_Trim_fill_zeros(
 @pytest.mark.parametrize('signal', [[1, 2, 3, 4]])
 @pytest.mark.parametrize('fill', ['loop'])
 @pytest.mark.parametrize(
-    'start_pos, end_pos, duration, fill_pos, expected_signal',
+    'start_pos, end_pos, duration, fill_pos, expected',
     [
         (None, None, 2, 'right', [2, 3]),
         (None, None, 2, 'left', [2, 3]),
@@ -244,23 +270,32 @@ def test_Trim_fill_loop(
         end_pos,
         duration,
         fill_pos,
-        expected_signal,
+        expected,
 ):
+    signal = np.array(signal)
+    expected = np.array(
+        expected,
+        dtype=auglib.core.transform.DTYPE,
+    )
     transform = auglib.transform.Trim(
         start_pos=start_pos,
         end_pos=end_pos,
         duration=duration,
         fill=fill,
         fill_pos=fill_pos,
+        sampling_rate=sampling_rate,
         unit=unit,
     )
     transform = audobject.from_yaml_s(
         transform.to_yaml_s(include_version=False),
     )
 
-    with auglib.AudioBuffer.from_array(signal, sampling_rate) as buf:
-        transform(buf)
-        np.testing.assert_equal(buf._data, np.array(expected_signal))
+    np.testing.assert_array_equal(
+        transform(signal),
+        expected,
+        strict=True,
+    )
+
 
 
 @pytest.mark.parametrize('sampling_rate', [8000])
@@ -297,7 +332,7 @@ def test_Trim_fill_loop(
             "Your combination of "
             "'duration' = 0.0001 seconds "
             "and 'sampling_rate' = 8000 Hz "
-            "would lead to an empty buffer "
+            "would lead to an empty signal "
             "which is forbidden.",
         ),
         (  # start_pos >= len(signal)
@@ -341,14 +376,16 @@ def test_Trim_error_call(
             start_pos=start_pos,
             end_pos=end_pos,
             duration=duration,
+            sampling_rate=sampling_rate,
             unit=unit,
         )
         transform = audobject.from_yaml_s(
             transform.to_yaml_s(include_version=False),
         )
 
-        with auglib.AudioBuffer.from_array(signal, sampling_rate) as buf:
-            transform(buf)
+        signal = np.array(signal)
+        transform(signal)
+
 
 
 @pytest.mark.parametrize(

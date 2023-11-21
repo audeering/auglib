@@ -1,6 +1,0 @@
-[requires]
-dspfilters/latest@audeering/stable
-drwav/0.13.7
-
-[generators]
-cmake

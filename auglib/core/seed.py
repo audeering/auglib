@@ -2,7 +2,14 @@ import random
 
 import numpy as np
 
-from auglib.core.api import lib
+
+SEED = 0
+
+
+def get_seed() -> int:
+    r"""Get current state of seed."""
+    global SEED
+    return SEED
 
 
 def seed(seed: int):
@@ -14,12 +21,7 @@ def seed(seed: int):
         seed: seed number
 
     """
+    global SEED
+    SEED = seed
     random.seed(seed)
     np.random.seed(seed)
-    if seed == 0:
-        # 0 is random initialization in the C library
-        # so we switch to another value.
-        # We use max integer - 1,
-        # see https://stackoverflow.com/a/7604981
-        seed = 9223372036854775806
-    lib.auglib_random_seed(seed)

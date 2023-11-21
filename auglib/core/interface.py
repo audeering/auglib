@@ -14,12 +14,11 @@ import audobject
 
 import auglib
 from auglib.core import transform
-from auglib.core.buffer import AudioBuffer
 from auglib.core.seed import seed as seed_func
 
 
 def _remove(path: str):  # pragma: no cover
-    path = audeer.safe_path(path)
+    path = audeer.path(path)
     if os.path.exists(path):
         os.remove(path)
 
@@ -30,30 +29,6 @@ def _make_tree(files: typing.Sequence[str]):  # pragma: no cover
         dirs.add(os.path.dirname(f))
     for d in list(dirs):
         audeer.mkdir(d)
-
-
-@audeer.deprecated(removal_version='1.0.0', alternative='auglib.Augment')
-class NumpyTransform:  # pragma: no cover
-    r"""Interface for data augmentation on numpy arrays.
-
-    Wraps a :class:`auglib.Transform` under a ``Callable``
-    interface, allowing it to be called on-the-fly on numpy arrays.
-
-    Args:
-        transform: auglib transform to be wrapped
-        sampling_rate: sampling rate of incoming signals
-
-    """
-
-    def __init__(self, transform: transform.Base, sampling_rate: int):
-        self.transform = transform
-        self.sampling_rate = sampling_rate
-
-    def __call__(self, signal: np.ndarray) -> np.ndarray:
-        with AudioBuffer.from_array(signal, self.sampling_rate) as buf:
-            self.transform(buf)
-            transformed = buf.to_array()
-        return transformed
 
 
 class Augment(audinterface.Process, audobject.Object):
@@ -161,9 +136,9 @@ class Augment(audinterface.Process, audobject.Object):
         ...     cache_root='cache',
         ...     data_root=db.root,
         ... )
-        >>> label = augmented_column[0]
+        >>> label = augmented_column.iloc[0]
         >>> file = augmented_column.index[0][0]
-        >>> file = file.replace(audeer.safe_path('.'), '.')  # remove absolute path
+        >>> file = file.replace(audeer.path('.'), '.')  # remove absolute path
         >>> file, label  # doctest: +SKIP
         ('./cache/decdec83/-6100627981361312836/0/audio/006.wav', 'unhappy')
 
@@ -334,7 +309,7 @@ class Augment(audinterface.Process, audobject.Object):
             from auglib.core.cache import default_cache_root
             cache_root = default_cache_root()
         else:
-            cache_root = audeer.safe_path(cache_root)
+            cache_root = audeer.path(cache_root)
         cache_root = os.path.join(cache_root, self.short_id)
 
         transform_path = os.path.join(cache_root, 'transform.yaml')
@@ -596,29 +571,27 @@ class Augment(audinterface.Process, audobject.Object):
     ) -> np.ndarray:
         r"""Internal processing function.
 
-        Creates audio buffer
+        Creates audio signal
         and runs it through the transformation object.
 
         """
         signal = np.atleast_2d(signal)
         max_samples = 0
-        buffers = []
+        signals = []
 
         # augment each channel individually
         for channel in signal:
-            buffer = AudioBuffer.from_array(channel.copy(), sampling_rate)
-            transform(buffer)
-            max_samples = max(max_samples, len(buffer))
-            buffers.append(buffer)
+            channel = transform(channel)
+            max_samples = max(max_samples, channel.shape[0])
+            signals.append(channel)
 
         # combine into single output array and fill short channels with zeros
         augmented_signal = np.zeros(
             (signal.shape[0], max_samples),
-            dtype=np.float32,
+            dtype='float32',
         )
-        for idx, buffer in enumerate(buffers):
-            augmented_signal[idx, :len(buffer)] = buffer.to_array(copy=False)
-            buffer.free()
+        for idx, channel in enumerate(signals):
+            augmented_signal[idx, :len(channel)] = channel
 
         return augmented_signal
 
@@ -651,7 +624,7 @@ def _augmented_files(
         remove_root: str = None,
 ) -> typing.Sequence[str]:
     r"""Return cache file names by joining with the cache directory."""
-    cache_root = audeer.safe_path(cache_root)
+    cache_root = audeer.path(cache_root)
     if remove_root is None:
         def join(path1: str, path2: str) -> str:
             seps = os.sep + os.altsep if os.altsep else os.sep
@@ -662,7 +635,7 @@ def _augmented_files(
             join(cache_root, file) for file in files
         ]
     else:
-        remove_root = audeer.safe_path(remove_root)
+        remove_root = audeer.path(remove_root)
         dirs = [os.path.dirname(file) for file in files]
         common_root = audeer.common_directory(dirs)
         if not audeer.common_directory(

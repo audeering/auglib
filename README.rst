@@ -2,9 +2,6 @@
 Data Augmentation in Python
 ===========================
 
-A Python wrapper for auglib_, a C++ library for audio data augmentation.
+auglib_ is an audio data augmentation library.
 
-.. _auglib: https://gitlab.audeering.com/tools/auglib
-
-For documentation see:
-http://tools.pp.audeering.com/pyauglib/
+.. _auglib: http://tools.pp.audeering.com/pyauglib/

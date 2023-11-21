@@ -22,7 +22,13 @@ import auglib
         (0, 10),
     ]
 )
-def test_WhiteNoiseGaussian(duration, sampling_rate, stddev, gain_db, snr_db):
+def test_white_noise_gaussian(
+        duration,
+        sampling_rate,
+        stddev,
+        gain_db,
+        snr_db,
+):
 
     seed = 0
     auglib.seed(seed)
@@ -36,58 +42,58 @@ def test_WhiteNoiseGaussian(duration, sampling_rate, stddev, gain_db, snr_db):
         transform.to_yaml_s(include_version=False),
     )
 
-    with transform(auglib.AudioBuffer(duration, sampling_rate)) as noise:
-        with auglib.AudioBuffer(
-                len(noise),
-                noise.sampling_rate,
-                unit='samples',
-        ) as expected_noise:
+    samples = int(duration * sampling_rate)
+    signal = np.zeros((1, samples))
 
-            if gain_db is None:
-                gain_db = 0.0
+    if gain_db is None:
+        gain_db = 0.0
 
-            # Power of white noise is given by std^2
-            noise_volume = 10 * np.log10(stddev ** 2)
+    # Power of white noise is given by std^2
+    noise_volume = 10 * np.log10(stddev ** 2)
 
-            if snr_db is not None:
-                # We add noise to an empty signal,
-                # which is limited to -120 dB
-                gain_db = -120 - snr_db - noise_volume
+    if snr_db is not None:
+        # We add noise to an empty signal,
+        # which is limited to -120 dB
+        gain_db = -120 - snr_db - noise_volume
 
-            expected_volume = noise_volume + gain_db
-            expected_mean = 0
-            expected_stddev = audmath.inverse_db(gain_db, bottom=-140) * stddev
+    expected_volume = noise_volume + gain_db
+    expected_mean = 0
+    expected_stddev = audmath.inverse_db(gain_db, bottom=-140) * stddev
 
-            # Create expected noise signal
-            auglib.seed(seed)
-            auglib.core.buffer.lib.AudioBuffer_addWhiteNoiseGaussian(
-                expected_noise._obj,
-                gain_db,
-                stddev,
-            )
-            # Double check volume is correct
-            np.testing.assert_almost_equal(
-                audmath.db(audmath.rms(expected_noise._data), bottom=-140),
-                expected_volume,
-                decimal=1,
-            )
+    # Create expected noise signal
+    noise_generator = np.random.default_rng(seed=seed)
+    expected_noise = noise_generator.normal(
+        expected_mean,
+        expected_stddev,
+        signal.shape,
+    )
+    # Double check volume is correct
+    np.testing.assert_almost_equal(
+        audmath.db(audmath.rms(expected_noise), bottom=-140),
+        expected_volume,
+        decimal=1,
+    )
 
-            np.testing.assert_equal(
-                noise._data,
-                expected_noise._data,
-            )
-            np.testing.assert_almost_equal(
-                audmath.db(audmath.rms(noise._data), bottom=-140),
-                expected_volume,
-                decimal=1,
-            )
-            np.testing.assert_almost_equal(
-                noise._data.mean(),
-                expected_mean,
-                decimal=1,
-            )
-            np.testing.assert_almost_equal(
-                noise._data.std(),
-                expected_stddev,
-                decimal=1,
-            )
+    auglib.seed(seed)
+    noise = transform(signal)
+    assert noise.dtype == auglib.core.transform.DTYPE
+    np.testing.assert_almost_equal(
+        noise,
+        expected_noise,
+        decimal=4,
+    )
+    np.testing.assert_almost_equal(
+        audmath.db(audmath.rms(noise), bottom=-140),
+        expected_volume,
+        decimal=1,
+    )
+    np.testing.assert_almost_equal(
+        noise.mean(),
+        expected_mean,
+        decimal=1,
+    )
+    np.testing.assert_almost_equal(
+        noise.std(),
+        expected_stddev,
+        decimal=1,
+    )

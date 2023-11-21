@@ -53,4 +53,4 @@ def default_cache_root(augment: Augment = None) -> str:
     )
     if augment is not None:
         root = os.path.join(root, augment.short_id)
-    return audeer.safe_path(root)
+    return audeer.path(root)

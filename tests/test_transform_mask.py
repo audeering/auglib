@@ -45,7 +45,7 @@ import auglib
         (3, 5, (1, 3), True, [[0, 0, 0, 1, 0, 0, 0, 1, 0, 0]]),
     ]
 )
-def test_Mask(
+def test_mask(
         signal,
         sampling_rate,
         transform,
@@ -56,6 +56,13 @@ def test_Mask(
         expected,
 ):
 
+    if isinstance(expected, np.ndarray):
+        expected = expected.astype(auglib.core.transform.DTYPE)
+    else:
+        expected = np.array(
+            expected,
+            dtype=auglib.core.transform.DTYPE,
+        )
     mask = auglib.transform.Mask(
         transform,
         start_pos=start_pos,
@@ -64,12 +71,12 @@ def test_Mask(
         invert=invert,
         unit='samples',
     )
-
     mask = audobject.from_yaml_s(
         mask.to_yaml_s(include_version=False),
     )
 
-    with auglib.AudioBuffer.from_array(signal, sampling_rate) as buf:
-        mask(buf)
-        augmented_signal = buf.to_array()
-        np.testing.assert_equal(augmented_signal, expected)
+    np.testing.assert_array_equal(
+        mask(signal),
+        expected,
+        strict=True
+    )
