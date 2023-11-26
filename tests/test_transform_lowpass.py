@@ -32,13 +32,12 @@ def test_lowpass(duration, sampling_rate, order, cutoff):
     transform = auglib.transform.LowPass(
         cutoff,
         order=order,
-        sampling_rate=sampling_rate,
     )
     transform = audobject.from_yaml_s(
         transform.to_yaml_s(include_version=False),
     )
 
-    augmented_signal = transform(signal)
+    augmented_signal = transform(signal, sampling_rate)
     assert augmented_signal.dtype == expected.dtype
     assert augmented_signal.shape == expected.shape
     np.testing.assert_almost_equal(
@@ -47,7 +46,32 @@ def test_lowpass(duration, sampling_rate, order, cutoff):
     )
 
 
-def test_lowpass_errors():
-    with pytest.raises(ValueError):
-        design = 'non-supported'
-        auglib.transform.LowPass(1, design=design)
+@pytest.mark.parametrize(
+    'design, sampling_rate, expected_error, expected_error_msg',
+    [
+        (
+            'non-supported',
+            16000,
+            ValueError,
+            (
+                "Unknown filter design 'non-supported'. "
+                "Supported designs are: butter."
+            ),
+        ),
+        (
+            'butter',
+            None,
+            ValueError,
+            "sampling_rate is 'None', but required.",
+        ),
+    ],
+)
+def test_bandpass_errors(
+        design,
+        sampling_rate,
+        expected_error,
+        expected_error_msg,
+):
+    with pytest.raises(expected_error, match=expected_error_msg):
+        transform = auglib.transform.LowPass(1, design=design)
+        transform(np.ones((1, 4000)), sampling_rate)

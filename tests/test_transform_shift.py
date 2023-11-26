@@ -16,6 +16,10 @@ import auglib
         (2, 'samples', [1, 2, 3], [3, 1, 2]),
         (3, 'samples', [1, 2, 3], [1, 2, 3]),
         (4, 'samples', [1, 2, 3], [2, 3, 1]),
+        (1./3, 'relative', [1, 2, 3], [2, 3, 1]),
+        (2./3, 'relative', [1, 2, 3], [3, 1, 2]),
+        (3./3, 'relative', [1, 2, 3], [1, 2, 3]),
+        (4./3, 'relative', [1, 2, 3], [2, 3, 1]),
     ],
 )
 def test_shift(sampling_rate, duration, unit, signal, expected):
@@ -27,7 +31,6 @@ def test_shift(sampling_rate, duration, unit, signal, expected):
     )
     transform = auglib.transform.Shift(
         duration=duration,
-        sampling_rate=sampling_rate,
         unit=unit,
     )
     transform = audobject.from_yaml_s(
@@ -35,7 +38,7 @@ def test_shift(sampling_rate, duration, unit, signal, expected):
     )
 
     np.testing.assert_array_equal(
-        transform(signal),
+        transform(signal, sampling_rate),
         expected,
         strict=True,
     )

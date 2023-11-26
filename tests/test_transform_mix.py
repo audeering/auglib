@@ -50,7 +50,7 @@ def test_mix_1(tmpdir, base_dur, aux_dur, sampling_rate, unit):
     )
     expected_mix = expected_mix.astype(auglib.core.transform.DTYPE)
     np.testing.assert_array_equal(
-        transform(base),
+        transform(base, sampling_rate),
         expected_mix,
         strict=True,
     )
@@ -75,7 +75,7 @@ def test_mix_1(tmpdir, base_dur, aux_dur, sampling_rate, unit):
         dtype=auglib.core.transform.DTYPE,
     )
     np.testing.assert_array_equal(
-        transform(base),
+        transform(base, sampling_rate),
         expected_mix,
         strict=True,
     )
@@ -133,7 +133,7 @@ def test_mix_1(tmpdir, base_dur, aux_dur, sampling_rate, unit):
         transform.to_yaml_s(include_version=False)
 
     np.testing.assert_array_equal(
-        transform(base),
+        transform(base, sampling_rate),
         expected_mix,
         strict=True,
     )
@@ -299,4 +299,41 @@ def test_mix_2(
         augmented_signal,
         expected_mix,
         decimal=5,
+    )
+
+
+@pytest.mark.parametrize('unit', ['relative'])
+@pytest.mark.parametrize(
+    'base, aux, write_pos_base, read_pos_aux, read_dur_aux, expected',
+    [
+        (
+            np.array([.1, .1, .1, .1]),
+            np.array([1, 2, 3, 4]),
+            0.5,
+            0.5,
+            0.5,
+            np.array([.1, .1, 3.1, 4.1], dtype='float32'),
+        ),
+    ],
+)
+def test_mix_3(
+        unit,
+        base,
+        aux,
+        write_pos_base,
+        read_pos_aux,
+        read_dur_aux,
+        expected,
+):
+    transform = auglib.transform.Mix(
+        aux,
+        write_pos_base=write_pos_base,
+        read_pos_aux=read_pos_aux,
+        read_dur_aux=read_dur_aux,
+        unit=unit,
+    )
+    np.testing.assert_array_equal(
+        transform(base),
+        expected,
+        strict=True,
     )

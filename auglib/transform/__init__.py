@@ -32,11 +32,11 @@ An augmentation can be applied to a :class:`numpy.ndarray`.
 
     sampling_rate = 8000
     signal = np.ones((1, sampling_rate))
-    signal = transform(signal)
+    signal = transform(signal, sampling_rate)
 
 As explained in :ref:`usage`
-with :class:`auglib.Augment`
-we can simplify to:
+we recommend :class:`auglib.Augment`
+to wrap a transform:
 
 .. jupyter-execute::
 
@@ -68,8 +68,8 @@ a new class that derives from
             super().__init__(bypass_prob=bypass_prob)
             self.repeats = repeats
 
-        def _call(self, base: np.ndarray):
-            return np.tile(base, self.repeats)
+        def _call(self, signal: np.ndarray, *, sampling_rate: int = None):
+            return np.tile(signal, self.repeats)
 
     transform = Repeat(3)
 

@@ -18,7 +18,7 @@ class Transform(auglib.transform.Base):
             preserve_level=preserve_level,
         )
 
-    def _call(self, base):
+    def _call(self, base, *, sampling_rate=None):
         return base + 1
 
 
@@ -32,7 +32,7 @@ class TransformAux(auglib.transform.Base):
             transform=transform,
         )
 
-    def _call(self, base, aux):
+    def _call(self, base, aux, *, sampling_rate=None):
         return base + aux
 
 

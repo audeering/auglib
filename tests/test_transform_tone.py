@@ -31,7 +31,6 @@ def test_tone(duration, sampling_rate, frequency, shape, gain_db, snr_db):
         shape=shape,
         gain_db=gain_db,
         snr_db=snr_db,
-        sampling_rate=sampling_rate,
     )
     transform = audobject.from_yaml_s(
         transform.to_yaml_s(include_version=False),
@@ -82,7 +81,7 @@ def test_tone(duration, sampling_rate, frequency, shape, gain_db, snr_db):
     gain = 10 ** (gain_db / 20)
     expected_tone *= gain
 
-    tone = transform(signal)
+    tone = transform(signal, sampling_rate)
 
     # We cannot use np.testing.assert_almost_equal()
     # for comparing square, triangle, and sawtooth signals
@@ -98,6 +97,32 @@ def test_tone(duration, sampling_rate, frequency, shape, gain_db, snr_db):
     )
 
 
-def test_tone_errors():
-    with pytest.raises(ValueError):
-        auglib.transform.Tone(440, shape='non-supported')
+@pytest.mark.parametrize(
+    'shape, sampling_rate, expected_error, expected_error_msg',
+    [
+        (
+            'non-supported',
+            16000,
+            ValueError,
+            (
+                "Unknown tone shape 'non-supported'. "
+                "Supported shapes are: sine, square, triangle, sawtooth."
+            ),
+        ),
+        (
+            'sine',
+            None,
+            ValueError,
+            "sampling_rate is 'None', but required.",
+        ),
+    ],
+)
+def test_tone_errors(
+        shape,
+        sampling_rate,
+        expected_error,
+        expected_error_msg,
+):
+    with pytest.raises(expected_error, match=expected_error_msg):
+        transform = auglib.transform.Tone(440, shape=shape)
+        transform(np.ones((1, 4000)), sampling_rate)

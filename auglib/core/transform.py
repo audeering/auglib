@@ -70,7 +70,6 @@ class Base(audobject.Object):
 
     Args:
         unit: unit of any duration values
-        sampling_rate: sampling rate in Hz
         bypass_prob: probability to bypass the transformation
         preserve_level: if ``True``
             the root mean square value
@@ -82,9 +81,9 @@ class Base(audobject.Object):
             or signal generating transform.
             If a transform is given
             it will be applied
-            to a signal with the same length
-            as the base signal
-            containing zeros
+            to an empty signal with the same length
+            as the signal
+            that will be augmented
         transform: transformation applied to the auxiliary signal
         num_repeat: number of repetitions
 
@@ -99,14 +98,12 @@ class Base(audobject.Object):
             bypass_prob: Union[float, observe.Base] = None,
             *,
             unit: str = 'seconds',
-            sampling_rate: int = None,
             preserve_level: Union[bool, observe.Base] = False,
             aux: Union[str, observe.Base, np.ndarray, 'Base'] = None,
             transform: 'Base' = None,
             num_repeat: int = None,
     ):
         self.unit = unit
-        self.sampling_rate = sampling_rate
         self.bypass_prob = bypass_prob
         self.preserve_level = preserve_level
         self.aux = aux
@@ -115,14 +112,17 @@ class Base(audobject.Object):
 
     def _call(
             self,
-            base: np.ndarray,
+            signal: np.ndarray,
             aux: np.ndarray = None,
+            *,
+            sampling_rate: int = None,
     ):  # pragma: no cover
         r"""Transform a signal.
 
         Args:
-            base: audio signal
+            signal: audio signal
             aux: auxiliary signal
+            sampling_rate: sampling rate of ``signal`` and ``aux`` in Hz
 
         Raises:
             NotImplementedError: raised if not overwritten in child class
@@ -130,8 +130,30 @@ class Base(audobject.Object):
         """
         raise NotImplementedError()
 
-    def __call__(self, base: np.ndarray) -> np.ndarray:
+    def __call__(
+            self,
+            signal: np.ndarray,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
+        r"""Apply transform to signal.
 
+        Args:
+            signal: signal to be transformed
+            sampling_rate: sampling rate in Hz
+
+        Returns:
+            augmented signal
+
+        Raises:
+            ValueError: if the signal shape
+                is not support
+                by chosen transform parameters
+            ValueError: if ``sampling_rate`` is ``None``,
+                but the transform requires a samling rate
+            RuntimeError: if the given sampling rate is incompatible
+                with the transform
+
+        """
         bypass_prob = observe.observe(self.bypass_prob)
         preserve_level = observe.observe(self.preserve_level)
         if (
@@ -139,19 +161,22 @@ class Base(audobject.Object):
                 or np.random.random_sample() >= bypass_prob
         ):
             # (sample) => (channel, samples)
-            ndim = base.ndim
-            base = np.atleast_2d(base)
+            ndim = signal.ndim
+            signal = np.atleast_2d(signal)
 
-            if base.dtype != DTYPE:
-                base = base.astype(DTYPE)
+            if signal.dtype != DTYPE:
+                signal = signal.astype(DTYPE)
 
             if preserve_level:
-                base_level = rms_db(base)
+                signal_level = rms_db(signal)
 
             num_repeat = observe.observe(self.num_repeat) or 1
             for _ in range(num_repeat):
                 if self.aux is None:
-                    base = self._call(base)
+                    signal = self._call(
+                        signal,
+                        sampling_rate=sampling_rate,
+                    )
                 else:
                     aux = observe.observe(self.aux)
 
@@ -162,35 +187,40 @@ class Base(audobject.Object):
                     # aux is signal generating transform
                     elif isinstance(aux, Base):
                         generator = aux
-                        channels, samples = base.shape
+                        channels, samples = signal.shape
                         aux = np.zeros((channels, samples), dtype=DTYPE)
                         aux = generator(aux)
 
                     if self.transform is not None:
-                        aux = self.transform(aux)
+                        aux = self.transform(aux, sampling_rate)
 
                     aux = np.atleast_2d(aux)
                     if aux.dtype != DTYPE:
                         aux = aux.astype(DTYPE)
-                    base = self._call(base, aux)
+                    signal = self._call(
+                        signal,
+                        aux,
+                        sampling_rate=sampling_rate,
+                    )
 
             if preserve_level:
-                mix_level = rms_db(base)
-                gain = from_db(base_level - mix_level)
-                base = gain * base
+                mix_level = rms_db(signal)
+                gain = from_db(signal_level - mix_level)
+                signal = gain * signal
 
-            if ndim == 1 and base.shape[0] > 0 and base.ndim > 1:
+            if ndim == 1 and signal.shape[0] > 0 and signal.ndim > 1:
                 # (channel, sample) => (sample)
-                base = base.squeeze(axis=0)
+                signal = signal.squeeze(axis=0)
 
-            if base.dtype != DTYPE:
-                base = base.astype(DTYPE)
+            if signal.dtype != DTYPE:
+                signal = signal.astype(DTYPE)
 
-        return base
+        return signal
 
     def to_samples(
             self,
             value: typing.Union[int, float, observe.Base, Time],
+            sampling_rate: int = None,
             *,
             length: int = None,
             allow_negative=True,
@@ -198,7 +228,7 @@ class Base(audobject.Object):
         r"""Convert duration value to samples."""
         return to_samples(
             value,
-            sampling_rate=self.sampling_rate,
+            sampling_rate=sampling_rate,
             unit=self.unit,
             length=length,
             allow_negative=allow_negative,
@@ -212,17 +242,15 @@ class AMRNB(Base):
     A lossy format used in 3rd generation mobile telephony
     and defined in 3GPP TS 26.071 et al.
 
-    .. note:: The input signal is treated as narrow-band,
-        and a sampling rate of 8000 Hz is assumed.
-
-    .. note:: Supported bit rates:
-        4750, 5150, 5900, 6700, 7400, 7950, 10200, 12200.
-        Any positive bit rate is allowed,
-        but it will be internally converted
-        to the closest among those listed above.
+    The input signal needs to have a sampling rate of 8000 Hz.
 
     Args:
-        bit_rate: target bit rate of the encoded stream (in bits per second)
+        bit_rate: target bit rate of the encoded stream in bits per second.
+            Supported bit rates:
+            4750, 5150, 5900, 6700, 7400, 7950, 10200, 12200.
+            Any positive bit rate is allowed,
+            but will be converted
+            to the closest supported one.
         dtx: enable discontinuous transmission (DTX)
         preserve_level: if ``True``
             the root mean square value
@@ -232,9 +260,10 @@ class AMRNB(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> base = np.array([0.5, 0.5, 0.5, 0.5])
-        >>> base = AMRNB(7400)(base)
-        >>> np.max(base)
+        >>> signal = np.array([0.5, 0.5, 0.5, 0.5])
+        >>> transform = AMRNB(7400)
+        >>> augmented_signal = transform(signal, 8000)
+        >>> np.max(augmented_signal)
         0.017089844
 
     """
@@ -252,9 +281,18 @@ class AMRNB(Base):
         )
         self.bit_rate = bit_rate
         self.dtx = dtx
-        self.sampling_rate = 8000
 
-    def _call(self, base: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            signal: np.ndarray,
+            *,
+            sampling_rate: int,
+    ) -> np.ndarray:
+        if sampling_rate != 8000:
+            raise RuntimeError(
+                "AMRNB requires a sampling rate of 8000 Hz. "
+                f"You have {sampling_rate} Hz."
+            )
         bit_rate = observe.observe(self.bit_rate)
         dtx = observe.observe(self.dtx)
 
@@ -263,7 +301,7 @@ class AMRNB(Base):
         with tempfile.TemporaryDirectory() as tmp:
             infile = audeer.path(tmp, 'infile.wav')
             outfile = audeer.path(tmp, 'outfile.amr')
-            audiofile.write(infile, base, self.sampling_rate)
+            audiofile.write(infile, signal, sampling_rate)
             cmd = [
                 'ffmpeg',
                 '-i', infile,
@@ -272,16 +310,16 @@ class AMRNB(Base):
                 outfile,
             ]
             audiofile.core.utils.run(cmd)
-            base, _ = audiofile.read(
+            signal, _ = audiofile.read(
                 outfile,
                 always_2d=True,
-                dtype=str(base.dtype),
+                dtype=str(signal.dtype),
             )
-        return base
+        return signal
 
 
 class Append(Base):
-    r"""Append an auxiliary signal to the base signal.
+    r"""Append an auxiliary signal.
 
     Args:
         aux: auxiliary signal,
@@ -289,9 +327,9 @@ class Append(Base):
             or signal generating transform.
             If a transform is given
             it will be applied
-            to a signal with the same length
-            as the base signal
-            containing zeros
+            to an empty signal with the same shape
+            as the signal
+            the transform is applied to
         read_pos_aux: read position of auxiliary signal (see ``unit``)
         read_dur_aux: duration to read from auxiliary signal
             (see ``unit``).
@@ -307,9 +345,10 @@ class Append(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> base = np.array([1, 2, 3, 4])
+        >>> signal = np.array([1, 2, 3, 4])
         >>> aux = np.array([5, 6])
-        >>> Append(aux)(base)
+        >>> transform = Append(aux)
+        >>> transform(signal)
         array([1., 2., 3., 4., 5., 6.], dtype=float32)
 
     """
@@ -320,14 +359,12 @@ class Append(Base):
             read_pos_aux: Union[int, float, observe.Base, Time] = 0.0,
             read_dur_aux: Union[int, float, observe.Base, Time] = None,
             unit: str = 'seconds',
-            sampling_rate: int = None,
             transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             aux=aux,
-            sampling_rate=sampling_rate,
             unit=unit,
             transform=transform,
             preserve_level=preserve_level,
@@ -336,20 +373,34 @@ class Append(Base):
         self.read_pos_aux = read_pos_aux
         self.read_dur_aux = read_dur_aux or 0
 
-    def _call(self, base: np.ndarray, aux: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            signal: np.ndarray,
+            aux: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
         if self.read_pos_aux != 0:
-            read_pos_aux = self.to_samples(self.read_pos_aux)
+            read_pos_aux = self.to_samples(
+                self.read_pos_aux,
+                sampling_rate,
+                length=aux.shape[1],
+            )
         else:
             read_pos_aux = 0
         if self.read_dur_aux == 0:
             read_dur_aux = aux.shape[1] - read_pos_aux
         else:
-            read_dur_aux = self.to_samples(self.read_dur_aux)
-        base = np.concatenate(
-            [base, aux[:, read_pos_aux:read_pos_aux + read_dur_aux]],
+            read_dur_aux = self.to_samples(
+                self.read_dur_aux,
+                sampling_rate,
+                length=aux.shape[1],
+            )
+        signal = np.concatenate(
+            [signal, aux[:, read_pos_aux:read_pos_aux + read_dur_aux]],
             axis=1,
         )
-        return base
+        return signal
 
 
 class AppendValue(Base):
@@ -362,7 +413,6 @@ class AppendValue(Base):
         value: value to append
         unit: literal specifying the format of ``duration``
             (see :meth:`auglib.utils.to_samples`).
-        sampling_rate: sampling rate in Hz
         preserve_level: if ``True``
             the root mean square value
             of the augmented signal
@@ -371,8 +421,9 @@ class AppendValue(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> base = np.array([1, 2, 3, 4])
-        >>> AppendValue(2, 5, unit='samples')(base)
+        >>> signal = np.array([1, 2, 3, 4])
+        >>> transform = AppendValue(2, 5, unit='samples')
+        >>> transform(signal)
         array([1., 2., 3., 4., 5., 5.], dtype=float32)
 
     """
@@ -381,13 +432,11 @@ class AppendValue(Base):
             duration: Union[int, float, observe.Base, Time],
             value: Union[float, observe.Base] = 0,
             *,
-            sampling_rate: int = None,
             unit: str = 'seconds',
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            sampling_rate=sampling_rate,
             unit=unit,
             bypass_prob=bypass_prob,
             preserve_level=preserve_level,
@@ -395,12 +444,21 @@ class AppendValue(Base):
         self.duration = duration
         self.value = value
 
-    def _call(self, base: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            signal: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
         if self.duration != 0:
-            samples = self.to_samples(self.duration)
+            samples = self.to_samples(
+                self.duration,
+                sampling_rate,
+                length=signal.shape[1],
+            )
             aux = np.array([[self.value] * samples])
-            base = Append(aux)(base)
-        return base
+            signal = Append(aux)(signal)
+        return signal
 
 
 class BabbleNoise(Base):
@@ -425,10 +483,6 @@ class BabbleNoise(Base):
         gain_db: gain in decibels.
             Ignored if ``snr_db`` is not ``None``
         snr_db: signal-to-noise ratio in decibels
-        sampling_rate: sampling rate in Hz
-        unit: literal specifying the format of ``write_pos_base``,
-            ``read_pos_aux`` and ``read_dur_aux``
-            (see :meth:`auglib.utils.to_samples`)
         preserve_level: if ``True``
             the root mean square value
             of the augmented signal
@@ -438,10 +492,12 @@ class BabbleNoise(Base):
 
     Examples:
         >>> seed(1)
-        >>> base = np.array([0, 0, 0, 0])
+        >>> signal = np.array([0, 0, 0, 0])
         >>> speech = np.array([1, 0, 0])
-        >>> BabbleNoise([speech], num_speakers=2)(base)
+        >>> transform = BabbleNoise([speech], num_speakers=2)
+        >>> transform(signal)
         array([0. , 0.5, 0.5, 0. ], dtype=float32)
+
     """
     @audobject.init_decorator(
         resolvers={
@@ -455,14 +511,10 @@ class BabbleNoise(Base):
             num_speakers: Union[int, observe.Base] = 5,
             gain_db: Union[float, observe.Base] = 0.0,
             snr_db: Union[float, observe.Base] = None,
-            sampling_rate: int = 16000,
-            unit: str = 'seconds',
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            sampling_rate=sampling_rate,
-            unit=unit,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -471,10 +523,15 @@ class BabbleNoise(Base):
         self.gain_db = gain_db
         self.snr_db = snr_db
 
-    def _call(self, base: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            signal: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
         # First create signal containing babble noise
-        # by summing speech signalss
-        babble = np.zeros(base.shape, dtype=DTYPE)
+        # by summing speech signals
+        babble = np.zeros(signal.shape, dtype=DTYPE)
         num_repeat = observe.observe(self.num_speakers)
         transform = Mix(
             observe.List(self.speech, draw=True),
@@ -483,9 +540,10 @@ class BabbleNoise(Base):
             loop_aux=True,
             # Cycle the input signal
             transform=Shift(
-                observe.FloatUni(0, base.shape[1]),
+                observe.FloatUni(0, signal.shape[1]),
                 unit='samples',
             ),
+            unit='samples',
         )
         babble = transform(babble)
         # Mix the babble noise to aux signal
@@ -493,10 +551,11 @@ class BabbleNoise(Base):
             babble,
             gain_aux_db=self.gain_db,
             snr_db=self.snr_db,
+            unit='samples',
         )
-        base = transform(base)
+        signal = transform(signal)
 
-        return base
+        return signal
 
 
 class BandPass(Base):
@@ -509,7 +568,6 @@ class BandPass(Base):
         design: filter design,
             at the moment only ``'butter'`` is available
             corresponding to a Butterworth filter
-        sampling_rate: sampling rate in Hz
         preserve_level: if ``True``
             the root mean square value
             of the augmented signal
@@ -521,8 +579,9 @@ class BandPass(Base):
         ValueError: if ``design`` contains a non-supported value
 
     Examples:
-        >>> base = np.array([1, 2])
-        >>> BandPass(2000, 1000)(base)
+        >>> signal = np.array([1, 2])
+        >>> transform = BandPass(2000, 1000)
+        >>> transform(signal, 16000)
         array([0.16591068, 0.53136045], dtype=float32)
 
     """
@@ -533,12 +592,10 @@ class BandPass(Base):
             *,
             order: Union[int, observe.Base] = 1,
             design: str = 'butter',
-            sampling_rate: int = 16000,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            sampling_rate=sampling_rate,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -553,7 +610,14 @@ class BandPass(Base):
             )
         self.design = design
 
-    def _call(self, base: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            signal: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
+        if sampling_rate is None:
+            raise ValueError("sampling_rate is 'None', but required.")
         center = observe.observe(self.center)
         bandwidth = observe.observe(self.bandwidth)
         order = observe.observe(self.order)
@@ -564,10 +628,10 @@ class BandPass(Base):
                 order,
                 [lowcut, highcut],
                 btype='bandpass',
-                fs=self.sampling_rate,
+                fs=sampling_rate,
             )
-            base = scipy.signal.lfilter(b, a, base)
-        return base.astype(DTYPE)
+            signal = scipy.signal.lfilter(b, a, signal)
+        return signal.astype(DTYPE)
 
 
 class BandStop(Base):
@@ -580,7 +644,6 @@ class BandStop(Base):
         design: filter design,
             at the moment only ``'butter'`` is available
             corresponding to a Butterworth filter
-        sampling_rate: sampling rate in Hz
         preserve_level: if ``True``
             the root mean square value
             of the augmented signal
@@ -592,8 +655,9 @@ class BandStop(Base):
         ValueError: if ``design`` contains a non-supported value
 
     Examples:
-        >>> base = np.array([1, 2])
-        >>> BandStop(2000, 1000)(base)
+        >>> signal = np.array([1, 2])
+        >>> transform = BandStop(2000, 1000)
+        >>> transform(signal, 16000)
         array([0.83408934, 1.4686396 ], dtype=float32)
 
     """
@@ -604,12 +668,10 @@ class BandStop(Base):
             *,
             order: Union[int, observe.Base] = 1,
             design: str = 'butter',
-            sampling_rate: int = 16000,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            sampling_rate=sampling_rate,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -624,7 +686,14 @@ class BandStop(Base):
             )
         self.design = design
 
-    def _call(self, base: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            signal: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
+        if sampling_rate is None:
+            raise ValueError("sampling_rate is 'None', but required.")
         center = observe.observe(self.center)
         bandwidth = observe.observe(self.bandwidth)
         order = observe.observe(self.order)
@@ -635,10 +704,10 @@ class BandStop(Base):
                 order,
                 [lowcut, highcut],
                 btype='bandstop',
-                fs=self.sampling_rate,
+                fs=sampling_rate,
             )
-            base = scipy.signal.lfilter(b, a, base)
-        return base.astype(DTYPE)
+            signal = scipy.signal.lfilter(b, a, signal)
+        return signal.astype(DTYPE)
 
 
 class Clip(Base):
@@ -668,8 +737,9 @@ class Clip(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> base = np.array([1, 2, -3, 4])
-        >>> Clip(threshold=to_db(2))(base)
+        >>> signal = np.array([1, 2, -3, 4])
+        >>> transform = Clip(threshold=to_db(2))
+        >>> transform(signal)
         array([ 1.,  2., -2.,  2.], dtype=float32)
 
     """
@@ -690,26 +760,30 @@ class Clip(Base):
         self.soft = soft
         self.normalize = normalize
 
-    def _call(self, base: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            signal: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
         threshold = observe.observe(self.threshold)
         soft = observe.observe(self.soft)
         normalize = observe.observe(self.normalize)
 
         # Clip
         threshold = from_db(threshold)
-        base = np.clip(base, -threshold, threshold)
+        signal = np.clip(signal, -threshold, threshold)
 
         # Cubic warping for soft clip
         if soft:
             beta = (1 / threshold) ** 2
             k = 3 * threshold / (3 * threshold - beta * threshold ** 3)
-            base = k * (base - beta * (base ** 3 / 3))
+            signal = k * (signal - beta * (signal ** 3 / 3))
 
         if normalize:
-            base = NormalizeByPeak(peak_db=0)(base)
+            signal = NormalizeByPeak(peak_db=0)(signal)
 
-        return base
-
+        return signal
 
 
 class ClipByRatio(Base):
@@ -745,8 +819,9 @@ class ClipByRatio(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> base = np.array([1, 2, 3, 4])
-        >>> ClipByRatio(0.25)(base).round(4)
+        >>> signal = np.array([1, 2, 3, 4])
+        >>> transform = ClipByRatio(0.25)
+        >>> transform(signal).round(4)
         array([1., 2., 3., 3.], dtype=float32)
 
     """
@@ -767,31 +842,36 @@ class ClipByRatio(Base):
         self.soft = soft
         self.normalize = normalize
 
-    def _call(self, base: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            signal: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
         ratio = observe.observe(self.ratio)
         soft = observe.observe(self.soft)
         normalize = observe.observe(self.normalize)
 
         if ratio == 0:
-            return base
+            return signal
 
         # Find threshold by ordering peak levels
         # and selecting based on the ratio
-        samples_to_clip = int(ratio * base.size)
-        temp = np.sort(abs(base))
-        idx = min(samples_to_clip + 1, base.size)
+        samples_to_clip = int(ratio * signal.size)
+        temp = np.sort(abs(signal))
+        idx = min(samples_to_clip + 1, signal.size)
         clip_level = temp[0, -idx]
 
         if clip_level == 0:
-            return base
+            return signal
 
-        base = Clip(
+        signal = Clip(
             threshold=to_db(clip_level),
             soft=soft,
             normalize=normalize,
-        )(base)
+        )(signal)
 
-        return base
+        return signal
 
 
 class Compose(Base):
@@ -807,8 +887,9 @@ class Compose(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> base = np.array([0.5, -0.5, 0.5, -0.5])
-        >>> Compose([GainStage(12), Clip()])(base)
+        >>> signal = np.array([0.5, -0.5, 0.5, -0.5])
+        >>> transform = Compose([GainStage(12), Clip()])
+        >>> transform(signal)
         array([ 1., -1.,  1., -1.], dtype=float32)
 
     """
@@ -825,10 +906,15 @@ class Compose(Base):
         )
         self.transforms = transforms
 
-    def _call(self, base: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            signal: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
         for transform in self.transforms:
-            base = transform(base)
-        return base
+            signal = transform(signal, sampling_rate)
+        return signal
 
 
 class CompressDynamicRange(Base):
@@ -885,7 +971,6 @@ class CompressDynamicRange(Base):
         release_time: release time in seconds
         makeup_db: optional amplification gain
         clip: clip signal
-        sampling_rate: sampling rate in Hz
         preserve_level: if ``True``
             the root mean square value
             of the augmented signal
@@ -894,8 +979,9 @@ class CompressDynamicRange(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> base = np.array([0.5, 0.5], dtype='float32')
-        >>> CompressDynamicRange(-6, 0.5)(base).round(4)
+        >>> signal = np.array([0.5, 0.5], dtype='float32')
+        >>> transform = CompressDynamicRange(-6, 0.5)
+        >>> transform(signal, 16000).round(4)
         array([0.5004, 0.5008], dtype=float32)
 
     """
@@ -908,12 +994,10 @@ class CompressDynamicRange(Base):
             knee_radius_db: Union[float, observe.Base] = 4.0,
             makeup_db: Union[None, float, observe.Base] = 0.0,
             clip: Union[bool, observe.Base] = False,
-            sampling_rate: int = 16000,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            sampling_rate=sampling_rate,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -925,14 +1009,21 @@ class CompressDynamicRange(Base):
         self.makeup_db = makeup_db
         self.clip = clip
 
-    def _call(self, base: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            signal: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
+        if sampling_rate is None:
+            raise ValueError("sampling_rate is 'None', but required.")
 
         threshold_db = observe.observe(self.threshold_db)
         ratio = observe.observe(self.ratio)
         attack_time = observe.observe(self.attack_time)
         release_time = observe.observe(self.release_time)
         knee_radius_db = observe.observe(self.knee_radius_db)
-        peak_db = to_db(get_peak(base))
+        peak_db = to_db(get_peak(signal))
         if self.makeup_db is None:
             makeup_db = None
             normalize_db = peak_db
@@ -947,7 +1038,7 @@ class CompressDynamicRange(Base):
         # for clip=False
         if clip is False:
             if peak_db > 0:
-                base = NormalizeByPeak(peak_db=0)(base)
+                signal = NormalizeByPeak(peak_db=0)(signal)
                 threshold_db = threshold_db - peak_db
                 if normalize_db is None:
                     normalize_db = peak_db
@@ -963,23 +1054,23 @@ class CompressDynamicRange(Base):
                 f'{attack_time},{release_time}',
                 f'{knee_radius_db}:{threshold_db},{ratio * threshold_db}',
             ]
-            audiofile.write(infile, base, self.sampling_rate)
+            audiofile.write(infile, signal, sampling_rate)
             audiofile.core.utils.run(cmd)
-            base, _ = audiofile.read(
+            signal, _ = audiofile.read(
                 outfile,
                 always_2d=True,
-                dtype=str(base.dtype),
+                dtype=str(signal.dtype),
             )
 
         if normalize_db is not None:
-            base = NormalizeByPeak(peak_db=normalize_db)(base)
+            signal = NormalizeByPeak(peak_db=normalize_db)(signal)
         if makeup_db is not None:
-            base = from_db(makeup_db) * base
+            signal = from_db(makeup_db) * signal
 
         if clip:
-            base = Clip()(base)
+            signal = Clip()(signal)
 
-        return base
+        return signal
 
 
 class Fade(Base):
@@ -1060,8 +1151,9 @@ class Fade(Base):
             are greater or equal to 0
 
     Examples:
-        >>> base = np.array([1, 1, 1, 1, 1, 1])
-        >>> Fade(in_dur=1, out_dur=1, unit='samples')(base)
+        >>> signal = np.array([1, 1, 1, 1, 1, 1])
+        >>> transform = Fade(in_dur=1, out_dur=1, unit='samples')
+        >>> transform(signal)
         array([0., 1., 1., 1., 1., 0.], dtype=float32)
 
     """
@@ -1074,13 +1166,11 @@ class Fade(Base):
             out_shape: str = 'tukey',
             in_db: float = -120,
             out_db: float = -120,
-            sampling_rate: int = 16000,
             unit: str = 'seconds',
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            sampling_rate=sampling_rate,
             unit=unit,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
@@ -1105,7 +1195,12 @@ class Fade(Base):
         self.in_db = in_db
         self.out_db = out_db
 
-    def _call(self, base: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            signal: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
 
         in_shape = observe.observe(self.in_shape)
         out_shape = observe.observe(self.out_shape)
@@ -1113,11 +1208,13 @@ class Fade(Base):
         out_db = observe.observe(self.out_db)
         in_samples = self.to_samples(
             observe.observe(self.in_dur),
-            length=base.shape[1],
+            sampling_rate,
+            length=signal.shape[1],
         )
         out_samples = self.to_samples(
             observe.observe(self.out_dur),
-            length=base.shape[1],
+            sampling_rate,
+            length=signal.shape[1],
         )
 
         fade_in = audmath.window(in_samples, shape=in_shape, half='left')
@@ -1135,9 +1232,9 @@ class Fade(Base):
 
         fade_in_win = np.concatenate(
             [
-                fade_in[:base.shape[1]],
+                fade_in[:signal.shape[1]],
                 np.ones(
-                    max(0, base.shape[1] - in_samples),
+                    max(0, signal.shape[1] - in_samples),
                     dtype=DTYPE,
                 ),
             ]
@@ -1145,15 +1242,15 @@ class Fade(Base):
         fade_out_win = np.concatenate(
             [
                 np.ones(
-                    max(0, base.shape[1] - out_samples),
+                    max(0, signal.shape[1] - out_samples),
                     dtype=DTYPE,
                 ),
-                fade_out[-base.shape[1]:],
+                fade_out[-signal.shape[1]:],
             ]
         ).astype(DTYPE)
-        base = fade_in_win * fade_out_win * base
+        signal = fade_in_win * fade_out_win * signal
 
-        return base
+        return signal
 
 
 class FFTConvolve(Base):
@@ -1167,9 +1264,8 @@ class FFTConvolve(Base):
             or signal generating transform.
             If a transform is given
             it will be applied
-            to a signal with the same length
+            to an empty signal with the same length
             as the base signal
-            containing zeros
         keep_tail: keep the tail of the convolution result
             (extending the length of the signal),
             or to cut it out
@@ -1183,11 +1279,13 @@ class FFTConvolve(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> base = np.array([1, 2, 3, 4])
+        >>> signal = np.array([1, 2, 3, 4])
         >>> aux = np.array([0, 1])
-        >>> np.abs(FFTConvolve(aux)(base).round(4))
+        >>> transform = FFTConvolve(aux)
+        >>> np.abs(transform(signal).round(4))
         array([0.,  1.,  2.,  3.,  4.], dtype=float32)
-        >>> np.abs(FFTConvolve(aux, keep_tail=False)(base).round(4))
+        >>> transform = FFTConvolve(aux, keep_tail=False)
+        >>> np.abs(transform(signal).round(4))
         array([0., 1., 2., 3.], dtype=float32)
 
     """
@@ -1208,13 +1306,19 @@ class FFTConvolve(Base):
         )
         self.keep_tail = keep_tail
 
-    def _call(self, base: np.ndarray, aux: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            signal: np.ndarray,
+            aux: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
         keep_tail = observe.observe(self.keep_tail)
-        samples = base.shape[1]
-        base = scipy.signal.fftconvolve(aux, base, mode='full')
+        samples = signal.shape[1]
+        signal = scipy.signal.fftconvolve(aux, signal, mode='full')
         if not keep_tail:
-            base = base[:, :samples]
-        return base
+            signal = signal[:, :samples]
+        return signal
 
 
 class Function(Base):
@@ -1258,16 +1362,19 @@ class Function(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> base = np.array([1, 2, 3, 4])
+        >>> signal = np.array([1, 2, 3, 4])
         >>> def plus_c(x, sr, c):
         ...     return x + c
-        >>> Function(plus_c, {'c': 1})(base)
+        >>> transform = Function(plus_c, {'c': 1})
+        >>> transform(signal)
         array([2., 3., 4., 5.], dtype=float32)
         >>> def halve(x, sr):
         ...     return x[:, ::2]
-        >>> Function(halve)(base)
+        >>> transform = Function(halve)
+        >>> transform(signal)
         array([1., 3.], dtype=float32)
-        >>> Function(lambda x, sr: x * 2)(base)
+        >>> transform = Function(lambda x, sr: x * 2)
+        >>> transform(signal)
         array([2., 4., 6., 8.], dtype=float32)
 
     """
@@ -1281,19 +1388,22 @@ class Function(Base):
             function: Callable[..., np.ndarray],
             function_args: typing.Dict = None,
             *,
-            sampling_rate: int = 16000,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            sampling_rate=sampling_rate,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
         self.function = function
         self.function_args = function_args
 
-    def _call(self, base: np.ndarray):
+    def _call(
+            self,
+            signal: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ):
 
         # evaluate function arguments
         args = {}
@@ -1301,9 +1411,9 @@ class Function(Base):
             for key, value in self.function_args.items():
                 args[key] = observe.observe(value)
 
-        base = self.function(base, self.sampling_rate, **args)
+        signal = self.function(signal, sampling_rate, **args)
 
-        return base
+        return signal
 
 
 class GainStage(Base):
@@ -1329,8 +1439,9 @@ class GainStage(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> base = np.array([1, 2, 3, 4])
-        >>> GainStage(to_db(2))(base)
+        >>> signal = np.array([1, 2, 3, 4])
+        >>> transform = GainStage(to_db(2))
+        >>> transform(signal)
         array([2., 4., 6., 8.], dtype=float32)
 
     """
@@ -1351,26 +1462,31 @@ class GainStage(Base):
         self.max_peak_db = max_peak_db
         self.clip = clip
 
-    def _call(self, base: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            signal: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
         gain_db = observe.observe(self.gain_db)
         clip = observe.observe(self.clip)
         max_peak_db = observe.observe(self.max_peak_db)
 
         if max_peak_db is not None:
-            current_peak_db = to_db(get_peak(base))
+            current_peak_db = to_db(get_peak(signal))
             new_peak_db = gain_db + current_peak_db
             if new_peak_db > max_peak_db:
                 gain_db = max_peak_db - current_peak_db
-            base = GainStage(gain_db)(base)
+            signal = GainStage(gain_db)(signal)
 
         else:
             gain = from_db(gain_db)
-            base = gain * base
+            signal = gain * signal
 
         if clip:
-            base = Clip(threshold=0)(base)
+            signal = Clip(threshold=0)(signal)
 
-        return base
+        return signal
 
 
 class HighPass(Base):
@@ -1382,7 +1498,6 @@ class HighPass(Base):
         design: filter design,
             at the moment only ``'butter'`` is available
             corresponding to a Butterworth filter
-        sampling_rate: sampling rate in Hz
         preserve_level: if ``True``
             the root mean square value
             of the augmented signal
@@ -1394,8 +1509,9 @@ class HighPass(Base):
         ValueError: if ``design`` contains a non-supported value
 
     Examples:
-        >>> base = np.array([1, 2])
-        >>> HighPass(7000, order=4)(base)
+        >>> signal = np.array([1, 2])
+        >>> transform = HighPass(7000, order=4)
+        >>> transform(signal, 16000)
         array([ 0.0009335 , -0.00464588], dtype=float32)
 
     """
@@ -1405,12 +1521,10 @@ class HighPass(Base):
             *,
             order: Union[int, observe.Base] = 1,
             design: str = 'butter',
-            sampling_rate: int = 16000,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            sampling_rate=sampling_rate,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -1424,7 +1538,14 @@ class HighPass(Base):
             )
         self.design = design
 
-    def _call(self, base: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            signal: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
+        if sampling_rate is None:
+            raise ValueError("sampling_rate is 'None', but required.")
         cutoff = observe.observe(self.cutoff)
         order = observe.observe(self.order)
         if self.design == 'butter':
@@ -1432,11 +1553,11 @@ class HighPass(Base):
                 order,
                 cutoff,
                 btype='highpass',
-                fs=self.sampling_rate,
+                fs=sampling_rate,
             )
-            base = scipy.signal.lfilter(b, a, base)
+            signal = scipy.signal.lfilter(b, a, signal)
 
-        return base.astype(DTYPE)
+        return signal.astype(DTYPE)
 
 
 class LowPass(Base):
@@ -1448,7 +1569,6 @@ class LowPass(Base):
         design: filter design,
             at the moment only ``'butter'`` is available
             corresponding to a Butterworth filter
-        sampling_rate: sampling rate in Hz
         preserve_level: if ``True``
             the root mean square value
             of the augmented signal
@@ -1460,8 +1580,9 @@ class LowPass(Base):
         ValueError: if ``design`` contains a non-supported value
 
     Examples:
-        >>> base = np.array([1, 2])
-        >>> LowPass(100)(base)
+        >>> signal = np.array([1, 2])
+        >>> transform = LowPass(100)
+        >>> transform(signal, 16000)
         array([0.01925927, 0.07629526], dtype=float32)
 
     """
@@ -1471,12 +1592,10 @@ class LowPass(Base):
             *,
             order: Union[int, observe.Base] = 1,
             design: str = 'butter',
-            sampling_rate: int = 16000,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            sampling_rate=sampling_rate,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -1490,7 +1609,14 @@ class LowPass(Base):
             )
         self.design = design
 
-    def _call(self, base: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            signal: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
+        if sampling_rate is None:
+            raise ValueError("sampling_rate is 'None', but required.")
         cutoff = observe.observe(self.cutoff)
         order = observe.observe(self.order)
         if self.design == 'butter':
@@ -1498,11 +1624,11 @@ class LowPass(Base):
                 order,
                 cutoff,
                 btype='lowpass',
-                fs=self.sampling_rate,
+                fs=sampling_rate,
             )
-            base = scipy.signal.lfilter(b, a, base)
+            signal = scipy.signal.lfilter(b, a, signal)
 
-        return base.astype(DTYPE)
+        return signal.astype(DTYPE)
 
 
 class Mask(Base):
@@ -1541,13 +1667,13 @@ class Mask(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> base = np.array([1, 1, 1, 1, 1, 1])
+        >>> signal = np.array([1, 1, 1, 1, 1, 1])
         >>> Mask(
         ...     GainStage(to_db(2)),
         ...     start_pos=2,
         ...     duration=3,
         ...     unit='samples',
-        ... )(base)
+        ... )(signal)
         array([2., 2., 1., 1., 1., 2.], dtype=float32)
         >>> Mask(
         ...     GainStage(to_db(2)),
@@ -1555,19 +1681,19 @@ class Mask(Base):
         ...     duration=3,
         ...     unit='samples',
         ...     invert=True,
-        ... )(base)
+        ... )(signal)
         array([1., 1., 2., 2., 2., 1.], dtype=float32)
         >>> Mask(
         ...     GainStage(to_db(2)),
         ...     step=2,
         ...     unit='samples',
-        ... )(base)
+        ... )(signal)
         array([1., 1., 2., 2., 1., 1.], dtype=float32)
         >>> Mask(
         ...     GainStage(to_db(2)),
         ...     step=(2, 1),
         ...     unit='samples',
-        ... )(base)
+        ... )(signal)
         array([1., 1., 2., 1., 1., 2.], dtype=float32)
 
     """  # noqa: E501
@@ -1590,7 +1716,6 @@ class Mask(Base):
                 ],
             ] = None,
             invert: typing.Union[bool, observe.Base] = False,
-            sampling_rate: int = 16000,
             unit: str = 'seconds',
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: typing.Union[float, observe.Base] = None,
@@ -1602,7 +1727,6 @@ class Mask(Base):
             step = tuple(step)
 
         super().__init__(
-            sampling_rate=sampling_rate,
             unit=unit,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
@@ -1613,16 +1737,22 @@ class Mask(Base):
         self.step = step
         self.invert = invert
 
-    def _call(self, base: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            signal: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
 
         # store original signal, then apply transformation
-        org_signal = base.copy()
-        base = self.transform(base)
-        num_samples = min(org_signal.shape[1], base.shape[1])
+        org_signal = signal.copy()
+        signal = self.transform(signal, sampling_rate)
+        num_samples = min(org_signal.shape[1], signal.shape[1])
 
         # figure start and end position of mask
         start_pos = self.to_samples(
             self.start_pos,
+            sampling_rate,
             length=num_samples,
         )
         if self.duration is None:
@@ -1630,12 +1760,13 @@ class Mask(Base):
         else:
             end_pos = start_pos + self.to_samples(
                 self.duration,
+                sampling_rate,
                 length=num_samples,
             )
             end_pos = min(end_pos, num_samples)
 
         # create mask
-        mask = np.zeros((base.shape[0], num_samples), dtype=bool)
+        mask = np.zeros((signal.shape[0], num_samples), dtype=bool)
         mask[:, :start_pos] = True
         mask[:, end_pos:] = True
 
@@ -1653,6 +1784,7 @@ class Mask(Base):
                     step = self.step[1]
                 step = self.to_samples(
                     step,
+                    sampling_rate,
                     length=num_samples,
                 )
                 step = min(step, end_pos - start_pos)
@@ -1668,15 +1800,15 @@ class Mask(Base):
         # invert = True -> keep augmentation within mask
         if not observe.observe(self.invert):
             mask = ~mask
-        base[:, :num_samples][mask] = org_signal[:, :num_samples][mask]
+        signal[:, :num_samples][mask] = org_signal[:, :num_samples][mask]
 
-        return base
+        return signal
 
 
 class Mix(Base):
     r"""Mix two audio signals.
 
-    Mix a base and auxiliary signal
+    Mix a base signal and auxiliary signal
     which may differ in length,
     but must have the same sampling rate.
     Individual gains can be set for both signals
@@ -1750,9 +1882,10 @@ class Mix(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> base = np.array([1, 2, 3, 4])
+        >>> signal = np.array([1, 2, 3, 4])
         >>> aux = np.array([1, 1])
-        >>> Mix(aux, num_repeat=2)(base)
+        >>> transform = Mix(aux, num_repeat=2, unit='samples')
+        >>> transform(signal)
         array([3., 4., 3., 4.], dtype=float32)
 
     """
@@ -1770,7 +1903,6 @@ class Mix(Base):
             loop_aux: Union[bool, observe.Base] = False,
             extend_base: Union[bool, observe.Base] = False,
             num_repeat: Union[int, observe.Base] = 1,
-            sampling_rate: int = 16000,
             unit: str = 'seconds',
             transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
@@ -1780,7 +1912,6 @@ class Mix(Base):
         super().__init__(
             aux=aux,
             num_repeat=num_repeat,
-            sampling_rate=sampling_rate,
             unit=unit,
             transform=transform,
             preserve_level=preserve_level,
@@ -1796,17 +1927,26 @@ class Mix(Base):
         self.loop_aux = loop_aux
         self.extend_base = extend_base
 
-    def _call(self, base: np.ndarray, aux: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            signal: np.ndarray,
+            aux: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
         write_pos_base = self.to_samples(
             self.write_pos_base,
-            length=base.shape[1],
+            sampling_rate,
+            length=signal.shape[1],
         )
         read_pos_aux = self.to_samples(
             self.read_pos_aux,
+            sampling_rate,
             length=aux.shape[1],
         )
         read_dur_aux = self.to_samples(
             self.read_dur_aux,
+            sampling_rate,
             length=aux.shape[1],
         )
         gain_base_db = observe.observe(self.gain_base_db)
@@ -1816,16 +1956,16 @@ class Mix(Base):
 
         channels = 1  # only mono supported at the moment
 
-        length_base = base.shape[1]
+        length_base = signal.shape[1]
         length_aux = aux.shape[1]
 
         if clip_mix:
             clip = Clip()
 
         # Apply gain to base signal
-        base = from_db(gain_base_db) * base
+        signal = from_db(gain_base_db) * signal
         if clip_mix:
-            base = clip(base)
+            signal = clip(signal)
 
         # If read_dur_aux was `None` or `0`
         # we set read_dur_aux until the end of the signal
@@ -1842,7 +1982,7 @@ class Mix(Base):
                     (channels, end_pos_base - length_base),
                     dtype=DTYPE,
                 )
-                base = np.concatenate([base, zeros], axis=1)
+                signal = np.concatenate([signal, zeros], axis=1)
             else:
                 end_pos_base = length_base
         elif loop_aux:
@@ -1875,19 +2015,19 @@ class Mix(Base):
             rms_start_aux = 0
             rms_end_aux = min([length_base - write_pos_base, end_pos])
 
-            base_db = rms_db(base[:, rms_start_base:rms_end_base])
+            base_db = rms_db(signal[:, rms_start_base:rms_end_base])
             aux_db = rms_db(aux[:, rms_start_aux:rms_end_aux])
             gain_aux_db = get_noise_gain_from_snr(base_db, aux_db, snr_db)
         else:
             gain_aux_db = observe.observe(self.gain_aux_db)
 
-        base[:, write_pos_base:write_pos_base + end_pos] += (
+        signal[:, write_pos_base:write_pos_base + end_pos] += (
             from_db(gain_aux_db) * aux[:, :end_pos]
         )
         if clip_mix:
-            base = clip(base)
+            signal = clip(signal)
 
-        return base
+        return signal
 
 
 class NormalizeByPeak(Base):
@@ -1904,10 +2044,12 @@ class NormalizeByPeak(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> base = np.array([0.5, -0.5, 0.5, -0.5])
-        >>> NormalizeByPeak()(base)
+        >>> signal = np.array([0.5, -0.5, 0.5, -0.5])
+        >>> transform = NormalizeByPeak()
+        >>> transform(signal)
         array([ 1., -1.,  1., -1.], dtype=float32)
-        >>> NormalizeByPeak(peak_db=-3)(base).round(4)
+        >>> transform = NormalizeByPeak(peak_db=-3)
+        >>> transform(signal).round(4)
         array([ 0.7079, -0.7079,  0.7079, -0.7079], dtype=float32)
 
     """
@@ -1926,18 +2068,23 @@ class NormalizeByPeak(Base):
         self.peak_db = peak_db
         self.clip = clip
 
-    def _call(self, base: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            signal: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
         peak_db = observe.observe(self.peak_db)
         clip = observe.observe(self.clip)
-        current_peak = get_peak(base)
+        current_peak = get_peak(signal)
 
         if current_peak == 0:
-            return base
+            return signal
 
         gain_db = peak_db - to_db(current_peak)
-        base = GainStage(gain_db, clip=clip)(base)
+        signal = GainStage(gain_db, clip=clip)(signal)
 
-        return base
+        return signal
 
 
 class PinkNoise(Base):
@@ -1956,8 +2103,8 @@ class PinkNoise(Base):
 
     Examples:
         >>> seed(0)
-        >>> base = np.array([0, 0, 0, 0])
-        >>> PinkNoise()(base).round(4)
+        >>> signal = np.array([0, 0, 0, 0])
+        >>> PinkNoise()(signal).round(4)
         array([ 0.4376, -1.    , -0.3993,  0.9617], dtype=float32)
 
     """
@@ -1976,7 +2123,12 @@ class PinkNoise(Base):
         self.gain_db = gain_db
         self.snr_db = snr_db
 
-    def _call(self, base: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            base: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
 
         noise = self._pink_noise(base.shape[1])
         noise = NormalizeByPeak()(noise)
@@ -2021,7 +2173,7 @@ class PinkNoise(Base):
 
 
 class Prepend(Base):
-    r"""Prepend an auxiliary signal to the base signal.
+    r"""Prepend an auxiliary signal.
 
     Args:
         aux: auxiliary signal,
@@ -2029,9 +2181,9 @@ class Prepend(Base):
             or signal generating transform.
             If a transform is given
             it will be applied
-            to a signal with the same length
-            as the base signal
-            containing zeros
+            to an empty signal with the same length
+            as the signal
+            the transform is applied to
         read_pos_aux: read position of auxiliary signal
             (see ``unit``)
         read_dur_aux: duration to read from auxiliary signal
@@ -2049,9 +2201,10 @@ class Prepend(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> base = np.array([1, 2, 3, 4])
+        >>> signal = np.array([1, 2, 3, 4])
         >>> aux = np.array([5, 6])
-        >>> Prepend(aux)(base)
+        >>> transform = Prepend(aux)
+        >>> transform(signal)
         array([5., 6., 1., 2., 3., 4.], dtype=float32)
 
     """
@@ -2061,7 +2214,6 @@ class Prepend(Base):
             *,
             read_pos_aux: Union[int, float, observe.Base, Time] = 0.0,
             read_dur_aux: Union[int, float, observe.Base, Time] = None,
-            sampling_rate: int = 16000,
             unit: str = 'seconds',
             transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
@@ -2069,7 +2221,6 @@ class Prepend(Base):
     ):
         super().__init__(
             aux=aux,
-            sampling_rate=sampling_rate,
             unit=unit,
             transform=transform,
             preserve_level=preserve_level,
@@ -2078,24 +2229,38 @@ class Prepend(Base):
         self.read_pos_aux = read_pos_aux
         self.read_dur_aux = read_dur_aux or 0
 
-    def _call(self, base: np.ndarray, aux: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            signal: np.ndarray,
+            aux: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
         if self.read_pos_aux != 0:
-            read_pos_aux = self.to_samples(self.read_pos_aux)
+            read_pos_aux = self.to_samples(
+                self.read_pos_aux,
+                sampling_rate,
+                length=aux.shape[1],
+            )
         else:
             read_pos_aux = 0
         if self.read_dur_aux == 0:
             read_dur_aux = aux.shape[1] - read_pos_aux
         else:
-            read_dur_aux = self.to_samples(self.read_dur_aux)
-        base = np.concatenate(
-            [aux[:, read_pos_aux:read_pos_aux + read_dur_aux], base],
+            read_dur_aux = self.to_samples(
+                self.read_dur_aux,
+                sampling_rate,
+                length=aux.shape[1],
+            )
+        signal = np.concatenate(
+            [aux[:, read_pos_aux:read_pos_aux + read_dur_aux], signal],
             axis=1,
         )
-        return base
+        return signal
 
 
 class PrependValue(Base):
-    r"""Prepend base signal with a constant value.
+    r"""Prepend signal with a constant value.
 
     Args:
         duration: duration of signal with constant value
@@ -2112,8 +2277,9 @@ class PrependValue(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> base = np.array([1., 2., 3., 4.])
-        >>> PrependValue(2, 5, unit='samples')(base)
+        >>> signal = np.array([1., 2., 3., 4.])
+        >>> transform = PrependValue(2, 5, unit='samples')
+        >>> transform(signal)
         array([5., 5., 1., 2., 3., 4.], dtype=float32)
 
     """
@@ -2122,13 +2288,11 @@ class PrependValue(Base):
             duration: Union[int, float, observe.Base, Time],
             value: Union[float, observe.Base] = 0,
             *,
-            sampling_rate: int = 16000,
             unit: str = 'seconds',
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            sampling_rate=sampling_rate,
             unit=unit,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
@@ -2136,12 +2300,21 @@ class PrependValue(Base):
         self.duration = duration
         self.value = value
 
-    def _call(self, base: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            signal: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
         if self.duration != 0:
-            samples = self.to_samples(self.duration)
+            samples = self.to_samples(
+                self.duration,
+                sampling_rate,
+                length=signal.shape[1],
+            )
             aux = np.ones(samples, dtype=DTYPE) * self.value
-            base = Prepend(aux)(base)
-        return base
+            signal = Prepend(aux)(signal)
+        return signal
 
 
 class Resample(Base):
@@ -2152,7 +2325,6 @@ class Resample(Base):
 
     Args:
         target_rate: target rate in Hz
-        sampling_rate: current sampling rate in Hz
         preserve_level: if ``True``
             the root mean square value
             of the augmented signal
@@ -2161,8 +2333,9 @@ class Resample(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> base = np.array([0., 0., 0., 0.])
-        >>> Resample(8000, sampling_rate=16000)(base)
+        >>> signal = np.array([0., 0., 0., 0.])
+        >>> transform = Resample(8000)
+        >>> transform(signal, 16000)
         array([0., 0.], dtype=float32)
 
     """
@@ -2170,13 +2343,11 @@ class Resample(Base):
             self,
             target_rate: typing.Union[int, observe.List],
             *,
-            sampling_rate: int = 16000,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: typing.Union[float, observe.Base] = None,
             **kwargs,
     ):
         super().__init__(
-            sampling_rate=sampling_rate,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -2190,19 +2361,23 @@ class Resample(Base):
                 stacklevel=2,
             )
 
-    def _call(self, base: np.ndarray) -> np.ndarray:
-
-        original_rate = self.sampling_rate
+    def _call(
+            self,
+            signal: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
+        if sampling_rate is None:
+            raise ValueError("sampling_rate is 'None', but required.")
         target_rate = observe.observe(self.target_rate)
-
-        if original_rate != target_rate:
-            base = audresample.resample(
-                base,
-                original_rate,
+        if sampling_rate != target_rate:
+            signal = audresample.resample(
+                signal,
+                sampling_rate,
                 target_rate,
             )
 
-        return base
+        return signal
 
 
 class Select(Base):
@@ -2219,9 +2394,10 @@ class Select(Base):
 
     Examples:
         >>> seed(0)
-        >>> base = np.array([1, 2, 3, 4])
+        >>> signal = np.array([1, 2, 3, 4])
         >>> aux = np.array([0., 0.])
-        >>> Select([Prepend(aux), Append(aux)])(base)
+        >>> transform = Select([Prepend(aux), Append(aux)])
+        >>> transform(signal)
         array([0., 0., 1., 2., 3., 4.], dtype=float32)
 
     """
@@ -2238,10 +2414,15 @@ class Select(Base):
         )
         self.transforms = transforms
 
-    def _call(self, base: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            signal: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
         idx = np.random.randint(len(self.transforms))
-        base = self.transforms[idx](base)
-        return base
+        signal = self.transforms[idx](signal, sampling_rate)
+        return signal
 
 
 class Shift(Base):
@@ -2255,7 +2436,6 @@ class Shift(Base):
 
     Args:
         duration: duration of shift
-        sampling_rate: sampling rate in Hz
         unit: literal specifying the format of ``duration``
             (see :meth:`auglib.utils.to_samples`)
         preserve_level: if ``True``
@@ -2266,8 +2446,9 @@ class Shift(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> base = np.array([1, 2, 3, 4])
-        >>> Shift(1, unit='samples')(base)
+        >>> signal = np.array([1, 2, 3, 4])
+        >>> transform = Shift(1, unit='samples')
+        >>> transform(signal)
         array([2., 3., 4., 1.], dtype=float32)
 
     """
@@ -2275,40 +2456,44 @@ class Shift(Base):
             self,
             duration: typing.Union[int, float, observe.Base, Time] = None,
             *,
-            sampling_rate: int = 16000,
             unit: str = 'seconds',
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: typing.Union[float, observe.Base] = None,
     ):
         super().__init__(
-            sampling_rate=sampling_rate,
             unit=unit,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
         self.duration = duration
 
-    def _call(self, base: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            signal: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
         if self.duration is not None:
             duration = self.to_samples(
                 observe.observe(self.duration),
-                length=base.shape[1],
+                sampling_rate,
+                length=signal.shape[1],
             )
             # Allow shift values that are out-of-bound
             # of the actual signal duration
-            start_pos = duration % base.shape[1]
+            start_pos = duration % signal.shape[1]
             if start_pos == 0:
-                return base
+                return signal
             # Append data
             # that will be removed at the beginning
-            base = np.concatenate(
-                [base, base[:, :start_pos]],
+            signal = np.concatenate(
+                [signal, signal[:, :start_pos]],
                 axis=1,
             )
             # Remove data from beginning
-            base = base[:, start_pos:]
+            signal = signal[:, start_pos:]
 
-        return base
+        return signal
 
 
 class Tone(Base):
@@ -2331,7 +2516,6 @@ class Tone(Base):
             ``'sawtooth'``
         lfo_rate: modulation rate of Low Frequency Oscillator
         lfo_range: modulation range of Low Frequency Oscillator
-        sampling_rate: sampling rate in Hz
         preserve_level: if ``True``
             the root mean square value
             of the augmented signal
@@ -2343,14 +2527,19 @@ class Tone(Base):
         ValueError: if ``shape`` contains a non-supported value
 
     Examples:
-        >>> base = np.array([0, 0, 0, 0])
-        >>> Tone(4000, shape='sine')(base).round(4)
+        >>> signal = np.array([0, 0, 0, 0])
+        >>> sampling_rate = 16000
+        >>> transform = Tone(4000, shape='sine')
+        >>> transform(signal, sampling_rate).round(4)
         array([ 0.,  1., -0., -1.], dtype=float32)
-        >>> Tone(4000, shape='square')(base)
+        >>> transform = Tone(4000, shape='square')
+        >>> transform(signal, sampling_rate)
         array([-1., -1.,  0.,  1.], dtype=float32)
-        >>> Tone(4000, shape='sawtooth')(base)
+        >>> transform = Tone(4000, shape='sawtooth')
+        >>> transform(signal, sampling_rate)
         array([-1. , -0.5,  0. ,  0.5], dtype=float32)
-        >>> Tone(4000, shape='triangle')(base)
+        >>> transform = Tone(4000, shape='triangle')
+        >>> transform(signal, sampling_rate)
         array([ 1.,  0., -1.,  0.], dtype=float32)
 
     """  # noqa: E501
@@ -2363,12 +2552,10 @@ class Tone(Base):
             shape: str = 'sine',
             lfo_rate: Union[float, observe.Base] = 0.0,
             lfo_range: Union[float, observe.Base] = 0.0,
-            sampling_rate: int = 16000,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            sampling_rate=sampling_rate,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -2385,7 +2572,14 @@ class Tone(Base):
             )
         self.shape = shape
 
-    def _call(self, base: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            signal: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
+        if sampling_rate is None:
+            raise ValueError("sampling_rate is 'None', but required.")
         freq = observe.observe(self.freq)
         lfo_rate = observe.observe(self.lfo_rate)
         lfo_range = observe.observe(self.lfo_range)
@@ -2406,7 +2600,7 @@ class Tone(Base):
             elif self.shape == 'sawtooth':
                 rms = 1 / np.sqrt(3)
             tone_db = 20 * np.log10(rms)
-            signal_db = rms_db(base)
+            signal_db = rms_db(signal)
             gain_db = get_noise_gain_from_snr(signal_db, tone_db, snr_db)
         else:
             gain_db = observe.observe(self.gain_db)
@@ -2415,13 +2609,13 @@ class Tone(Base):
             lfo_range = 0.0  # this will result in no modulation
             lfo_rate = 1.0  # dummy value to avoid NAN or division by zero
 
-        period = self.sampling_rate / freq  # in samples
-        lfo_period = self.sampling_rate / lfo_rate  # in samples
+        period = sampling_rate / freq  # in samples
+        lfo_period = sampling_rate / lfo_rate  # in samples
         omega = 2.0 * math.pi / period  # in radians per sample
         lfo_omega = 2.0 * math.pi / lfo_period  # in radians per sample
-        lfo_amp = math.pi * lfo_range / self.sampling_rate  # half range (rad)
+        lfo_amp = math.pi * lfo_range / sampling_rate  # half range (rad)
 
-        time = np.array(range(base.shape[1]), dtype=DTYPE)
+        time = np.array(range(signal.shape[1]), dtype=DTYPE)
         gain = from_db(gain_db)
 
         if self.shape == 'sine':
@@ -2430,7 +2624,7 @@ class Tone(Base):
                 omega * time
                 + (lfo_amp * np.sin(lfo_omega * time) / lfo_omega)
             )
-            base = base + gain * np.sin(phase)
+            signal = signal + gain * np.sin(phase)
 
         else:  # if shape is not sine, different approach
 
@@ -2438,7 +2632,7 @@ class Tone(Base):
             acc = 0.0
 
             # TODO: find solution without loop
-            for sample in range(base.shape[1]):
+            for sample in range(signal.shape[1]):
                 # Update the current period and compute the output sample
                 current_period = (
                     2.0 * math.pi
@@ -2452,16 +2646,16 @@ class Tone(Base):
                         state = -1.0
                     else:
                         state = 0.0
-                    base[:, sample] += gain * state
+                    signal[:, sample] += gain * state
                 elif self.shape == 'triangle':
-                    base[:, sample] += 4 * gain * (np.abs(acc - 0.5) - 0.25)
+                    signal[:, sample] += 4 * gain * (np.abs(acc - 0.5) - 0.25)
                 elif self.shape == 'sawtooth':
-                    base[:, sample] += 2 * gain * (acc - 0.5)
+                    signal[:, sample] += 2 * gain * (acc - 0.5)
                 acc += increment  # 'phase-like' variable increasing in time
                 if acc > 1.0:
                     acc = acc - np.floor(acc)  # phase wraps after each period
 
-        return base
+        return signal
 
 
 class Trim(Base):
@@ -2539,7 +2733,6 @@ class Trim(Base):
             ``'left'`` adds samples to the left,
             or ``'both'`` adds samples on both sides,
             equally distributed starting at the right
-        sampling_rate: sampling rate in Hz
         unit: literal specifying the format
             of ``start_pos``,
             ``end_pos``,
@@ -2557,14 +2750,14 @@ class Trim(Base):
         ValueError: if ``fill_pos`` contains a non-supported value
 
     Examples:
-        >>> base = np.array([1, 2, 3, 4])
-        >>> Trim(start_pos=1, unit='samples')(base)
+        >>> signal = np.array([1, 2, 3, 4])
+        >>> Trim(start_pos=1, unit='samples')(signal)
         array([2., 3., 4.], dtype=float32)
-        >>> Trim(end_pos=1, unit='samples')(base)
+        >>> Trim(end_pos=1, unit='samples')(signal)
         array([1., 2., 3.], dtype=float32)
-        >>> Trim(start_pos=None, duration=2, unit='samples')(base)
+        >>> Trim(start_pos=None, duration=2, unit='samples')(signal)
         array([2., 3.], dtype=float32)
-        >>> Trim(start_pos=2, duration=4, unit='samples', fill='loop')(base)
+        >>> Trim(start_pos=2, duration=4, unit='samples', fill='loop')(signal)
         array([3., 4., 3., 4.], dtype=float32)
         >>> Trim(
         ...     start_pos=1,
@@ -2572,7 +2765,7 @@ class Trim(Base):
         ...     duration=4,
         ...     unit='samples',
         ...     fill='zeros',
-        ... )(base)
+        ... )(signal)
         array([2., 3., 0., 0.], dtype=float32)
         >>> Trim(
         ...     start_pos=3,
@@ -2580,7 +2773,7 @@ class Trim(Base):
         ...     unit='samples',
         ...     fill='zeros',
         ...     fill_pos='both',
-        ... )(base)
+        ... )(signal)
         array([0., 4., 0., 0.], dtype=float32)
 
     """
@@ -2592,13 +2785,11 @@ class Trim(Base):
             duration: Union[int, float, observe.Base, Time] = None,
             fill: str = 'none',
             fill_pos: str = 'right',
-            sampling_rate: int = 16000,
             unit: str = 'seconds',
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            sampling_rate=sampling_rate,
             unit=unit,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
@@ -2621,7 +2812,12 @@ class Trim(Base):
         self.fill = fill
         self.fill_pos = fill_pos
 
-    def _call(self, base: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            signal: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
 
         # start_pos | end_pos | duration
         # --------- | ------- | --------
@@ -2636,14 +2832,15 @@ class Trim(Base):
                     or self.duration == 0
                 )
         ):
-            return base
+            return signal
 
         # Convert start_pos, end_pos, duration to samples
         # and check for meaningful values
-        length = base.shape[1]
+        length = signal.shape[1]
         if self.start_pos is not None:
             start_pos = self.to_samples(
                 observe.observe(self.start_pos),
+                sampling_rate,
                 length=length,
                 allow_negative=True,
             )
@@ -2654,6 +2851,7 @@ class Trim(Base):
         if self.end_pos is not None:
             end_pos = self.to_samples(
                 observe.observe(self.end_pos),
+                sampling_rate,
                 length=length,
                 allow_negative=True,
             )
@@ -2667,20 +2865,21 @@ class Trim(Base):
             else:
                 duration = self.to_samples(
                     observe.observe(self.duration),
+                    sampling_rate,
                     length=length,
                     allow_negative=True,
                 )
             if duration < 0:
                 raise ValueError("'duration' must be >=0.")
-            # duration can become 0 if self.duration is very small
             if duration == 0:
                 raise ValueError(
                     "Your combination of "
-                    f"'duration' = {self.duration} {self.unit} "
-                    f"and 'sampling_rate' = {self.sampling_rate} Hz "
+                    "'duration' = 0.0001 seconds "
+                    f"and 'sampling_rate' = {sampling_rate} Hz "
                     "would lead to an empty signal "
                     "which is forbidden."
                 )
+
 
         # start_pos | end_pos | duration
         # --------- | ------- | --------
@@ -2707,7 +2906,7 @@ class Trim(Base):
                 start_pos = 0
             elif self.end_pos is None:
                 end_pos = 0
-            duration = base.shape[1] - start_pos - end_pos
+            duration = signal.shape[1] - start_pos - end_pos
 
         # start_pos | end_pos | duration
         # --------- | ------- | --------
@@ -2753,14 +2952,14 @@ class Trim(Base):
             elif self.end_pos is None:
                 end_pos = max(0, length - duration - start_pos)
             if end_pos == 0:
-                base = base[:, start_pos:]
+                signal = signal[:, start_pos:]
             else:
-                base = base[:, start_pos:-end_pos]
+                signal = signal[:, start_pos:-end_pos]
 
             # Check the difference in samples
             # between current signal
             # and desired duration
-            difference = base.shape[1] - duration
+            difference = signal.shape[1] - duration
 
             # Expand signal if too short
             # and fill is requested
@@ -2795,32 +2994,32 @@ class Trim(Base):
                     repetitions = (
                         int(
                             max(prepend_samples, append_samples)
-                            / base.shape[1]
+                            / signal.shape[1]
                         )
                         + 1
                     )
-                    repeated_array = np.tile(base, repetitions)
+                    repeated_array = np.tile(signal, repetitions)
                     prepend_array = repeated_array[:, -prepend_samples:]
                     append_array = repeated_array[:, :append_samples]
 
                 if prepend_samples > 0:
-                    base = np.concatenate(
-                        [prepend_array, base],
+                    signal = np.concatenate(
+                        [prepend_array, signal],
                         axis=1,
                     )
 
                 if append_samples > 0:
-                    base = np.concatenate(
-                        [base, append_array],
+                    signal = np.concatenate(
+                        [signal, append_array],
                         axis=1,
                     )
 
             # Set start_pos to 0 for final trim with provided duration
             start_pos = 0
 
-        base = base[:, start_pos:start_pos + duration]
+        signal = signal[:, start_pos:start_pos + duration]
 
-        return base
+        return signal
 
 
 class WhiteNoiseGaussian(Base):
@@ -2840,8 +3039,9 @@ class WhiteNoiseGaussian(Base):
 
     Examples:
         >>> seed(0)
-        >>> base = np.array([0, 0])
-        >>> WhiteNoiseGaussian()(base)
+        >>> signal = np.array([0, 0])
+        >>> transform = WhiteNoiseGaussian()
+        >>> transform(signal)
         array([ 0.03771907, -0.03963146], dtype=float32)
 
     """
@@ -2862,7 +3062,12 @@ class WhiteNoiseGaussian(Base):
         self.snr_db = snr_db
         self.stddev = stddev
 
-    def _call(self, base: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            signal: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
         if self.snr_db is not None:
             snr_db = observe.observe(self.snr_db)
             # For white noise we have
@@ -2876,20 +3081,19 @@ class WhiteNoiseGaussian(Base):
             # rms_noise_db and hence the resulting SNR
             # can slightly deviate from the theoretical value.
             noise_db = 10 * np.log10(self.stddev ** 2)
-            signal_db = rms_db(base)
+            signal_db = rms_db(signal)
             gain_db = get_noise_gain_from_snr(signal_db, noise_db, snr_db)
         else:
             gain_db = observe.observe(self.gain_db)
         stddev = observe.observe(self.stddev)
         noise_generator = np.random.default_rng(seed=get_seed())
 
-        base += (
+        signal += (
             from_db(gain_db)
-            * noise_generator.normal(0, stddev, base.shape)
+            * noise_generator.normal(0, stddev, signal.shape)
         )
 
-        return base
-
+        return signal
 
 
 class WhiteNoiseUniform(Base):
@@ -2908,8 +3112,9 @@ class WhiteNoiseUniform(Base):
 
     Examples:
         >>> seed(0)
-        >>> base = np.array([0, 0])
-        >>> WhiteNoiseUniform()(base)
+        >>> signal = np.array([0, 0])
+        >>> transform = WhiteNoiseUniform()
+        >>> transform(signal)
         array([ 0.27392337, -0.46042657], dtype=float32)
 
     """
@@ -2928,7 +3133,12 @@ class WhiteNoiseUniform(Base):
         self.gain_db = gain_db
         self.snr_db = snr_db
 
-    def _call(self, base: np.ndarray) -> np.ndarray:
+    def _call(
+            self,
+            signal: np.ndarray,
+            *,
+            sampling_rate: int = None,
+    ) -> np.ndarray:
         if self.snr_db is not None:
             snr_db = observe.observe(self.snr_db)
             # For uniform white noise we have
@@ -2941,16 +3151,16 @@ class WhiteNoiseUniform(Base):
             # rms_noise_db and hence the resulting SNR
             # can slightly deviate.
             noise_db = -4.77125
-            signal_db = rms_db(base)
+            signal_db = rms_db(signal)
             gain_db = get_noise_gain_from_snr(signal_db, noise_db, snr_db)
         else:
             gain_db = observe.observe(self.gain_db)
 
         noise_generator = np.random.default_rng(seed=get_seed())
 
-        base += (
+        signal += (
             from_db(gain_db)
-            * noise_generator.uniform(-1, 1, base.shape)
+            * noise_generator.uniform(-1, 1, signal.shape)
         )
 
-        return base
+        return signal

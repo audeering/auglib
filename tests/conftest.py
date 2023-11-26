@@ -7,7 +7,7 @@ import auglib
 
 
 class Ones(auglib.transform.Base):
-    def _call(self, base: np.ndarray):
+    def _call(self, base: np.ndarray, *, sampling_rate: int = None):
         return np.ones(base.shape)
 
 

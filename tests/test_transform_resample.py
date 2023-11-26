@@ -33,16 +33,35 @@ def test_resample(signal, original_rate, target_rate):
 
     transform = auglib.transform.Resample(
         target_rate,
-        sampling_rate=original_rate,
     )
     transform = audobject.from_yaml_s(
         transform.to_yaml_s(include_version=False),
     )
     np.testing.assert_array_equal(
-        transform(signal),
+        transform(signal, original_rate),
         expected,
         strict=True,
     )
+
+
+@pytest.mark.parametrize(
+    'sampling_rate, expected_error, expected_error_msg',
+    [
+        (
+            None,
+            ValueError,
+            "sampling_rate is 'None', but required.",
+        ),
+    ],
+)
+def test_resample_errors(
+        sampling_rate,
+        expected_error,
+        expected_error_msg,
+):
+    with pytest.raises(expected_error, match=expected_error_msg):
+        transform = auglib.transform.Resample(8000)
+        transform(np.ones((1, 4000)), sampling_rate)
 
 
 def test_resample_warning():

@@ -581,7 +581,7 @@ class Augment(audinterface.Process, audobject.Object):
 
         # augment each channel individually
         for channel in signal:
-            channel = transform(channel)
+            channel = transform(channel, sampling_rate)
             max_samples = max(max_samples, channel.shape[0])
             signals.append(channel)
 

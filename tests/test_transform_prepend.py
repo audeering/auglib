@@ -5,7 +5,7 @@ import auglib
 
 
 @pytest.mark.parametrize('sampling_rate', [8000])
-@pytest.mark.parametrize('base', [np.array([1, 1])])
+@pytest.mark.parametrize('signal', [np.array([1, 1])])
 @pytest.mark.parametrize(
     'read_pos_aux, read_dur_aux, unit, aux, expected',
     [
@@ -37,12 +37,40 @@ import auglib
             np.array([0, 2]),
             np.array([0, 1, 1]),
         ),
+        (
+            0,
+            None,
+            'relative',
+            np.array([0, 2]),
+            np.array([0, 2, 1, 1]),
+        ),
+        (
+            0.5,
+            None,
+            'relative',
+            np.array([0, 2]),
+            np.array([2, 1, 1]),
+        ),
+        (
+            0,
+            0.5,
+            'relative',
+            np.array([0, 2]),
+            np.array([0, 1, 1]),
+        ),
+        (
+            0,
+            1.5,
+            'relative',
+            np.array([0, 2]),
+            np.array([0, 2, 1, 1]),
+        ),
     ],
 )
 def test_Prepend(
         tmpdir,
         sampling_rate,
-        base,
+        signal,
         read_pos_aux,
         read_dur_aux,
         unit,
@@ -54,11 +82,10 @@ def test_Prepend(
         aux,
         read_pos_aux=read_pos_aux,
         read_dur_aux=read_dur_aux,
-        sampling_rate=sampling_rate,
         unit=unit,
     )
     np.testing.assert_array_equal(
-        transform(base),
+        transform(signal, sampling_rate),
         expected,
         strict=True,
     )

@@ -42,7 +42,6 @@ def test_Trim(
         end_pos=end_pos,
         duration=duration,
         fill=fill,
-        sampling_rate=sampling_rate,
         unit=unit,
     )
     transform = audobject.from_yaml_s(
@@ -50,14 +49,13 @@ def test_Trim(
     )
 
     np.testing.assert_array_equal(
-        transform(signal),
+        transform(signal, sampling_rate),
         expected,
         strict=True,
     )
 
 
 # Trim, fill='none'
-@pytest.mark.parametrize('sampling_rate', [8000])
 @pytest.mark.parametrize('unit', ['samples'])
 @pytest.mark.parametrize('signal', [[1, 2, 3, 4]])
 @pytest.mark.parametrize('fill', ['none'])
@@ -91,7 +89,6 @@ def test_Trim(
     ]
 )
 def test_Trim_fill_none(
-        sampling_rate,
         unit,
         signal,
         fill,
@@ -112,7 +109,6 @@ def test_Trim_fill_none(
         duration=duration,
         fill=fill,
         fill_pos=fill_pos,
-        sampling_rate=sampling_rate,
         unit=unit,
     )
     transform = audobject.from_yaml_s(
@@ -128,7 +124,6 @@ def test_Trim_fill_none(
 
 
 # Trim, fill='zeros'
-@pytest.mark.parametrize('sampling_rate', [8000])
 @pytest.mark.parametrize('unit', ['samples'])
 @pytest.mark.parametrize('signal', [[1, 2, 3, 4]])
 @pytest.mark.parametrize('fill', ['zeros'])
@@ -167,7 +162,6 @@ def test_Trim_fill_none(
     ]
 )
 def test_Trim_fill_zeros(
-        sampling_rate,
         unit,
         signal,
         fill,
@@ -188,7 +182,6 @@ def test_Trim_fill_zeros(
         duration=duration,
         fill=fill,
         fill_pos=fill_pos,
-        sampling_rate=sampling_rate,
         unit=unit,
     )
     transform = audobject.from_yaml_s(
@@ -204,7 +197,6 @@ def test_Trim_fill_zeros(
 
 
 # Trim, fill='loop'
-@pytest.mark.parametrize('sampling_rate', [8000])
 @pytest.mark.parametrize('unit', ['samples'])
 @pytest.mark.parametrize('signal', [[1, 2, 3, 4]])
 @pytest.mark.parametrize('fill', ['loop'])
@@ -262,7 +254,6 @@ def test_Trim_fill_zeros(
     ]
 )
 def test_Trim_fill_loop(
-        sampling_rate,
         unit,
         signal,
         fill,
@@ -283,7 +274,6 @@ def test_Trim_fill_loop(
         duration=duration,
         fill=fill,
         fill_pos=fill_pos,
-        sampling_rate=sampling_rate,
         unit=unit,
     )
     transform = audobject.from_yaml_s(
@@ -376,7 +366,6 @@ def test_Trim_error_call(
             start_pos=start_pos,
             end_pos=end_pos,
             duration=duration,
-            sampling_rate=sampling_rate,
             unit=unit,
         )
         transform = audobject.from_yaml_s(
@@ -384,7 +373,7 @@ def test_Trim_error_call(
         )
 
         signal = np.array(signal)
-        transform(signal)
+        transform(signal, sampling_rate)
 
 
 

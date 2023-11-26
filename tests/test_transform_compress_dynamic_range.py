@@ -35,8 +35,9 @@ def test_compress_dynamic_range(
 ):
 
     signal = np.zeros((1, int(duration * sampling_rate)))
-    signal = auglib.transform.Tone(220.0, shape='square')(signal)
-    signal = auglib.transform.NormalizeByPeak(peak_db=signal_peak_db)(signal)
+    tone = auglib.transform.Tone(220.0, shape='square')
+    normalize = auglib.transform.NormalizeByPeak(peak_db=signal_peak_db)
+    signal = normalize(tone(signal, sampling_rate))
 
     transform = auglib.transform.CompressDynamicRange(
         threshold,
@@ -45,13 +46,32 @@ def test_compress_dynamic_range(
         release_time=0.1,
         knee_radius_db=6.0,
         makeup_db=makeup_db,
-        sampling_rate=sampling_rate,
         clip=clip,
     )
     transform = audobject.from_yaml_s(
         transform.to_yaml_s(include_version=False),
     )
 
-    augmented_signal = transform(signal)
+    augmented_signal = transform(signal, sampling_rate)
     peak = audmath.db(np.max(np.abs(augmented_signal)))
     assert np.isclose(peak, expected_peak_db, atol=1e-02)
+
+
+@pytest.mark.parametrize(
+    'sampling_rate, expected_error, expected_error_msg',
+    [
+        (
+            None,
+            ValueError,
+            "sampling_rate is 'None', but required.",
+        ),
+    ],
+)
+def test_compress_dynamic_range_errors(
+        sampling_rate,
+        expected_error,
+        expected_error_msg,
+):
+    with pytest.raises(expected_error, match=expected_error_msg):
+        transform = auglib.transform.CompressDynamicRange(-12, 1)
+        transform(np.ones((1, 4000)), sampling_rate)

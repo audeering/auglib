@@ -38,7 +38,6 @@ def test_babble_noise_1(
         num_speakers=num_speakers,
         gain_db=gain_db,
         snr_db=snr_db,
-        sampling_rate=sampling_rate,
     )
 
     signal = np.zeros((1, int(duration * sampling_rate)))
@@ -64,7 +63,6 @@ def test_babble_noise_1(
 
 
 # Test shorter speech signals for BabbleNoise
-@pytest.mark.parametrize('sampling_rate', [8000])
 @pytest.mark.parametrize(
     # NOTE: expected signal depends on seed
     'signal, speech, num_speakers, expected_babble',
@@ -88,7 +86,6 @@ def test_babble_noise_1(
     ],
 )
 def test_babble_noise_2(
-        sampling_rate,
         signal,
         speech,
         num_speakers,
