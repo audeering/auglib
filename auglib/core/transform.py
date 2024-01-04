@@ -272,12 +272,10 @@ class AMRNB(Base):
             bit_rate: Union[int, observe.Base],
             *,
             dtx: Union[bool, observe.Base] = False,
-            transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            transform=transform,
             bypass_prob=bypass_prob,
             preserve_level=preserve_level,
         )
@@ -435,13 +433,11 @@ class AppendValue(Base):
             value: Union[float, observe.Base] = 0,
             *,
             unit: str = 'seconds',
-            transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             unit=unit,
-            transform=transform,
             bypass_prob=bypass_prob,
             preserve_level=preserve_level,
         )
@@ -515,12 +511,10 @@ class BabbleNoise(Base):
             num_speakers: Union[int, observe.Base] = 5,
             gain_db: Union[float, observe.Base] = 0.0,
             snr_db: Union[float, observe.Base] = None,
-            transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            transform=transform,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -598,12 +592,10 @@ class BandPass(Base):
             *,
             order: Union[int, observe.Base] = 1,
             design: str = 'butter',
-            transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            transform=transform,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -676,12 +668,10 @@ class BandStop(Base):
             *,
             order: Union[int, observe.Base] = 1,
             design: str = 'butter',
-            transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            transform=transform,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -759,12 +749,10 @@ class Clip(Base):
             threshold: Union[float, observe.Base] = 0.0,
             soft: Union[bool, observe.Base] = False,
             normalize: Union[bool, observe.Base] = False,
-            transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            transform=transform,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -843,12 +831,10 @@ class ClipByRatio(Base):
             *,
             soft: Union[bool, observe.Base] = False,
             normalize: Union[bool, observe.Base] = False,
-            transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            transform=transform,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -911,12 +897,10 @@ class Compose(Base):
             self,
             transforms: Sequence[Base],
             *,
-            transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            transform=transform,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -1010,12 +994,10 @@ class CompressDynamicRange(Base):
             knee_radius_db: Union[float, observe.Base] = 4.0,
             makeup_db: Union[None, float, observe.Base] = 0.0,
             clip: Union[bool, observe.Base] = False,
-            transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            transform=transform,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -1185,13 +1167,11 @@ class Fade(Base):
             in_db: float = -120,
             out_db: float = -120,
             unit: str = 'seconds',
-            transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             unit=unit,
-            transform=transform,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -1408,12 +1388,10 @@ class Function(Base):
             function: Callable[..., np.ndarray],
             function_args: typing.Dict = None,
             *,
-            transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            transform=transform,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -1473,12 +1451,10 @@ class GainStage(Base):
             *,
             max_peak_db: Union[float, observe.Base] = None,
             clip: Union[bool, observe.Base] = False,
-            transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            transform=transform,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -1545,12 +1521,10 @@ class HighPass(Base):
             *,
             order: Union[int, observe.Base] = 1,
             design: str = 'butter',
-            transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            transform=transform,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -1618,12 +1592,10 @@ class LowPass(Base):
             *,
             order: Union[int, observe.Base] = 1,
             design: str = 'butter',
-            transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            transform=transform,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -2086,12 +2058,10 @@ class NormalizeByPeak(Base):
             *,
             peak_db: Union[float, observe.Base] = 0.0,
             clip: Union[bool, observe.Base] = False,
-            transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            transform=transform,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -2143,12 +2113,10 @@ class PinkNoise(Base):
             *,
             gain_db: Union[float, observe.Base] = 0.0,
             snr_db: Union[float, observe.Base] = None,
-            transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            transform=transform,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -2321,13 +2289,11 @@ class PrependValue(Base):
             value: Union[float, observe.Base] = 0,
             *,
             unit: str = 'seconds',
-            transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             unit=unit,
-            transform=transform,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -2377,13 +2343,11 @@ class Resample(Base):
             self,
             target_rate: typing.Union[int, observe.List],
             *,
-            transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: typing.Union[float, observe.Base] = None,
             **kwargs,
     ):
         super().__init__(
-            transform=transform,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -2441,12 +2405,10 @@ class Select(Base):
             self,
             transforms: Sequence[Base],
             *,
-            transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            transform=transform,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -2495,13 +2457,11 @@ class Shift(Base):
             duration: typing.Union[int, float, observe.Base, Time] = None,
             *,
             unit: str = 'seconds',
-            transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: typing.Union[float, observe.Base] = None,
     ):
         super().__init__(
             unit=unit,
-            transform=transform,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -2592,12 +2552,10 @@ class Tone(Base):
             shape: str = 'sine',
             lfo_rate: Union[float, observe.Base] = 0.0,
             lfo_range: Union[float, observe.Base] = 0.0,
-            transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            transform=transform,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -2828,13 +2786,11 @@ class Trim(Base):
             fill: str = 'none',
             fill_pos: str = 'right',
             unit: str = 'seconds',
-            transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             unit=unit,
-            transform=transform,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -3095,12 +3051,10 @@ class WhiteNoiseGaussian(Base):
             gain_db: Union[float, observe.Base] = 0.0,
             snr_db: Union[float, observe.Base] = None,
             stddev: Union[float, observe.Base] = 0.3,
-            transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            transform=transform,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
@@ -3169,12 +3123,10 @@ class WhiteNoiseUniform(Base):
             *,
             gain_db: Union[float, observe.Base] = 0.0,
             snr_db: Union[float, observe.Base] = None,
-            transform: Base = None,
             preserve_level: Union[bool, observe.Base] = False,
             bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
-            transform=transform,
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
