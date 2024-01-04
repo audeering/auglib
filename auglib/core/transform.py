@@ -2523,9 +2523,6 @@ class Tone(Base):
             as before augmentation
         bypass_prob: probability to bypass the transformation
 
-    Raises:
-        ValueError: if ``shape`` contains a non-supported value
-
     Examples:
         >>> signal = np.array([0, 0, 0, 0])
         >>> sampling_rate = 16000
@@ -2534,13 +2531,13 @@ class Tone(Base):
         array([ 0.,  1., -0., -1.], dtype=float32)
         >>> transform = Tone(4000, shape='square')
         >>> transform(signal, sampling_rate)
-        array([-1., -1.,  0.,  1.], dtype=float32)
+        array([-1., -1.,  1.,  1.], dtype=float32)
         >>> transform = Tone(4000, shape='sawtooth')
         >>> transform(signal, sampling_rate)
         array([-1. , -0.5,  0. ,  0.5], dtype=float32)
         >>> transform = Tone(4000, shape='triangle')
         >>> transform(signal, sampling_rate)
-        array([ 1.,  0., -1.,  0.], dtype=float32)
+        array([ 1.        ,  0.        , -0.99999994,  0.        ], dtype=float32)
 
     """  # noqa: E501
     def __init__(
@@ -2549,7 +2546,7 @@ class Tone(Base):
             *,
             gain_db: Union[float, observe.Base] = 0.0,
             snr_db: Union[float, observe.Base] = None,
-            shape: str = 'sine',
+            shape: Union[str, observe.Base] = 'sine',
             lfo_rate: Union[float, observe.Base] = 0.0,
             lfo_range: Union[float, observe.Base] = 0.0,
             preserve_level: Union[bool, observe.Base] = False,
@@ -2564,12 +2561,6 @@ class Tone(Base):
         self.snr_db = snr_db
         self.lfo_rate = lfo_rate
         self.lfo_range = lfo_range
-        if shape not in SUPPORTED_TONE_SHAPES:
-            raise ValueError(
-                f"Unknown tone shape '{shape}'. "
-                "Supported shapes are: "
-                f"{', '.join(SUPPORTED_TONE_SHAPES)}."
-            )
         self.shape = shape
 
     def _call(
@@ -2583,6 +2574,13 @@ class Tone(Base):
         freq = observe.observe(self.freq)
         lfo_rate = observe.observe(self.lfo_rate)
         lfo_range = observe.observe(self.lfo_range)
+        shape = observe.observe(self.shape)
+        if shape not in SUPPORTED_TONE_SHAPES:
+            raise ValueError(
+                f"Unknown tone shape '{shape}'. "
+                "Supported shapes are: "
+                f"{', '.join(SUPPORTED_TONE_SHAPES)}."
+            )
         if self.snr_db is not None:
             snr_db = observe.observe(self.snr_db)
             # RMS values of the tone,
@@ -2591,13 +2589,13 @@ class Tone(Base):
             # For short signals and low sampling rates,
             # rms_tone_db and hence the resulting SNR
             # can slightly deviate from the theoretical value.
-            if self.shape == 'sine':
+            if shape == 'sine':
                 rms = 1 / np.sqrt(2)
-            elif self.shape == 'square':
+            elif shape == 'square':
                 rms = 1
-            elif self.shape == 'triangle':
+            elif shape == 'triangle':
                 rms = 1 / np.sqrt(3)
-            elif self.shape == 'sawtooth':
+            elif shape == 'sawtooth':
                 rms = 1 / np.sqrt(3)
             tone_db = 20 * np.log10(rms)
             signal_db = rms_db(signal)
@@ -2617,43 +2615,18 @@ class Tone(Base):
 
         time = np.array(range(signal.shape[1]), dtype=DTYPE)
         gain = from_db(gain_db)
-
-        if self.shape == 'sine':
-            phase = 0.0
-            phase = (
-                omega * time
-                + (lfo_amp * np.sin(lfo_omega * time) / lfo_omega)
-            )
-            signal = signal + gain * np.sin(phase)
-
-        else:  # if shape is not sine, different approach
-
-            current_period = period
-            acc = 0.0
-
-            # TODO: find solution without loop
-            for sample in range(signal.shape[1]):
-                # Update the current period and compute the output sample
-                current_period = (
-                    2.0 * math.pi
-                    / (omega + lfo_amp * np.sin(lfo_omega * sample))
-                )
-                increment = 1.0 / current_period
-                if self.shape == 'square':
-                    if acc > 0.5:
-                        state = 1.0
-                    elif acc < 0.5:
-                        state = -1.0
-                    else:
-                        state = 0.0
-                    signal[:, sample] += gain * state
-                elif self.shape == 'triangle':
-                    signal[:, sample] += 4 * gain * (np.abs(acc - 0.5) - 0.25)
-                elif self.shape == 'sawtooth':
-                    signal[:, sample] += 2 * gain * (acc - 0.5)
-                acc += increment  # 'phase-like' variable increasing in time
-                if acc > 1.0:
-                    acc = acc - np.floor(acc)  # phase wraps after each period
+        phase = (
+            omega * time
+            + (lfo_amp * np.sin(lfo_omega * time) / lfo_omega)
+        )
+        if shape == 'sine':
+            signal += gain * np.sin(phase)
+        elif shape == 'square':
+            signal += -gain * scipy.signal.square(phase, duty=0.5)
+        elif shape == 'triangle':
+            signal += -gain * scipy.signal.sawtooth(phase, width=0.5)
+        elif shape == 'sawtooth':
+            signal += gain * scipy.signal.sawtooth(phase, width=1)
 
         return signal
 
