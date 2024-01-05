@@ -6,19 +6,22 @@ import audobject
 import auglib
 
 
-@pytest.mark.parametrize('sampling_rate', [8000])
 @pytest.mark.parametrize('signal', [np.array([1, 1])])
 @pytest.mark.parametrize(
-    'duration, unit, value, expected',
+    'duration, unit, value, sampling_rate, expected',
     [
-        (0, 'samples', 0, np.array([1, 1])),
-        (0, 'seconds', 0, np.array([1, 1])),
-        (1, 'samples', 2, np.array([2, 1, 1])),
-        (2, 'samples', 2, np.array([2, 2, 1, 1])),
-        (0, 'relative', 2, np.array([1, 1])),
-        (0.5, 'relative', 2, np.array([2, 1, 1])),
-        (1, 'relative', 2, np.array([2, 2, 1, 1])),
-        (1.5, 'relative', 2, np.array([2, 2, 2, 1, 1])),
+        (0, 'samples', 0, None, np.array([1, 1])),
+        (0, 'samples', 0, 8000, np.array([1, 1])),
+        (0, 'seconds', 0, 8000, np.array([1, 1])),
+        (auglib.observe.List([0]), 'samples', 0, None, np.array([1, 1])),
+        (auglib.observe.List([0]), 'seconds', 0, 8000, np.array([1, 1])),
+        (1, 'samples', 2, 8000, np.array([2, 1, 1])),
+        (auglib.observe.List([1]), 'samples', 2, 8000, np.array([2, 1, 1])),
+        (2, 'samples', 2, 8000, np.array([2, 2, 1, 1])),
+        (0, 'relative', 2, 8000, np.array([1, 1])),
+        (0.5, 'relative', 2, 8000, np.array([2, 1, 1])),
+        (1, 'relative', 2, 8000, np.array([2, 2, 1, 1])),
+        (1.5, 'relative', 2, 8000, np.array([2, 2, 2, 1, 1])),
     ],
 )
 def test_prepend_value(

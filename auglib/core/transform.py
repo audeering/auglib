@@ -450,9 +450,10 @@ class AppendValue(Base):
             *,
             sampling_rate: int = None,
     ) -> np.ndarray:
-        if self.duration != 0:
+        duration = observe.observe(self.duration)
+        if duration != 0:
             samples = self.to_samples(
-                self.duration,
+                duration,
                 sampling_rate,
                 length=signal.shape[1],
             )
@@ -2306,9 +2307,10 @@ class PrependValue(Base):
             *,
             sampling_rate: int = None,
     ) -> np.ndarray:
-        if self.duration != 0:
+        duration = observe.observe(self.duration)
+        if duration != 0:
             samples = self.to_samples(
-                self.duration,
+                duration,
                 sampling_rate,
                 length=signal.shape[1],
             )
