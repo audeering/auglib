@@ -199,10 +199,6 @@ class Augment(audinterface.Process, audobject.Object):
         """
         return self.id[-8:]
 
-    @audeer.deprecated_keyword_argument(
-        deprecated_argument='channel',
-        removal_version='0.10.0',
-    )
     def augment(
             self,
             data: typing.Union[pd.Index, pd.Series, pd.DataFrame],
