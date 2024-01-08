@@ -669,7 +669,7 @@ and re-synthesises the audio signal.
 
 |
 
-.. _praat: http://www.praat.org/
+.. _praat: https://github.com/praat/praat/
 
 
 .. _examples-constant-pitch:
@@ -771,4 +771,4 @@ after re-synthesis.
 
 |
 
-.. _praat: http://www.praat.org/
+.. _praat: https://github.com/praat/praat/
