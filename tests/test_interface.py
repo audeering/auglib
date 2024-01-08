@@ -256,7 +256,7 @@ def test_augment(tmpdir, index, signal, sampling_rate, transform,
         audiofile.write(file, signal, sampling_rate)
 
     index_hash = audformat.utils.hash(
-        audformat.utils.to_segmented_index(index, allow_nat=False),
+        audformat.utils.to_segmented_index(index, allow_nat=True),
     )
     expected_root = os.path.join(
         cache_root,
@@ -311,7 +311,6 @@ def test_augment(tmpdir, index, signal, sampling_rate, transform,
 
 
 def test_augment_cache(tmpdir):
-
     root = audeer.mkdir(os.path.join(tmpdir, 'input'))
     cache_root = os.path.join(tmpdir, 'cache')
     transform = auglib.transform.PinkNoise()
@@ -329,7 +328,7 @@ def test_augment_cache(tmpdir):
         audiofile.write(file, signal, sampling_rate)
 
     # augment index with relative and absolute files names
-    # as filewise, segmented and segmented without NaT
+    # as filewise and segmented (without NaT)
 
     augmented_indices = [
         augment.augment(
@@ -339,15 +338,6 @@ def test_augment_cache(tmpdir):
         ),
         augment.augment(
             audformat.utils.to_segmented_index(index_rel),
-            cache_root=cache_root,
-            data_root=root,
-        ),
-        augment.augment(
-            audformat.utils.to_segmented_index(
-                index_rel,
-                allow_nat=False,
-                root=root,
-            ),
             cache_root=cache_root,
             data_root=root,
         ),
@@ -362,6 +352,25 @@ def test_augment_cache(tmpdir):
             remove_root=root,
         ),
         augment.augment(
+            pd.Series(0, index_rel),
+            cache_root=cache_root,
+            data_root=root,
+        ).index,
+    ]
+
+    # augment index with relative and absolute files names
+    # as segmented (with NaT)
+    augmented_indices_nat = [
+        augment.augment(
+            audformat.utils.to_segmented_index(
+                index_rel,
+                allow_nat=False,
+                root=root,
+            ),
+            cache_root=cache_root,
+            data_root=root,
+        ),
+        augment.augment(
             audformat.utils.to_segmented_index(
                 index_abs,
                 allow_nat=False,
@@ -370,11 +379,6 @@ def test_augment_cache(tmpdir):
             cache_root=cache_root,
             remove_root=root,
         ),
-        augment.augment(
-            pd.Series(0, index_rel),
-            cache_root=cache_root,
-            data_root=root,
-        ).index,
     ]
 
     # assert augmented indices match
@@ -382,9 +386,151 @@ def test_augment_cache(tmpdir):
     for augmented_index in augmented_indices[1:]:
         pd.testing.assert_index_equal(augmented_indices[0], augmented_index)
 
+    # assert augmented indices with NaT match
+
+    for augmented_index_nat in augmented_indices_nat[1:]:
+        pd.testing.assert_index_equal(
+            augmented_indices_nat[0], augmented_index_nat
+        )
+
+    # assert augmented indices don't overlap with augmented indices with NaT
+    # as they should have a different cache root
+
+    index_overlap = augmented_indices_nat[0].intersection(augmented_indices[0])
+    assert len(index_overlap) == 0
+
+@pytest.mark.parametrize('keep_nat_first', [True, False])
+@pytest.mark.parametrize(
+    'index, signal, sampling_rate, transform, '
+    'expected_index_nat, expected_index_no_nat',
+    [
+        (
+            audformat.filewise_index(
+                ['f1.wav', 'f2.wav'],
+            ),
+            np.zeros((1, 10)),
+            10,
+            auglib.transform.PinkNoise(),
+            audformat.segmented_index(
+                ['f1.wav', 'f2.wav'],
+                [0, 0],
+                [pd.NaT, pd.NaT],
+            ),
+            audformat.segmented_index(
+                ['f1.wav', 'f2.wav'],
+                [0, 0],
+                ['1s', '1s'],
+            ),
+        ),
+        (
+            audformat.segmented_index(
+                ['f1.wav', 'f2.wav'],
+                [0, 0],
+                [pd.NaT, '1s']
+            ),
+            np.zeros((1, 10)),
+            10,
+            auglib.transform.Trim(duration=5, unit='samples'),
+            audformat.segmented_index(
+                ['f1.wav', 'f2.wav'],
+                [0, 0],
+                [pd.NaT, '0.5s'],
+            ),
+            audformat.segmented_index(
+                ['f1.wav', 'f2.wav'],
+                [0, 0],
+                ['0.5s', '0.5s'],
+            ),
+        ),
+    ],
+)
+def test_augment_cache_nat(tmpdir, keep_nat_first, index, signal,
+                           sampling_rate, transform,
+                           expected_index_nat, expected_index_no_nat):
+    root = audeer.mkdir(os.path.join(tmpdir, 'input'))
+    cache_root = os.path.join(tmpdir, 'cache')
+    augment_no_nat = auglib.Augment(
+        transform,
+        sampling_rate=sampling_rate,
+        keep_nat=False,
+        seed=0
+    )
+    augment_nat = auglib.Augment(
+        transform,
+        sampling_rate=sampling_rate,
+        keep_nat=True,
+        seed=0
+    )
+    index = audformat.utils.expand_file_path(index, root)
+    files = index.get_level_values('file').unique()
+    for file in files:
+        audeer.mkdir(os.path.dirname(file))
+        audiofile.write(file, signal, sampling_rate)
+
+    index_hash = audformat.utils.hash(
+        audformat.utils.to_segmented_index(index, allow_nat=True),
+    )
+    expected_root = os.path.join(
+        cache_root,
+        augment_nat.short_id,
+        index_hash,
+        str(0),
+    )
+
+    expected_index_no_nat = audformat.utils.expand_file_path(
+        expected_index_no_nat,
+        expected_root,
+    )
+    expected_index_nat = audformat.utils.expand_file_path(
+        expected_index_nat,
+        expected_root,
+    )
+    # The index should be as expected for the first run
+    # as well as for the second run when loading from cache
+    no_nat_indices = []
+    nat_indices = []
+    for _ in range(2):
+        # Test both orders of augmentation application,
+        # with keep_nat first and with keep_nat second
+        if keep_nat_first:
+            no_nat_indices.append(
+                augment_no_nat.augment(
+                    index,
+                    cache_root=cache_root,
+                    remove_root=root,
+                )
+            )
+            nat_indices.append(
+                augment_nat.augment(
+                    index,
+                    cache_root=cache_root,
+                    remove_root=root,
+                )
+            )
+        else:
+            nat_indices.append(
+                augment_nat.augment(
+                    index,
+                    cache_root=cache_root,
+                    remove_root=root,
+                )
+            )
+            no_nat_indices.append(
+                augment_no_nat.augment(
+                    index,
+                    cache_root=cache_root,
+                    remove_root=root,
+                )
+            )
+
+    for no_nat_index in no_nat_indices:
+        pd.testing.assert_index_equal(expected_index_no_nat, no_nat_index)
+
+    for nat_index in nat_indices:
+        pd.testing.assert_index_equal(expected_index_nat, nat_index)
+
 
 def test_augment_empty(tmpdir):
-
     data = pd.Series(
         None,
         index=audformat.segmented_index(),
@@ -719,7 +865,7 @@ def test_augment_variants(tmpdir, index, num_variants, modified_only,
 
     for idx in range(num_variants):
         index_hash = audformat.utils.hash(
-            audformat.utils.to_segmented_index(index, allow_nat=False),
+            audformat.utils.to_segmented_index(index, allow_nat=True),
         )
         cache_root_idx = os.path.join(
             cache_root,

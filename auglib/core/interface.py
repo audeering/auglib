@@ -216,7 +216,13 @@ class Augment(audinterface.Process, audobject.Object):
         and augments them.
         If the index is segmented, only the segments are augmented.
         Augmented files are stored as
-        ``<cache_root>/<uid>/<variant>/<original_path>``.
+        ``<cache_root>/<short_id>/<index_id>/<variant>/<original_path>``.
+        The ``<index_id>`` is the identifier of the index of ``data``.
+        Note that the ``<index_id>`` of a filewise index
+        is the same as its corresponding segmented index
+        with ``start=0`` and ``end=NaT``,
+        but differs from its corresponding segmented index
+        when ``end`` is set to the file durations.
         It is possible to shorten the path by setting ``remove_root``
         to a directory that should be removed from ``<original_path>``
         (e.g. the ``audb`` cache folder).
@@ -267,10 +273,10 @@ class Augment(audinterface.Process, audobject.Object):
         if len(data) == 0:
             return data
 
-        # prepare index:
-        # 1. remember position of NaT
-        # 2. convert to absolute file names
-        # 3. convert to segment index and replace NaT with duration
+        # prepare index for hashing:
+        # 1. convert to segmented index
+        # 2. remember position of NaT
+        # 3. convert to absolute file names
 
         is_index = isinstance(data, pd.Index)
         if is_index:
@@ -279,22 +285,17 @@ class Augment(audinterface.Process, audobject.Object):
             index = data.index
         original_index = index
 
+        index = audformat.utils.to_segmented_index(
+            index,
+            allow_nat=True,
+        )
         if self.keep_nat:
-            index = audformat.utils.to_segmented_index(
-                index,
-                allow_nat=True,
-            )
             nat_mask = index.get_level_values(
                 audformat.define.IndexField.END
             ).isna()
 
         if data_root is not None:
             index = audformat.utils.expand_file_path(index, data_root)
-
-        index = audformat.utils.to_segmented_index(
-            index,
-            allow_nat=False,
-        )
 
         index_hash = audformat.utils.hash(index)
 
@@ -317,13 +318,21 @@ class Augment(audinterface.Process, audobject.Object):
 
         # apply augmentation
 
+        # Holds index with non NaT timestamps if required
+        non_nat_index = None
+
         if modified_only:
             augmented_indices = []
         else:
             if self.keep_nat:
                 augmented_indices = [original_index]
             else:
-                augmented_indices = [index]
+                non_nat_index = audformat.utils.to_segmented_index(
+                    index,
+                    allow_nat=False,
+                )
+                augmented_indices = [non_nat_index]
+
 
         for idx in range(num_variants):
 
@@ -345,8 +354,20 @@ class Augment(audinterface.Process, audobject.Object):
                     {'file': 'string'},
                 )
             else:
+                # We always replace NaT when storing in cache
+                # as `keep_nat` is not serialized.
+                # When `keep_nat` is `True`
+                # we replace the index values later on with `_apply_nat_mask()`
+
+                # Only compute the duration of segments once for all variants
+                if non_nat_index is None:
+                    non_nat_index = audformat.utils.to_segmented_index(
+                        index,
+                        allow_nat=False,
+                    )
+
                 augmented_index = self._augment_index(
-                    index,
+                    non_nat_index,
                     cache_root_idx,
                     remove_root,
                     f'Augment ({idx+1} of {num_variants})',
