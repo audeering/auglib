@@ -1,4 +1,5 @@
 audb
+audeer >=1.21.0
 audiomentations
 audplot >=1.4.5
 ipykernel

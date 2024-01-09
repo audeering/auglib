@@ -1,3 +1,4 @@
+cache_root: .cache/audb
 repositories:
   - name: data-public-local
     backend: artifactory

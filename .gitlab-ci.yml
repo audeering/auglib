@@ -58,6 +58,10 @@ docs:
   artifacts:
     paths:
       - build/
+  cache:
+    key: audb
+    paths:
+      - .cache/audb
 
 pages:
   stage: doc

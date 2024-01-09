@@ -9,6 +9,7 @@ import audeer
 
 
 config = toml.load(audeer.path('..', 'pyproject.toml'))
+current_dir = os.path.dirname(os.path.realpath(__file__))
 
 
 # Project -----------------------------------------------------------------
@@ -56,6 +57,16 @@ copybutton_prompt_is_regexp = True
 napoleon_use_ivar = True  # List of class attributes
 autodoc_inherit_docstrings = False  # disable docstring inheritance
 typehints_fully_qualified = True  # show fully qualified class names
+
+# Code executed at the beginning of each .. plot:: directive
+plot_pre_code = (
+    "import audeer\n"
+    "import audiofile\n"
+    "import matplotlib.pyplot as plt\n"
+    "media_dir = audeer.mkdir("
+    f"'{current_dir}', '..', 'build', 'html', 'api', 'media')\n"
+    "plt.rcParams['font.size'] = 13"
+)
 
 intersphinx_mapping = {
     'audformat': ('https://audeering.github.io/audformat/', None),

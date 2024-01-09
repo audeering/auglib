@@ -1,3 +1,9 @@
+# This module contains all transforms.
+# As ``audobject`` uses the path inside the Python package
+# during serialization,
+# they should never be moved to a different file,
+# and the file should never be renamed.
+
 import math
 import tempfile
 import typing
@@ -26,6 +32,38 @@ from auglib.core.utils import rms_db
 from auglib.core.utils import to_db
 from auglib.core.utils import to_samples
 
+
+__doctest_skip__ = [
+    'AMRNB',
+    'Append',
+    'AppendValue',
+    'BabbleNoise',
+    'BandPass',
+    'BandStop',
+    'Clip',
+    'ClipByRatio',
+    'Compose',
+    'CompressDynamicRange',
+    'Fade',
+    'FFTConvolve',
+    'Function',
+    'GainStage',
+    'HighPass',
+    'LowPass',
+    'Mask',
+    'Mix',
+    'NormalizeByPeak',
+    'PinkNoise',
+    'Prepend',
+    'PrependValue',
+    'Resample',
+    'Select',
+    'Shift',
+    'Tone',
+    'Trim',
+    'WhiteNoiseGaussian',
+    'WhiteNoiseUniform',
+]
 
 DTYPE = 'float32'
 SUPPORTED_FADE_SHAPES = [
@@ -260,13 +298,37 @@ class AMRNB(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> signal = np.array([0.5, 0.5, 0.5, 0.5])
-        >>> transform = AMRNB(7400)
-        >>> augmented_signal = transform(signal, 8000)
-        >>> np.max(augmented_signal)
-        0.017089844
+        .. plot::
+            :context: close-figs
+            :include-source: True
 
-    """
+            >>> import audb
+            >>> import audiofile
+            >>> import audplot
+            >>> import auglib
+            >>> transform = auglib.transform.AMRNB(7400)
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', sampling_rate=8000)
+            >>> signal, sampling_rate = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal, sampling_rate)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-amrnb0.wav'),
+                augmented_signal,
+                8000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-amrnb0.wav"></audio>
+            </p>
+
+    """  # noqa: E501
     def __init__(
             self,
             bit_rate: Union[int, observe.Base],
@@ -345,11 +407,43 @@ class Append(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> signal = np.array([1, 2, 3, 4])
-        >>> aux = np.array([5, 6])
-        >>> transform = Append(aux)
-        >>> transform(signal)
-        array([1., 2., 3., 4., 5., 6.], dtype=float32)
+        Append coughing at the end of a speech signal.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> import audplot
+            >>> import auglib
+            >>> files = audb.load_media(
+            ...     'cough-speech-sneeze',
+            ...     'coughing/kopzxumj430_40.94-41.8.wav',
+            ...     sampling_rate=16000,
+            ... )
+            >>> cough, _ = audiofile.read(files[0])
+            >>> transform = auglib.transform.Append(cough)
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, _ = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-append0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-append0.wav"></audio>
+            </p>
 
     """
     def __init__(
@@ -421,12 +515,39 @@ class AppendValue(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> signal = np.array([1, 2, 3, 4])
-        >>> transform = AppendValue(2, 5, unit='samples')
-        >>> transform(signal)
-        array([1., 2., 3., 4., 5., 5.], dtype=float32)
+        Append zeros at the end of a speech signal.
 
-    """
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> import audplot
+            >>> import auglib
+            >>> transform = auglib.transform.AppendValue(8000, value=0, unit='samples')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, _ = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-append-value0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-append-value0.wav"></audio>
+            </p>
+
+    """  # noqa: E501
     def __init__(
             self,
             duration: Union[int, float, observe.Base, Time],
@@ -463,7 +584,7 @@ class AppendValue(Base):
 
 
 class BabbleNoise(Base):
-    """Adds Babble Noise.
+    r"""Adds Babble Noise.
 
     Babble noise refers to having several speakers
     in the background
@@ -492,12 +613,67 @@ class BabbleNoise(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> seed(1)
-        >>> signal = np.array([0, 0, 0, 0])
-        >>> speech = np.array([1, 0, 0])
-        >>> transform = BabbleNoise([speech], num_speakers=2)
-        >>> transform(signal)
-        array([0. , 0.5, 0.5, 0. ], dtype=float32)
+        Pure babble noise.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audplot
+            >>> import auglib
+            >>> import numpy as np
+            >>> auglib.seed(1)
+            >>> db = audb.load('musan', media='.*speech-librivox-000\d')
+            >>> transform = auglib.transform.BabbleNoise(db.files[:5])
+            >>> signal = np.zeros((1, 30372))
+            >>> augmented_signal = transform(signal)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-babble-noise0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-babble-noise0.wav"></audio>
+            </p>
+
+        Add babble noise consisting of 5 speakers to a speech signal.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audiofile
+            >>> auglib.seed(1)
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, _ = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-babble-noise1.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-babble-noise1.wav"></audio>
+            </p>
 
     """
     @audobject.init_decorator(
@@ -580,12 +756,65 @@ class BandPass(Base):
         ValueError: if ``design`` contains a non-supported value
 
     Examples:
-        >>> signal = np.array([1, 2])
-        >>> transform = BandPass(2000, 1000)
-        >>> transform(signal, 16000)
-        array([0.16591068, 0.53136045], dtype=float32)
+        Filter a speech signal with a 1000 Hz bandwidth,
+        centered at 2000 Hz.
 
-    """
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> import audplot
+            >>> import auglib
+            >>> transform = auglib.transform.BandPass(center=2000, bandwidth=1000)
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, sampling_rate = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal, sampling_rate)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-band-pass0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-band-pass0.wav"></audio>
+            </p>
+
+        Inspect its magnitude spectrum.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audmath
+            >>> import matplotlib.pyplot as plt
+            >>> import seaborn as sns
+            >>> sigs = [signal, augmented_signal]
+            >>> colors = ['#5d6370', '#e13b41']
+            >>> for sig, color in zip(sigs, colors):
+            ...     magnitude, f = plt.mlab.magnitude_spectrum(sig, Fs=sampling_rate)
+            ...     # Smooth magnitude
+            ...     magnitude = np.convolve(magnitude, np.ones(14) / 14, mode='same')
+            ...     plt.plot(f, audmath.db(magnitude), color=color)
+            >>> plt.xlim([10, 8000])
+            >>> plt.ylim([-100, -45])
+            >>> plt.ylabel('Magnitude / dB')
+            >>> plt.xlabel('Frequency / Hz')
+            >>> plt.legend(['signal', 'augmented signal'])
+            >>> plt.grid(alpha=0.4)
+            >>> sns.despine()
+            >>> plt.tight_layout()
+
+    """  # noqa: E501
     def __init__(
             self,
             center: Union[float, observe.Base],
@@ -656,12 +885,65 @@ class BandStop(Base):
         ValueError: if ``design`` contains a non-supported value
 
     Examples:
-        >>> signal = np.array([1, 2])
-        >>> transform = BandStop(2000, 1000)
-        >>> transform(signal, 16000)
-        array([0.83408934, 1.4686396 ], dtype=float32)
+        Filter a speech signal with a 3000 Hz hole,
+        centered at 2000 Hz.
 
-    """
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> import audplot
+            >>> import auglib
+            >>> transform = auglib.transform.BandStop(center=2000, bandwidth=3000)
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, sampling_rate = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal, sampling_rate)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-band-stop0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-band-stop0.wav"></audio>
+            </p>
+
+        Inspect its magnitude spectrum.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audmath
+            >>> import matplotlib.pyplot as plt
+            >>> import seaborn as sns
+            >>> sigs = [signal, augmented_signal]
+            >>> colors = ['#5d6370', '#e13b41']
+            >>> for sig, color in zip(sigs, colors):
+            ...     magnitude, f = plt.mlab.magnitude_spectrum(sig, Fs=sampling_rate)
+            ...     # Smooth magnitude
+            ...     magnitude = np.convolve(magnitude, np.ones(14) / 14, mode='same')
+            ...     plt.plot(f, audmath.db(magnitude), color=color)
+            >>> plt.xlim([10, 8000])
+            >>> plt.ylim([-100, -45])
+            >>> plt.ylabel('Magnitude / dB')
+            >>> plt.xlabel('Frequency / Hz')
+            >>> plt.legend(['signal', 'augmented signal'])
+            >>> plt.grid(alpha=0.4)
+            >>> sns.despine()
+            >>> plt.tight_layout()
+
+    """  # noqa: E501
     def __init__(
             self,
             center: Union[float, observe.Base],
@@ -738,10 +1020,37 @@ class Clip(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> signal = np.array([1, 2, -3, 4])
-        >>> transform = Clip(threshold=to_db(2))
-        >>> transform(signal)
-        array([ 1.,  2., -2.,  2.], dtype=float32)
+        Clip a speech signal at -10 dB.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> import audplot
+            >>> import auglib
+            >>> transform = auglib.transform.Clip(threshold=-10)
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, sampling_rate = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal, sampling_rate)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-clip0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-clip0.wav"></audio>
+            </p>
 
     """
     def __init__(
@@ -820,10 +1129,37 @@ class ClipByRatio(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> signal = np.array([1, 2, 3, 4])
-        >>> transform = ClipByRatio(0.25)
-        >>> transform(signal).round(4)
-        array([1., 2., 3., 3.], dtype=float32)
+        Clip 5% of the samples of a speech signal.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> import audplot
+            >>> import auglib
+            >>> transform = auglib.transform.ClipByRatio(0.05)
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, sampling_rate = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal, sampling_rate)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-clip-by-ratio0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-clip-by-ratio0.wav"></audio>
+            </p>
 
     """
     def __init__(
@@ -888,10 +1224,119 @@ class Compose(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> signal = np.array([0.5, -0.5, 0.5, -0.5])
-        >>> transform = Compose([GainStage(12), Clip()])
-        >>> transform(signal)
-        array([ 1., -1.,  1., -1.], dtype=float32)
+        Append a cough to a speech signal,
+        and then add pink noise and clipping to the whole signal.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> import audplot
+            >>> import auglib
+            >>> auglib.seed(0)
+            >>> files = audb.load_media(
+            ...     'cough-speech-sneeze',
+            ...     'coughing/kopzxumj430_40.94-41.8.wav',
+            ...     sampling_rate=16000,
+            ... )
+            >>> cough, _ = audiofile.read(files[0])
+            >>> transform = auglib.transform.Compose(
+            ...     [
+            ...         auglib.transform.Append(cough),
+            ...         auglib.transform.PinkNoise(snr_db=10),
+            ...         auglib.transform.ClipByRatio(0.02),
+            ...     ],
+            ... )
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, _ = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-compose0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-compose0.wav"></audio>
+            </p>
+
+        Add pink noise and clipping to a speech signal,
+        and afterwards append coughing.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> transform = auglib.transform.Compose(
+            ...     [
+            ...         auglib.transform.PinkNoise(snr_db=10),
+            ...         auglib.transform.ClipByRatio(0.02),
+            ...         auglib.transform.Append(cough),
+            ...     ],
+            ... )
+            >>> augmented_signal = transform(signal)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-compose1.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-compose1.wav"></audio>
+            </p>
+
+        Add pink noise and clipping to a cough,
+        and append it to a speech signal.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> transform = auglib.transform.Append(
+            ...     cough,
+            ...     transform=auglib.transform.Compose(
+            ...         [
+            ...             auglib.transform.PinkNoise(snr_db=10),
+            ...             auglib.transform.ClipByRatio(0.02),
+            ...         ],
+            ...     ),
+            ... )
+            >>> augmented_signal = transform(signal)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-compose2.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-compose2.wav"></audio>
+            </p>
 
     """
     def __init__(
@@ -980,16 +1425,45 @@ class CompressDynamicRange(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> signal = np.array([0.5, 0.5], dtype='float32')
-        >>> transform = CompressDynamicRange(-6, 0.5)
-        >>> transform(signal, 16000).round(4)
-        array([0.5004, 0.5008], dtype=float32)
+        Attenuate all samples of a speech signal
+        above -15 dB by a factor of 4.
 
-    """
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> import audplot
+            >>> import auglib
+            >>> transform = auglib.transform.CompressDynamicRange(-15, 1/4)
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, sampling_rate = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal, sampling_rate)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-compress-dynamic-range0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-compress-dynamic-range0.wav"></audio>
+            </p>
+
+    """  # noqa: E501
     def __init__(
             self,
             threshold_db: Union[float, observe.Base],
-            ratio: Union[float, observe.Base], *,
+            ratio: Union[float, observe.Base],
+            *,
             attack_time: Union[float, observe.Base] = 0.01,
             release_time: Union[float, observe.Base] = 0.02,
             knee_radius_db: Union[float, observe.Base] = 4.0,
@@ -1093,8 +1567,8 @@ class Fade(Base):
     The following figure shows all available shapes
     by the example of a fade-in.
 
-    .. jupyter-execute::
-        :hide-code:
+    .. plot::
+        :include-source: False
 
         import auglib
         import matplotlib.pyplot as plt
@@ -1102,6 +1576,7 @@ class Fade(Base):
         import numpy as np
         import seaborn as sns
 
+        plt.rcParams['font.size'] = 13
         for shape in auglib.core.transform.SUPPORTED_FADE_SHAPES:
             transform = auglib.transform.Fade(
                 in_dur=101,
@@ -1119,8 +1594,6 @@ class Fade(Base):
         ax = plt.gca()
         ax.xaxis.set_major_formatter(mtick.PercentFormatter())
         ax.tick_params(axis=u'both', which=u'both',length=0)
-        fig = plt.gcf()
-        fig.set_size_inches(5.12, 3.84)
         plt.xlim([-1.2, 100.2])
         plt.ylim([-0.02, 1])
         sns.despine(left=True, bottom=True)
@@ -1152,10 +1625,49 @@ class Fade(Base):
             are greater or equal to 0
 
     Examples:
-        >>> signal = np.array([1, 1, 1, 1, 1, 1])
-        >>> transform = Fade(in_dur=1, out_dur=1, unit='samples')
-        >>> transform(signal)
-        array([0., 1., 1., 1., 1., 0.], dtype=float32)
+        Fade in a speech signal by 0.2 s,
+        and fade out by 0.7 s.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> import audplot
+            >>> import auglib
+            >>> transform = auglib.transform.Fade(in_dur=0.2, out_dur=0.7)
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, sampling_rate = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal, sampling_rate)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-fade0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-fade0.wav"></audio>
+            </p>
+
+        Inspect fade window.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import numpy as np
+            >>> signal = np.ones(signal.shape)
+            >>> augmented_signal = transform(signal, sampling_rate)
+            >>> audplot.waveform(augmented_signal)
 
     """
     def __init__(
@@ -1280,16 +1792,67 @@ class FFTConvolve(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> signal = np.array([1, 2, 3, 4])
-        >>> aux = np.array([0, 1])
-        >>> transform = FFTConvolve(aux)
-        >>> np.abs(transform(signal).round(4))
-        array([0.,  1.,  2.,  3.,  4.], dtype=float32)
-        >>> transform = FFTConvolve(aux, keep_tail=False)
-        >>> np.abs(transform(signal).round(4))
-        array([0., 1., 2., 3.], dtype=float32)
+        Filter a speech signal by a `Telefunken M201/1`_ microphone.
 
-    """
+        .. _Telefunken M201/1: https://micirp.blogspot.com/2013/11/telefunken-m2011.html
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> import audplot
+            >>> import auglib
+            >>> files = audb.load_media('micirp', 'dirs/Telefunken_M201.wav', sampling_rate=16000)
+            >>> transform = auglib.transform.FFTConvolve(files[0])
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, _ = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-fft-convolve0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-fft-convolve0.wav"></audio>
+            </p>
+
+        Inspect its magnitude spectrum.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audmath
+            >>> import matplotlib.pyplot as plt
+            >>> import seaborn as sns
+            >>> sigs = [signal, augmented_signal]
+            >>> colors = ['#5d6370', '#e13b41']
+            >>> for sig, color in zip(sigs, colors):
+            ...     magnitude, f = plt.mlab.magnitude_spectrum(sig, Fs=sampling_rate)
+            ...     # Smooth magnitude
+            ...     magnitude = np.convolve(magnitude, np.ones(14) / 14, mode='same')
+            ...     plt.plot(f, audmath.db(magnitude), color=color)
+            >>> plt.xlim([10, 8000])
+            >>> plt.ylim([-100, -45])
+            >>> plt.ylabel('Magnitude / dB')
+            >>> plt.xlabel('Frequency / Hz')
+            >>> plt.legend(['signal', 'augmented signal'])
+            >>> plt.grid(alpha=0.4)
+            >>> sns.despine()
+            >>> plt.tight_layout()
+
+    """  # noqa: E501
     def __init__(
             self,
             aux: Union[str, observe.Base, np.ndarray, Base],
@@ -1363,22 +1926,76 @@ class Function(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> signal = np.array([1, 2, 3, 4])
-        >>> def plus_c(x, sr, c):
-        ...     return x + c
-        >>> transform = Function(plus_c, {'c': 1})
-        >>> transform(signal)
-        array([2., 3., 4., 5.], dtype=float32)
-        >>> def halve(x, sr):
-        ...     return x[:, ::2]
-        >>> transform = Function(halve)
-        >>> transform(signal)
-        array([1., 3.], dtype=float32)
-        >>> transform = Function(lambda x, sr: x * 2)
-        >>> transform(signal)
-        array([2., 4., 6., 8.], dtype=float32)
+        Define a shutter function
+        and set every second sample to 0
+        in a speech signal.
 
-    """
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> import audplot
+            >>> import auglib
+            >>> import numpy as np
+            >>> def shutter(signal, sampling_rate, block=1, non_block=1):
+            ...     n = 0
+            ...     augmented_signal = signal.copy()
+            ...     while n < augmented_signal.shape[1]:
+            ...         augmented_signal[:, n + non_block:n + non_block + block] = 0
+            ...         n += block + non_block
+            ...     return augmented_signal
+            >>> transform = auglib.transform.Function(shutter)
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, _ = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-function0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-function0.wav"></audio>
+            </p>
+
+        Repeatedly set 400 samples to zero,
+        and leave 800 samples untouched of a speech signal.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> transform = auglib.transform.Function(shutter, {'block': 400, 'non_block': 800})
+            >>> augmented_signal = transform(signal)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-function1.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-function1.wav"></audio>
+            </p>
+
+    """  # noqa: E501
     @audobject.init_decorator(
         resolvers={
             'function': audobject.resolver.Function,
@@ -1440,10 +2057,39 @@ class GainStage(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> signal = np.array([1, 2, 3, 4])
-        >>> transform = GainStage(to_db(2))
-        >>> transform(signal)
-        array([2., 4., 6., 8.], dtype=float32)
+        Half the amplitude values
+        of a speech signal.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> import audplot
+            >>> import auglib
+            >>> gain = auglib.utils.to_db(0.5)
+            >>> transform = auglib.transform.GainStage(gain)
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, _ = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-gain-stage0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-gain-stage0.wav"></audio>
+            </p>
 
     """
     def __init__(
@@ -1510,12 +2156,97 @@ class HighPass(Base):
         ValueError: if ``design`` contains a non-supported value
 
     Examples:
-        >>> signal = np.array([1, 2])
-        >>> transform = HighPass(7000, order=4)
-        >>> transform(signal, 16000)
-        array([ 0.0009335 , -0.00464588], dtype=float32)
+        Filter a speech signal
+        with a 4000 Hz,
+        4th order high pass.
 
-    """
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> import audplot
+            >>> import auglib
+            >>> transform = auglib.transform.HighPass(4000, order=4)
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, sampling_rate = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal, sampling_rate)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-high-pass0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-high-pass0.wav"></audio>
+            </p>
+
+        Inspect its magnitude spectrum.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audmath
+            >>> import matplotlib.pyplot as plt
+            >>> import seaborn as sns
+            >>> sigs = [signal, augmented_signal]
+            >>> colors = ['#5d6370', '#e13b41']
+            >>> for sig, color in zip(sigs, colors):
+            ...     magnitude, f = plt.mlab.magnitude_spectrum(sig, Fs=sampling_rate)
+            ...     # Smooth magnitude
+            ...     magnitude = np.convolve(magnitude, np.ones(14) / 14, mode='same')
+            ...     plt.plot(f, audmath.db(magnitude), color=color)
+            >>> plt.xlim([10, 8000])
+            >>> plt.ylim([-100, -45])
+            >>> plt.ylabel('Magnitude / dB')
+            >>> plt.xlabel('Frequency / Hz')
+            >>> plt.legend(['signal', 'augmented signal'])
+            >>> plt.grid(alpha=0.4)
+            >>> sns.despine()
+            >>> plt.tight_layout()
+
+        The high pass can also filter signals
+        added by other transforms.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> transform = auglib.transform.Mix(
+            ...     auglib.transform.WhiteNoiseGaussian(),
+            ...     snr_db=10,
+            ...     transform=auglib.transform.HighPass(7000, order=4),
+            ... )
+            >>> augmented_signal = transform(signal, sampling_rate)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-high-pass1.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-high-pass1.wav"></audio>
+            </p>
+
+    """  # noqa: E501
     def __init__(
             self,
             cutoff: Union[float, observe.Base],
@@ -1581,12 +2312,97 @@ class LowPass(Base):
         ValueError: if ``design`` contains a non-supported value
 
     Examples:
-        >>> signal = np.array([1, 2])
-        >>> transform = LowPass(100)
-        >>> transform(signal, 16000)
-        array([0.01925927, 0.07629526], dtype=float32)
+        Filter a speech signal
+        with a 2000 Hz,
+        2th order low pass.
 
-    """
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> import audplot
+            >>> import auglib
+            >>> transform = auglib.transform.LowPass(2000, order=2)
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, sampling_rate = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal, sampling_rate)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-low-pass0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-low-pass0.wav"></audio>
+            </p>
+
+        Inspect its magnitude spectrum.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audmath
+            >>> import matplotlib.pyplot as plt
+            >>> import seaborn as sns
+            >>> sigs = [signal, augmented_signal]
+            >>> colors = ['#5d6370', '#e13b41']
+            >>> for sig, color in zip(sigs, colors):
+            ...     magnitude, f = plt.mlab.magnitude_spectrum(sig, Fs=sampling_rate)
+            ...     # Smooth magnitude
+            ...     magnitude = np.convolve(magnitude, np.ones(14) / 14, mode='same')
+            ...     plt.plot(f, audmath.db(magnitude), color=color)
+            >>> plt.xlim([10, 8000])
+            >>> plt.ylim([-100, -45])
+            >>> plt.ylabel('Magnitude / dB')
+            >>> plt.xlabel('Frequency / Hz')
+            >>> plt.legend(['signal', 'augmented signal'])
+            >>> plt.grid(alpha=0.4)
+            >>> sns.despine()
+            >>> plt.tight_layout()
+
+        The low pass can also filter signals
+        added by other transforms.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> transform = auglib.transform.Mix(
+            ...     auglib.transform.WhiteNoiseGaussian(),
+            ...     snr_db=10,
+            ...     transform=auglib.transform.LowPass(2000, order=2),
+            ... )
+            >>> augmented_signal = transform(signal, sampling_rate)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-low-pass1.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-low-pass1.wav"></audio>
+            </p>
+
+    """  # noqa: E501
     def __init__(
             self,
             cutoff: Union[float, observe.Base],
@@ -1668,34 +2484,103 @@ class Mask(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> signal = np.array([1, 1, 1, 1, 1, 1])
-        >>> Mask(
-        ...     GainStage(to_db(2)),
-        ...     start_pos=2,
-        ...     duration=3,
-        ...     unit='samples',
-        ... )(signal)
-        array([2., 2., 1., 1., 1., 2.], dtype=float32)
-        >>> Mask(
-        ...     GainStage(to_db(2)),
-        ...     start_pos=2,
-        ...     duration=3,
-        ...     unit='samples',
-        ...     invert=True,
-        ... )(signal)
-        array([1., 1., 2., 2., 2., 1.], dtype=float32)
-        >>> Mask(
-        ...     GainStage(to_db(2)),
-        ...     step=2,
-        ...     unit='samples',
-        ... )(signal)
-        array([1., 1., 2., 2., 1., 1.], dtype=float32)
-        >>> Mask(
-        ...     GainStage(to_db(2)),
-        ...     step=(2, 1),
-        ...     unit='samples',
-        ... )(signal)
-        array([1., 1., 2., 1., 1., 2.], dtype=float32)
+        Reduce the gain of a speech signal by -20 dB,
+        only in the region outside of 0.5 s to 1.0 s.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> import audplot
+            >>> import auglib
+            >>> transform = auglib.transform.Mask(
+            ...     auglib.transform.GainStage(-20),
+            ...     start_pos=0.5,
+            ...     duration=0.5,
+            ... )
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, sampling_rate = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal, sampling_rate)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-mask0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-mask0.wav"></audio>
+            </p>
+
+        Invert the region in which the gain is reduced.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> transform = auglib.transform.Mask(
+            ...     auglib.transform.GainStage(-20),
+            ...     start_pos=0.5,
+            ...     duration=0.5,
+            ...     invert=True,
+            ... )
+            >>> augmented_signal = transform(signal, sampling_rate)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-mask1.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-mask1.wav"></audio>
+            </p>
+
+        Repeat a mask of length 0.2 s
+        after a pause of 0.3 s.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> transform = auglib.transform.Mask(
+            ...     auglib.transform.GainStage(-20),
+            ...     step=(0.2, 0.3),
+            ... )
+            >>> augmented_signal = transform(signal, sampling_rate)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-mask2.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-mask2.wav"></audio>
+            </p>
 
     """  # noqa: E501
     @audobject.init_decorator(
@@ -1883,11 +2768,86 @@ class Mix(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> signal = np.array([1, 2, 3, 4])
-        >>> aux = np.array([1, 1])
-        >>> transform = Mix(aux, num_repeat=2, unit='samples')
-        >>> transform(signal)
-        array([3., 4., 3., 4.], dtype=float32)
+        Select randomly one of 10 noise files
+        and add it with a SNR of 10 dB
+        to a speech signal.
+        If the noise signal shorter
+        than the speech signal,
+        it will be looped.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> import audplot
+            >>> import auglib
+            >>> auglib.seed(0)
+            >>> db = audb.load('musan', media='.*noise-free-sound-000\d')
+            >>> transform = auglib.transform.Mix(
+            ...     auglib.observe.List(db.files, draw=True),
+            ...     loop_aux=True,
+            ...     snr_db=10,
+            ... )
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, sampling_rate = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal, sampling_rate)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-mix0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-mix0.wav"></audio>
+            </p>
+
+        Add a cough to a speech signal,
+        starting at a random position between 0% and 90%
+        of the length of the speech signal.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> auglib.seed(0)
+            >>> files = audb.load_media(
+            ...     'cough-speech-sneeze',
+            ...     'coughing/kopzxumj430_40.94-41.8.wav',
+            ...     sampling_rate=16000,
+            ... )
+            >>> transform = auglib.transform.Mix(
+            ...     files[0],
+            ...     write_pos_base=auglib.observe.FloatUni(0, .9),
+            ...     unit='relative',
+            ... )
+            >>> augmented_signal = transform(signal, sampling_rate)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-mix1.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-mix1.wav"></audio>
+            </p>
 
     """
     def __init__(
@@ -2045,15 +3005,40 @@ class NormalizeByPeak(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> signal = np.array([0.5, -0.5, 0.5, -0.5])
-        >>> transform = NormalizeByPeak()
-        >>> transform(signal)
-        array([ 1., -1.,  1., -1.], dtype=float32)
-        >>> transform = NormalizeByPeak(peak_db=-3)
-        >>> transform(signal).round(4)
-        array([ 0.7079, -0.7079,  0.7079, -0.7079], dtype=float32)
+        Normalize the peak value of a speech signal
+        to -10 dB.
 
-    """
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> import audplot
+            >>> import auglib
+            >>> transform = auglib.transform.NormalizeByPeak(peak_db=-10)
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, sampling_rate = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal, sampling_rate)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-normalize-by-peak0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-normalize-by-peak0.wav"></audio>
+            </p>
+
+    """  # noqa: E501
     def __init__(
             self,
             *,
@@ -2091,6 +3076,12 @@ class NormalizeByPeak(Base):
 class PinkNoise(Base):
     r"""Adds pink noise.
 
+    Pink noise or 1/f noise
+    is a signal with a frequency spectrum
+    such that the power spectral density
+    is inversely proportional to the frequency of the signal.
+    It's magnitude in dB falls 10 dB each octave.
+
     Args:
         gain_db: gain in decibels
             Ignored if ``snr_db`` is not ``None``
@@ -2103,12 +3094,89 @@ class PinkNoise(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> seed(0)
-        >>> signal = np.array([0, 0, 0, 0])
-        >>> PinkNoise()(signal).round(4)
-        array([ 0.4376, -1.    , -0.3993,  0.9617], dtype=float32)
+        Pure pink noise.
 
-    """
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audplot
+            >>> import auglib
+            >>> import numpy as np
+            >>> auglib.seed(0)
+            >>> transform = auglib.transform.PinkNoise(gain_db=-10)
+            >>> signal = np.zeros((1, 16000))
+            >>> augmented_signal = transform(signal)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-pink-noise0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-pink-noise0.wav"></audio>
+            </p>
+
+        It's magnitude falls 10 dB each octave.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audmath
+            >>> import matplotlib.pyplot as plt
+            >>> import seaborn as sns
+            >>> magnitude, f = plt.mlab.magnitude_spectrum(augmented_signal[0, :], Fs=16000)
+            >>> # Smooth magnitude
+            >>> magnitude = np.convolve(magnitude, np.ones(14) / 14, mode='same')
+            >>> plt.semilogx(f, audmath.db(magnitude), color='#e13b41')
+            >>> plt.xlim([10, 10010])
+            >>> plt.ylim([-75, -45])
+            >>> plt.ylabel('Magnitude / dB')
+            >>> plt.xlabel('Frequency / Hz')
+            >>> plt.grid(alpha=0.4)
+            >>> sns.despine()
+            >>> plt.tight_layout()
+
+        Pink Noise added with an SNR of 10 dB to speech.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> transform = auglib.transform.PinkNoise(snr_db=10)
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, _ = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-pink-noise1.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-pink-noise1.wav"></audio>
+            </p>
+
+    """  # noqa: E501
     def __init__(
             self,
             *,
@@ -2202,11 +3270,43 @@ class Prepend(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> signal = np.array([1, 2, 3, 4])
-        >>> aux = np.array([5, 6])
-        >>> transform = Prepend(aux)
-        >>> transform(signal)
-        array([5., 6., 1., 2., 3., 4.], dtype=float32)
+        Prepend coughing at the start of a speech signal.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> import audplot
+            >>> import auglib
+            >>> files = audb.load_media(
+            ...     'cough-speech-sneeze',
+            ...     'coughing/kopzxumj430_40.94-41.8.wav',
+            ...     sampling_rate=16000,
+            ... )
+            >>> cough, _ = audiofile.read(files[0])
+            >>> transform = auglib.transform.Prepend(cough)
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, _ = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-prepend0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-prepend0.wav"></audio>
+            </p>
 
     """
     def __init__(
@@ -2278,12 +3378,39 @@ class PrependValue(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> signal = np.array([1., 2., 3., 4.])
-        >>> transform = PrependValue(2, 5, unit='samples')
-        >>> transform(signal)
-        array([5., 5., 1., 2., 3., 4.], dtype=float32)
+        Prepend zeros at the start of a speech signal.
 
-    """
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> import audplot
+            >>> import auglib
+            >>> transform = auglib.transform.PrependValue(8000, value=0, unit='samples')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, _ = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-prepend-value0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-prepend-value0.wav"></audio>
+            </p>
+
+    """  # noqa: E501
     def __init__(
             self,
             duration: Union[int, float, observe.Base, Time],
@@ -2335,12 +3462,132 @@ class Resample(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> signal = np.array([0., 0., 0., 0.])
-        >>> transform = Resample(8000)
-        >>> transform(signal, 16000)
-        array([0., 0.], dtype=float32)
+        When applying a transform on a file with :class:`auglib.Augment`,
+        it will not change its sampling rate,
+        but its number of samples.
+        Hence,
+        we assume here as well
+        that the sampling rate
+        of the augmented signal
+        stays at 16000 Hz.
 
-    """
+        Resample a speech signal to 8000 Hz,
+        to speed up the signal.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> import audplot
+            >>> import auglib
+            >>> transform = auglib.transform.Resample(8000)
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, sampling_rate = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal, sampling_rate)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-resample0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-resample0.wav"></audio>
+            </p>
+
+        Inspect its magnitude spectrum.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audmath
+            >>> import matplotlib.pyplot as plt
+            >>> import seaborn as sns
+            >>> sigs = [signal, augmented_signal]
+            >>> colors = ['#5d6370', '#e13b41']
+            >>> for sig, color in zip(sigs, colors):
+            ...     magnitude, f = plt.mlab.magnitude_spectrum(sig, Fs=sampling_rate)
+            ...     # Smooth magnitude
+            ...     magnitude = np.convolve(magnitude, np.ones(14) / 14, mode='same')
+            ...     plt.plot(f, audmath.db(magnitude), color=color)
+            >>> plt.xlim([10, 8000])
+            >>> plt.ylim([-100, -45])
+            >>> plt.ylabel('Magnitude / dB')
+            >>> plt.xlabel('Frequency / Hz')
+            >>> plt.legend(['signal', 'augmented signal'])
+            >>> plt.grid(alpha=0.4)
+            >>> sns.despine()
+            >>> plt.tight_layout()
+
+        Removing the upper half of the signal
+        by frst resampling it to 8000 Hz,
+        and then to 32000 Hz.
+        Again,
+        we listen to the augmented signal
+        at its original sampling rate
+        of 16000 Hz.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> transform = auglib.transform.Compose(
+            ...     [
+            ...         auglib.transform.Resample(8000),
+            ...         auglib.transform.Resample(32000),
+            ...     ],
+            ... )
+            >>> augmented_signal = transform(signal, sampling_rate)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-resample1.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-resample1.wav"></audio>
+            </p>
+
+        Inspect its magnitude spectrum.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> sigs = [signal, augmented_signal]
+            >>> for sig, color in zip(sigs, colors):
+            ...     magnitude, f = plt.mlab.magnitude_spectrum(sig, Fs=sampling_rate)
+            ...     # Smooth magnitude
+            ...     magnitude = np.convolve(magnitude, np.ones(14) / 14, mode='same')
+            ...     plt.plot(f, audmath.db(magnitude), color=color)
+            >>> plt.xlim([10, 8000])
+            >>> plt.ylim([-100, -45])
+            >>> plt.ylabel('Magnitude / dB')
+            >>> plt.xlabel('Frequency / Hz')
+            >>> plt.legend(['signal', 'augmented signal'])
+            >>> plt.grid(alpha=0.4)
+            >>> sns.despine()
+            >>> plt.tight_layout()
+
+    """  # noqa: E501
     def __init__(
             self,
             target_rate: typing.Union[int, observe.List],
@@ -2395,12 +3642,44 @@ class Select(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> seed(0)
-        >>> signal = np.array([1, 2, 3, 4])
-        >>> aux = np.array([0., 0.])
-        >>> transform = Select([Prepend(aux), Append(aux)])
-        >>> transform(signal)
-        array([0., 0., 1., 2., 3., 4.], dtype=float32)
+        Select randomly a transform
+        and apply to a speech signal.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> import audplot
+            >>> import auglib
+            >>> auglib.seed(0)
+            >>> transform = auglib.transform.Select(
+            ...     [
+            ...         auglib.transform.WhiteNoiseGaussian(snr_db=10),
+            ...         auglib.transform.ClipByRatio(0.1),
+            ...     ],
+            ... )
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, _ = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-select0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-select0.wav"></audio>
+            </p>
 
     """
     def __init__(
@@ -2448,10 +3727,37 @@ class Shift(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> signal = np.array([1, 2, 3, 4])
-        >>> transform = Shift(1, unit='samples')
-        >>> transform(signal)
-        array([2., 3., 4., 1.], dtype=float32)
+        Shift a speech signal by 1 s.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> import audplot
+            >>> import auglib
+            >>> transform = auglib.transform.Shift(1)
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, sampling_rate = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal, sampling_rate)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-append-shift0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-append-shift0.wav"></audio>
+            </p>
 
     """
     def __init__(
@@ -2526,20 +3832,68 @@ class Tone(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> signal = np.array([0, 0, 0, 0])
-        >>> sampling_rate = 16000
-        >>> transform = Tone(4000, shape='sine')
-        >>> transform(signal, sampling_rate).round(4)
-        array([ 0.,  1., -0., -1.], dtype=float32)
-        >>> transform = Tone(4000, shape='square')
-        >>> transform(signal, sampling_rate)
-        array([-1., -1.,  1.,  1.], dtype=float32)
-        >>> transform = Tone(4000, shape='sawtooth')
-        >>> transform(signal, sampling_rate)
-        array([-1. , -0.5,  0. ,  0.5], dtype=float32)
-        >>> transform = Tone(4000, shape='triangle')
-        >>> transform(signal, sampling_rate)
-        array([ 1.        ,  0.        , -0.99999994,  0.        ], dtype=float32)
+        Pure tone with 100 Hz.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audplot
+            >>> import auglib
+            >>> import numpy as np
+            >>> transform = auglib.transform.Tone(100, gain_db=-10)
+            >>> sampling_rate = 16000
+            >>> signal = np.zeros((1, 1600))
+            >>> augmented_signal = transform(signal, sampling_rate)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-tone0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-tone0.wav"></audio>
+            </p>
+
+        Add a triangle shaped tone with 4000 Hz
+        to a speech signal
+        with an SNR of 20 dB.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> transform = auglib.transform.Tone(4000, shape='triangle', snr_db=20)
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, sampling_rate = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal, sampling_rate)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-tone1.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-tone1.wav"></audio>
+            </p>
 
     """  # noqa: E501
     def __init__(
@@ -2725,33 +4079,100 @@ class Trim(Base):
         ValueError: if ``fill_pos`` contains a non-supported value
 
     Examples:
-        >>> signal = np.array([1, 2, 3, 4])
-        >>> Trim(start_pos=1, unit='samples')(signal)
-        array([2., 3., 4.], dtype=float32)
-        >>> Trim(end_pos=1, unit='samples')(signal)
-        array([1., 2., 3.], dtype=float32)
-        >>> Trim(start_pos=None, duration=2, unit='samples')(signal)
-        array([2., 3.], dtype=float32)
-        >>> Trim(start_pos=2, duration=4, unit='samples', fill='loop')(signal)
-        array([3., 4., 3., 4.], dtype=float32)
-        >>> Trim(
-        ...     start_pos=1,
-        ...     end_pos=1,
-        ...     duration=4,
-        ...     unit='samples',
-        ...     fill='zeros',
-        ... )(signal)
-        array([2., 3., 0., 0.], dtype=float32)
-        >>> Trim(
-        ...     start_pos=3,
-        ...     duration=4,
-        ...     unit='samples',
-        ...     fill='zeros',
-        ...     fill_pos='both',
-        ... )(signal)
-        array([0., 4., 0., 0.], dtype=float32)
+        Remove first 0.2 s and last 0.2 s of a speech signal.
 
-    """
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> import audplot
+            >>> import auglib
+            >>> transform = auglib.transform.Trim(start_pos=0.2, end_pos=0.2)
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, sampling_rate = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal, sampling_rate)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-append-trim0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-append-trim0.wav"></audio>
+            </p>
+
+        Trim speech signal to half its current length.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> transform = auglib.transform.Trim(duration=0.5, unit='relative')
+            >>> augmented_signal = transform(signal, sampling_rate)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-append-trim1.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-append-trim1.wav"></audio>
+            </p>
+
+        Trim beginning and end of a speech signal,
+        and request a fixed duration.
+        If the trimmed signal is shorter
+        than the requested duration,
+        it is looped.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> transform = auglib.transform.Trim(
+            ...     start_pos=0.5,
+            ...     end_pos=0.5,
+            ...     duration=2.0,
+            ...     fill='loop',
+            ... )
+            >>> augmented_signal = transform(signal, sampling_rate)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-append-trim2.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-append-trim2.wav"></audio>
+            </p>
+
+    """  # noqa: E501
     def __init__(
             self,
             *,
@@ -3013,13 +4434,89 @@ class WhiteNoiseGaussian(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> seed(0)
-        >>> signal = np.array([0, 0])
-        >>> transform = WhiteNoiseGaussian()
-        >>> transform(signal)
-        array([ 0.03771907, -0.03963146], dtype=float32)
+        Pure Gaussian white noise.
 
-    """
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audplot
+            >>> import auglib
+            >>> import numpy as np
+            >>> auglib.seed(0)
+            >>> transform = auglib.transform.WhiteNoiseGaussian(gain_db=-10)
+            >>> signal = np.zeros((1, 16000))
+            >>> augmented_signal = transform(signal)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-white-noise-gaussian0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-white-noise-gaussian0.wav"></audio>
+            </p>
+
+        It has a flat magnitude spectrum.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audmath
+            >>> import matplotlib.pyplot as plt
+            >>> import seaborn as sns
+            >>> magnitude, f = plt.mlab.magnitude_spectrum(augmented_signal[0, :], Fs=16000)
+            >>> # Smooth magnitude
+            >>> magnitude = np.convolve(magnitude, np.ones(14) / 14, mode='same')
+            >>> plt.semilogx(f, audmath.db(magnitude), color='#e13b41')
+            >>> plt.xlim([10, 10010])
+            >>> plt.ylim([-75, -45])
+            >>> plt.ylabel('Magnitude / dB')
+            >>> plt.xlabel('Frequency / Hz')
+            >>> plt.grid(alpha=0.4)
+            >>> sns.despine()
+            >>> plt.tight_layout()
+
+        Gaussian white noise added with an SNR of 10 dB to speech.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> transform = auglib.transform.WhiteNoiseGaussian(snr_db=10)
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, _ = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-white-noise-gaussian1.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-white-noise-gaussian1.wav"></audio>
+            </p>
+
+    """  # noqa: E501
     def __init__(
             self,
             *,
@@ -3086,13 +4583,89 @@ class WhiteNoiseUniform(Base):
         bypass_prob: probability to bypass the transformation
 
     Examples:
-        >>> seed(0)
-        >>> signal = np.array([0, 0])
-        >>> transform = WhiteNoiseUniform()
-        >>> transform(signal)
-        array([ 0.27392337, -0.46042657], dtype=float32)
+        Pure uniform white noise.
 
-    """
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audplot
+            >>> import auglib
+            >>> import numpy as np
+            >>> auglib.seed(0)
+            >>> transform = auglib.transform.WhiteNoiseUniform(gain_db=-15)
+            >>> signal = np.zeros((1, 16000))
+            >>> augmented_signal = transform(signal)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-white-noise-uniform0.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-white-noise-uniform0.wav"></audio>
+            </p>
+
+        It has a flat magnitude spectrum.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audmath
+            >>> import matplotlib.pyplot as plt
+            >>> import seaborn as sns
+            >>> magnitude, f = plt.mlab.magnitude_spectrum(augmented_signal[0, :], Fs=16000)
+            >>> # Smooth magnitude
+            >>> magnitude = np.convolve(magnitude, np.ones(14) / 14, mode='same')
+            >>> plt.semilogx(f, audmath.db(magnitude), color='#e13b41')
+            >>> plt.xlim([10, 10010])
+            >>> plt.ylim([-75, -45])
+            >>> plt.ylabel('Magnitude / dB')
+            >>> plt.xlabel('Frequency / Hz')
+            >>> plt.grid(alpha=0.4)
+            >>> sns.despine()
+            >>> plt.tight_layout()
+
+        Uniform white noise added with an SNR of 10 dB to speech.
+
+        .. plot::
+            :context: close-figs
+            :include-source: True
+
+            >>> import audb
+            >>> import audiofile
+            >>> transform = auglib.transform.WhiteNoiseUniform(snr_db=10)
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> signal, _ = audiofile.read(files[0])
+            >>> augmented_signal = transform(signal)
+            >>> audplot.waveform(augmented_signal)
+
+        .. plot::
+            :context: close-figs
+            :include-source: False
+
+            audiofile.write(
+                audeer.path(media_dir, 'transform-white-noise-uniform1.wav'),
+                augmented_signal,
+                16000,
+            )
+
+        .. raw:: html
+
+            <p style="margin-left: 24px;">
+              <audio controls src="media/transform-white-noise-uniform1.wav"></audio>
+            </p>
+
+    """  # noqa: E501
     def __init__(
             self,
             *,
