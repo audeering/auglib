@@ -400,6 +400,7 @@ def test_augment_cache(tmpdir):
     assert len(index_overlap) == 0
 
 @pytest.mark.parametrize('keep_nat_first', [True, False])
+@pytest.mark.parametrize('modified_only', [True, False])
 @pytest.mark.parametrize(
     'index, signal, sampling_rate, transform, '
     'expected_index_nat, expected_index_no_nat',
@@ -444,9 +445,17 @@ def test_augment_cache(tmpdir):
         ),
     ],
 )
-def test_augment_cache_nat(tmpdir, keep_nat_first, index, signal,
-                           sampling_rate, transform,
-                           expected_index_nat, expected_index_no_nat):
+def test_augment_cache_nat(
+        tmpdir,
+        keep_nat_first,
+        modified_only,
+        index,
+        signal,
+        sampling_rate,
+        transform,
+        expected_index_nat,
+        expected_index_no_nat,
+):
     root = audeer.mkdir(os.path.join(tmpdir, 'input'))
     cache_root = os.path.join(tmpdir, 'cache')
     augment_no_nat = auglib.Augment(
@@ -485,6 +494,23 @@ def test_augment_cache_nat(tmpdir, keep_nat_first, index, signal,
         expected_index_nat,
         expected_root,
     )
+    if not modified_only:
+        # Prepend original index
+        original_index_no_nat = audformat.utils.to_segmented_index(
+            index,
+            allow_nat=False,
+        )
+        expected_index_no_nat = original_index_no_nat.append(
+            expected_index_no_nat
+        )
+        original_index_nat = audformat.utils.to_segmented_index(
+            index,
+            allow_nat=True,
+        )
+        expected_index_nat = original_index_nat.append(
+            expected_index_nat
+        )
+
     # The index should be as expected for the first run
     # as well as for the second run when loading from cache
     no_nat_indices = []
@@ -498,6 +524,7 @@ def test_augment_cache_nat(tmpdir, keep_nat_first, index, signal,
                     index,
                     cache_root=cache_root,
                     remove_root=root,
+                    modified_only=modified_only,
                 )
             )
             nat_indices.append(
@@ -505,6 +532,7 @@ def test_augment_cache_nat(tmpdir, keep_nat_first, index, signal,
                     index,
                     cache_root=cache_root,
                     remove_root=root,
+                    modified_only=modified_only,
                 )
             )
         else:
@@ -513,6 +541,7 @@ def test_augment_cache_nat(tmpdir, keep_nat_first, index, signal,
                     index,
                     cache_root=cache_root,
                     remove_root=root,
+                    modified_only=modified_only,
                 )
             )
             no_nat_indices.append(
@@ -520,6 +549,7 @@ def test_augment_cache_nat(tmpdir, keep_nat_first, index, signal,
                     index,
                     cache_root=cache_root,
                     remove_root=root,
+                    modified_only=modified_only,
                 )
             )
 
