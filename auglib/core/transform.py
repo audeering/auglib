@@ -307,7 +307,12 @@ class AMRNB(Base):
             >>> import audplot
             >>> import auglib
             >>> transform = auglib.transform.AMRNB(7400)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', sampling_rate=8000)
+            >>> files = audb.load_media(
+            ...     'emodb',
+            ...     'wav/03a01Fa.wav',
+            ...     version='1.4.1',
+            ...     sampling_rate=8000,
+            ... )
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -420,11 +425,12 @@ class Append(Base):
             >>> files = audb.load_media(
             ...     'cough-speech-sneeze',
             ...     'coughing/kopzxumj430_40.94-41.8.wav',
+            ...     version='2.0.1',
             ...     sampling_rate=16000,
             ... )
             >>> cough, _ = audiofile.read(files[0])
             >>> transform = auglib.transform.Append(cough)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, _ = audiofile.read(files[0])
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
@@ -445,7 +451,7 @@ class Append(Base):
               <audio controls src="media/transform-append0.wav"></audio>
             </p>
 
-    """
+    """  # noqa: E501
     def __init__(
             self,
             aux: Union[str, observe.Base, np.ndarray, Base],
@@ -526,7 +532,7 @@ class AppendValue(Base):
             >>> import audplot
             >>> import auglib
             >>> transform = auglib.transform.AppendValue(8000, value=0, unit='samples')
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, _ = audiofile.read(files[0])
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
@@ -624,7 +630,7 @@ class BabbleNoise(Base):
             >>> import auglib
             >>> import numpy as np
             >>> auglib.seed(1)
-            >>> db = audb.load('musan', media='.*speech-librivox-000\d')
+            >>> db = audb.load('musan', media='.*speech-librivox-000\d', version='1.0.0')
             >>> transform = auglib.transform.BabbleNoise(db.files[:5])
             >>> signal = np.zeros((1, 30372))
             >>> augmented_signal = transform(signal)
@@ -654,7 +660,7 @@ class BabbleNoise(Base):
 
             >>> import audiofile
             >>> auglib.seed(1)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, _ = audiofile.read(files[0])
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
@@ -675,7 +681,7 @@ class BabbleNoise(Base):
               <audio controls src="media/transform-babble-noise1.wav"></audio>
             </p>
 
-    """
+    """  # noqa: E501
     @audobject.init_decorator(
         resolvers={
             'speech': ObservableListResolver,
@@ -768,7 +774,7 @@ class BandPass(Base):
             >>> import audplot
             >>> import auglib
             >>> transform = auglib.transform.BandPass(center=2000, bandwidth=1000)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -897,7 +903,7 @@ class BandStop(Base):
             >>> import audplot
             >>> import auglib
             >>> transform = auglib.transform.BandStop(center=2000, bandwidth=3000)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -1031,7 +1037,7 @@ class Clip(Base):
             >>> import audplot
             >>> import auglib
             >>> transform = auglib.transform.Clip(threshold=-10)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -1052,7 +1058,7 @@ class Clip(Base):
               <audio controls src="media/transform-clip0.wav"></audio>
             </p>
 
-    """
+    """  # noqa: E501
     def __init__(
             self,
             *,
@@ -1140,7 +1146,7 @@ class ClipByRatio(Base):
             >>> import audplot
             >>> import auglib
             >>> transform = auglib.transform.ClipByRatio(0.05)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -1161,7 +1167,7 @@ class ClipByRatio(Base):
               <audio controls src="media/transform-clip-by-ratio0.wav"></audio>
             </p>
 
-    """
+    """  # noqa: E501
     def __init__(
             self,
             ratio: Union[float, observe.Base],
@@ -1239,6 +1245,7 @@ class Compose(Base):
             >>> files = audb.load_media(
             ...     'cough-speech-sneeze',
             ...     'coughing/kopzxumj430_40.94-41.8.wav',
+            ...     version='2.0.1',
             ...     sampling_rate=16000,
             ... )
             >>> cough, _ = audiofile.read(files[0])
@@ -1249,7 +1256,7 @@ class Compose(Base):
             ...         auglib.transform.ClipByRatio(0.02),
             ...     ],
             ... )
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, _ = audiofile.read(files[0])
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
@@ -1338,7 +1345,7 @@ class Compose(Base):
               <audio controls src="media/transform-compose2.wav"></audio>
             </p>
 
-    """
+    """  # noqa: E501
     def __init__(
             self,
             transforms: Sequence[Base],
@@ -1437,7 +1444,7 @@ class CompressDynamicRange(Base):
             >>> import audplot
             >>> import auglib
             >>> transform = auglib.transform.CompressDynamicRange(-15, 1/4)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -1637,7 +1644,7 @@ class Fade(Base):
             >>> import audplot
             >>> import auglib
             >>> transform = auglib.transform.Fade(in_dur=0.2, out_dur=0.7)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -1669,7 +1676,7 @@ class Fade(Base):
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
 
-    """
+    """  # noqa: E501
     def __init__(
             self,
             *,
@@ -1804,9 +1811,14 @@ class FFTConvolve(Base):
             >>> import audiofile
             >>> import audplot
             >>> import auglib
-            >>> files = audb.load_media('micirp', 'dirs/Telefunken_M201.wav', sampling_rate=16000)
+            >>> files = audb.load_media(
+            ...     'micirp',
+            ...     'dirs/Telefunken_M201.wav',
+            ...     version='1.0.0',
+            ...     sampling_rate=16000,
+            ... )
             >>> transform = auglib.transform.FFTConvolve(files[0])
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, _ = audiofile.read(files[0])
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
@@ -1947,7 +1959,7 @@ class Function(Base):
             ...         n += block + non_block
             ...     return augmented_signal
             >>> transform = auglib.transform.Function(shutter)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, _ = audiofile.read(files[0])
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
@@ -2070,7 +2082,7 @@ class GainStage(Base):
             >>> import auglib
             >>> gain = auglib.utils.to_db(0.5)
             >>> transform = auglib.transform.GainStage(gain)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, _ = audiofile.read(files[0])
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
@@ -2091,7 +2103,7 @@ class GainStage(Base):
               <audio controls src="media/transform-gain-stage0.wav"></audio>
             </p>
 
-    """
+    """  # noqa: E501
     def __init__(
             self,
             gain_db: Union[float, observe.Base],
@@ -2169,7 +2181,7 @@ class HighPass(Base):
             >>> import audplot
             >>> import auglib
             >>> transform = auglib.transform.HighPass(4000, order=4)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -2325,7 +2337,7 @@ class LowPass(Base):
             >>> import audplot
             >>> import auglib
             >>> transform = auglib.transform.LowPass(2000, order=2)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -2500,7 +2512,7 @@ class Mask(Base):
             ...     start_pos=0.5,
             ...     duration=0.5,
             ... )
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -2784,13 +2796,13 @@ class Mix(Base):
             >>> import audplot
             >>> import auglib
             >>> auglib.seed(0)
-            >>> db = audb.load('musan', media='.*noise-free-sound-000\d')
+            >>> db = audb.load('musan', media='.*noise-free-sound-000\d', version='1.0.0')
             >>> transform = auglib.transform.Mix(
             ...     auglib.observe.List(db.files, draw=True),
             ...     loop_aux=True,
             ...     snr_db=10,
             ... )
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -2823,6 +2835,7 @@ class Mix(Base):
             >>> files = audb.load_media(
             ...     'cough-speech-sneeze',
             ...     'coughing/kopzxumj430_40.94-41.8.wav',
+            ...     version='2.0.1',
             ...     sampling_rate=16000,
             ... )
             >>> transform = auglib.transform.Mix(
@@ -2849,7 +2862,7 @@ class Mix(Base):
               <audio controls src="media/transform-mix1.wav"></audio>
             </p>
 
-    """
+    """  # noqa: E501
     def __init__(
             self,
             aux: Union[str, observe.Base, np.ndarray, Base],
@@ -3017,7 +3030,7 @@ class NormalizeByPeak(Base):
             >>> import audplot
             >>> import auglib
             >>> transform = auglib.transform.NormalizeByPeak(peak_db=-10)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -3155,7 +3168,7 @@ class PinkNoise(Base):
             >>> import audb
             >>> import audiofile
             >>> transform = auglib.transform.PinkNoise(snr_db=10)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, _ = audiofile.read(files[0])
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
@@ -3283,11 +3296,12 @@ class Prepend(Base):
             >>> files = audb.load_media(
             ...     'cough-speech-sneeze',
             ...     'coughing/kopzxumj430_40.94-41.8.wav',
+            ...     version='2.0.1',
             ...     sampling_rate=16000,
             ... )
             >>> cough, _ = audiofile.read(files[0])
             >>> transform = auglib.transform.Prepend(cough)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, _ = audiofile.read(files[0])
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
@@ -3308,7 +3322,7 @@ class Prepend(Base):
               <audio controls src="media/transform-prepend0.wav"></audio>
             </p>
 
-    """
+    """  # noqa: E501
     def __init__(
             self,
             aux: Union[str, observe.Base, np.ndarray, Base],
@@ -3389,7 +3403,7 @@ class PrependValue(Base):
             >>> import audplot
             >>> import auglib
             >>> transform = auglib.transform.PrependValue(8000, value=0, unit='samples')
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, _ = audiofile.read(files[0])
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
@@ -3483,7 +3497,7 @@ class Resample(Base):
             >>> import audplot
             >>> import auglib
             >>> transform = auglib.transform.Resample(8000)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -3660,7 +3674,7 @@ class Select(Base):
             ...         auglib.transform.ClipByRatio(0.1),
             ...     ],
             ... )
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, _ = audiofile.read(files[0])
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
@@ -3681,7 +3695,7 @@ class Select(Base):
               <audio controls src="media/transform-select0.wav"></audio>
             </p>
 
-    """
+    """  # noqa: E501
     def __init__(
             self,
             transforms: Sequence[Base],
@@ -3738,7 +3752,7 @@ class Shift(Base):
             >>> import audplot
             >>> import auglib
             >>> transform = auglib.transform.Shift(1)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -3759,7 +3773,7 @@ class Shift(Base):
               <audio controls src="media/transform-append-shift0.wav"></audio>
             </p>
 
-    """
+    """  # noqa: E501
     def __init__(
             self,
             duration: typing.Union[int, float, observe.Base, Time] = None,
@@ -3874,7 +3888,7 @@ class Tone(Base):
             >>> import audb
             >>> import audiofile
             >>> transform = auglib.transform.Tone(4000, shape='triangle', snr_db=20)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -4090,7 +4104,7 @@ class Trim(Base):
             >>> import audplot
             >>> import auglib
             >>> transform = auglib.transform.Trim(start_pos=0.2, end_pos=0.2)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -4495,7 +4509,7 @@ class WhiteNoiseGaussian(Base):
             >>> import audb
             >>> import audiofile
             >>> transform = auglib.transform.WhiteNoiseGaussian(snr_db=10)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, _ = audiofile.read(files[0])
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
@@ -4644,7 +4658,7 @@ class WhiteNoiseUniform(Base):
             >>> import audb
             >>> import audiofile
             >>> transform = auglib.transform.WhiteNoiseUniform(snr_db=10)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav')
+            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
             >>> signal, _ = audiofile.read(files[0])
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
