@@ -15,7 +15,7 @@ import auglib
 
 @pytest.mark.parametrize(
     'index, signal, sampling_rate, transform, keep_nat, '
-    'expected_index, expected_signal',
+    'expected_index, expected_signals',
     [
         # segment length unchanged
         (
@@ -29,9 +29,12 @@ import auglib
             audformat.segmented_index(
                 ['f1.wav', 'f2.wav'],
                 [0, 0],
-                ['1s', '1s'],
+                [1, 1],
             ),
-            np.ones((1, 10)),
+            (
+                np.ones((1, 10)),
+                np.ones((1, 10)),
+            ),
         ),
         (
             audformat.filewise_index(
@@ -46,24 +49,110 @@ import auglib
                 [0, 0],
                 [pd.NaT, pd.NaT],
             ),
-            np.ones((1, 10)),
+            (
+                np.ones((1, 10)),
+                np.ones((1, 10)),
+            ),
         ),
         (
             audformat.segmented_index(
-                ['f1.wav', 'f1.wav'],
-                ['0.1s', '0.8s'],
-                ['0.2s', '0.9s'],
+                ['f1.wav', 'f2.wav'],
+                [0.1, 0.2],
+                [pd.NaT, pd.NaT],
             ),
             np.zeros((1, 10)),
             10,
             auglib.transform.Function(lambda x, _: x + 1),
             False,
             audformat.segmented_index(
-                ['f1.wav', 'f1.wav'],
-                ['0.1s', '0.8s'],
-                ['0.2s', '0.9s'],
+                ['f1.wav', 'f2.wav'],
+                [0, 0],
+                [0.9, 0.8],
             ),
-            np.array([[0., 1., 0., 0., 0., 0., 0., 0., 1., 0.]]),
+            (
+                np.ones((1, 9)),
+                np.ones((1, 8)),
+            ),
+        ),
+        (
+            audformat.segmented_index(
+                ['f1.wav', 'f2.wav'],
+                [0.1, 0.2],
+                [pd.NaT, pd.NaT],
+            ),
+            np.zeros((1, 10)),
+            10,
+            auglib.transform.Function(lambda x, _: x + 1),
+            True,
+            audformat.segmented_index(
+                ['f1.wav', 'f2.wav'],
+                [0, 0],
+                [pd.NaT, pd.NaT],
+            ),
+            (
+                np.ones((1, 9)),
+                np.ones((1, 8)),
+            ),
+        ),
+        (
+            audformat.segmented_index(
+                ['f1.wav', 'f1.wav'],
+                [0.1, 0.8],
+                [0.2, 0.9],
+            ),
+            np.zeros((1, 10)),
+            10,
+            auglib.transform.Function(lambda x, _: x + 1),
+            False,
+            audformat.segmented_index(
+                ['f1-0.wav', 'f1-1.wav'],
+                [0, 0],
+                [0.1, 0.1],
+            ),
+            (
+                np.ones((1, 1)),
+                np.ones((1, 1)),
+            ),
+        ),
+        (
+            audformat.segmented_index(
+                ['f1.wav', 'f1.wav'],
+                [0.1, 0.8],
+                [0.2, pd.NaT],
+            ),
+            np.zeros((1, 10)),
+            10,
+            auglib.transform.Function(lambda x, _: x + 1),
+            False,
+            audformat.segmented_index(
+                ['f1-0.wav', 'f1-1.wav'],
+                [0, 0],
+                [0.1, 0.2],
+            ),
+            (
+                np.ones((1, 1)),
+                np.ones((1, 2)),
+            ),
+        ),
+        (
+            audformat.segmented_index(
+                ['f1.wav', 'f1.wav'],
+                [0.1, 0.8],
+                [0.2, pd.NaT],
+            ),
+            np.zeros((1, 10)),
+            10,
+            auglib.transform.Function(lambda x, _: x + 1),
+            True,
+            audformat.segmented_index(
+                ['f1-0.wav', 'f1-1.wav'],
+                [0, 0],
+                [0.1, pd.NaT],
+            ),
+            (
+                np.ones((1, 1)),
+                np.ones((1, 2)),
+            ),
         ),
         # expand segments
         (
@@ -75,133 +164,163 @@ import auglib
             auglib.transform.Compose(
                 [
                     auglib.transform.Function(lambda x, _: x + 1),
-                    auglib.transform.AppendValue(5, .5, unit='samples'),
+                    auglib.transform.AppendValue(5, value=.5, unit='samples'),
                 ]
             ),
             False,
             audformat.segmented_index(
                 ['f1.wav', 'f2.wav'],
                 [0, 0],
-                ['1s', '1s'],
+                [1, 1],
             ),
-            np.array([[1., 1., 1., 1., 1., .5, .5, .5, .5, .5]]),
+            (
+                np.array([[1., 1., 1., 1., 1., .5, .5, .5, .5, .5]]),
+                np.array([[1., 1., 1., 1., 1., .5, .5, .5, .5, .5]]),
+            ),
         ),
         (
             audformat.segmented_index(
                 ['f1.wav', 'f1.wav'],
-                ['0.1s', '0.8s'],
-                ['0.2s', '0.9s'],
+                [0.1, 0.7],
+                [0.2, 0.9],
             ),
             np.zeros((1, 10)),
             10,
             auglib.transform.Compose(
                 [
                     auglib.transform.Function(lambda x, _: x + 1),
-                    auglib.transform.AppendValue(1, .5, unit='samples'),
+                    auglib.transform.AppendValue(1, value=.5, unit='samples'),
                 ]
             ),
             False,
             audformat.segmented_index(
-                ['f1.wav', 'f1.wav'],
-                ['0.1s', '0.9s'],
-                ['0.3s', '1.1s'],
+                ['f1-0.wav', 'f1-1.wav'],
+                [0, 0],
+                [0.2, 0.3],
             ),
-            np.array([[0., 1., .5, 0., 0., 0., 0., 0., 0., 1., .5, 0.]]),
+            (
+                np.array([[1., .5]]),
+                np.array([[1., 1., .5]]),
+            ),
         ),
         (
-            audformat.segmented_index(
+            audformat.segmented_index(  # overlapping segments
                 ['f1.wav', 'f1.wav'],
-                ['0.1s', '0.5s'],
-                ['0.6s', '0.9s'],
+                [0.1, 0.5],
+                [0.6, 0.9],
             ),
             np.zeros((1, 10)),
             10,
             auglib.transform.Compose(
                 [
                     auglib.transform.Function(lambda x, _: x + 1),
-                    auglib.transform.AppendValue(1, 0.5, unit='samples'),
+                    auglib.transform.AppendValue(1, value=.5, unit='samples'),
                 ]
             ),
             False,
             audformat.segmented_index(
-                ['f1.wav', 'f1.wav'],
-                ['0.1s', '0.6s'],
-                ['0.7s', '1.1s'],
+                ['f1-0.wav', 'f1-1.wav'],
+                [0, 0],
+                [0.6, 0.5],
             ),
-            np.array([[0., 1., 1., 1., 1., 1., 1., 1., 1., 1., .5, 0.]]),
+            (
+                np.array([[1., 1., 1., 1., 1., .5]]),
+                np.array([[1., 1., 1., 1., .5]]),
+            ),
         ),
         # trim segments
         (
             audformat.filewise_index(
                 ['f1.wav', 'f2.wav'],
             ),
-            np.zeros((1, 10)),
+            np.array([[0., 1., 2., 3., 4., 5., 6., 7., 8., 9.]]),
             10,
             auglib.transform.Compose(
                 [
                     auglib.transform.Function(lambda x, _: x + 1),
-                    auglib.transform.Trim(duration=5, unit='samples'),
+                    auglib.transform.Trim(
+                        start_pos=2,
+                        duration=5,
+                        unit='samples',
+                    ),
                 ]
             ),
             False,
             audformat.segmented_index(
                 ['f1.wav', 'f2.wav'],
                 [0, 0],
-                ['0.5s', '0.5s'],
+                [0.5, 0.5],
             ),
-            np.ones((1, 5)),
+            (
+                np.array([[3., 4., 5., 6., 7.]]),
+                np.array([[3., 4., 5., 6., 7.]]),
+            ),
         ),
         (
             audformat.segmented_index(
                 ['f1.wav', 'f1.wav'],
-                ['0.1s', '0.6s'],
-                ['0.4s', '0.9s'],
+                [0.1, 0.6],
+                [0.4, 0.9],
             ),
-            np.zeros((1, 10)),
+            np.array([[0., 1., 2., 3., 4., 5., 6., 7., 8., 9.]]),
             10,
             auglib.transform.Compose(
                 [
                     auglib.transform.Function(lambda x, _: x + 1),
-                    auglib.transform.Trim(duration=2, unit='samples'),
+                    auglib.transform.Trim(
+                        start_pos=0,
+                        duration=2,
+                        unit='samples',
+                    ),
                 ]
             ),
             False,
             audformat.segmented_index(
-                ['f1.wav', 'f1.wav'],
-                ['0.1s', '0.5s'],
-                ['0.3s', '0.7s'],
+                ['f1-0.wav', 'f1-1.wav'],
+                [0, 0],
+                [0.2, 0.2],
             ),
-            np.array([[0., 1., 1., 0., 0., 1., 1., 0.]]),
+            (
+                np.array([[2., 3.]]),
+                np.array([[7., 8.]]),
+            ),
         ),
         (
-            audformat.segmented_index(
+            audformat.segmented_index(  # overlapping segments
                 ['f1.wav', 'f1.wav'],
-                ['0.1s', '0.5s'],
-                ['0.6s', '0.9s'],
+                [0.1, 0.5],
+                [0.6, 0.9],
             ),
-            np.zeros((1, 10)),
+            np.array([[0., 1., 2., 3., 4., 5., 6., 7., 8., 9.]]),
             10,
             auglib.transform.Compose(
                 [
                     auglib.transform.Function(lambda x, _: x + 1),
-                    auglib.transform.Trim(duration=2, unit='samples'),
+                    auglib.transform.Trim(
+                        start_pos=0,
+                        duration=2,
+                        unit='samples',
+                    ),
                 ]
             ),
             False,
             audformat.segmented_index(
-                ['f1.wav', 'f1.wav'],
-                ['0.1s', '0.2s'],
-                ['0.3s', '0.4s'],
+                ['f1-0.wav', 'f1-1.wav'],
+                [0, 0],
+                [0.2, 0.2],
             ),
-            np.array([[0., 1., 1., 1., 0.]]),
+            (
+                np.array([[2., 3.]]),
+                np.array([[7., 8.]]),
+            ),
         ),
-        (  # Ensure start values do not change
+        (  # Time values might change due to pandas.to_timedelta()
            # see
            # https://gitlab.audeering.com/tools/pyauglib/-/merge_requests/206
             audformat.segmented_index(
                 ['f1.wav'],
+                [0],
                 ['0 days 00:00:00.511437'],
-                ['0 days 00:00:00.711437'],
             ),
             np.zeros((1, 16000)),
             16000,
@@ -209,33 +328,65 @@ import auglib
             False,
             audformat.segmented_index(
                 ['f1.wav'],
-                ['0 days 00:00:00.511437'],
-                ['0 days 00:00:00.711437'],
+                [0],
+                ['0 days 00:00:00.511437500'],
             ),
-            np.concatenate(
-                [
-                    np.zeros((1, 8183)),
-                    np.ones((1, 3200)),
-                    np.zeros((1, 4617)),
-                ],
-                axis=1,
-            )
+            (
+                np.ones((1, 8183)),
+            ),
         ),
-        pytest.param(  # out of border segment
-            audformat.segmented_index('f1.wav', '0.1s', '1.1s'),
+        (  # out of border segment
+            audformat.segmented_index('f1.wav', '0.1s', '1.2s'),
             np.zeros((1, 10)),
             10,
             auglib.transform.Function(lambda x, _: x + 1),
             False,
-            audformat.segmented_index('f1.wav', '0.1s', '1.1s'),
-            None,
-            marks=pytest.mark.xfail(raises=ValueError),
+            audformat.segmented_index('f1.wav', '0.0s', '0.9s'),
+            (
+                np.ones((1, 9)),
+            ),
+        ),
+        (  # more than 10 segments
+            audformat.segmented_index(
+                ['f0.wav'] * 11,
+                [.0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1.0],
+                [.1, .2, .3, .4, .5, .6, .7, .8, .9, 1.0, 1.1],
+            ),
+            np.zeros((1, 11)),
+            10,
+            auglib.transform.Function(lambda x, _: x + 1),
+            False,
+            audformat.segmented_index(
+                [f'f0-{n:02.0f}.wav' for n in range(11)],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [.1, .1, .1, .1, .1, .1, .1, .1, .1, .1, .1],
+            ),
+            (
+                np.ones((1, 1)),
+                np.ones((1, 1)),
+                np.ones((1, 1)),
+                np.ones((1, 1)),
+                np.ones((1, 1)),
+                np.ones((1, 1)),
+                np.ones((1, 1)),
+                np.ones((1, 1)),
+                np.ones((1, 1)),
+                np.ones((1, 1)),
+                np.ones((1, 1)),
+            ),
         ),
     ]
 )
-def test_augment(tmpdir, index, signal, sampling_rate, transform,
-                 keep_nat, expected_index, expected_signal):
-
+def test_augment(
+        tmpdir,
+        index,
+        signal,
+        sampling_rate,
+        transform,
+        keep_nat,
+        expected_index,
+        expected_signals,
+):
     # create interface
 
     augment = auglib.Augment(
@@ -280,9 +431,9 @@ def test_augment(tmpdir, index, signal, sampling_rate, transform,
     pd.testing.assert_index_equal(augmented_index, expected_index)
 
     expected_files = augmented_index.get_level_values('file').unique()
-    for file in expected_files:
+    for file, signal in zip(expected_files, expected_signals):
         tmp_file = os.path.join(tmpdir, 'tmp.wav')
-        audiofile.write(tmp_file, expected_signal, sampling_rate)
+        audiofile.write(tmp_file, signal, sampling_rate)
         assert filecmp.cmp(file, tmp_file)
 
     # augment series
@@ -830,6 +981,11 @@ def test_augment_seed():
             np.testing.assert_equal(y, y_4)
 
 
+@pytest.mark.parametrize('signal', [np.zeros((1, 10))])
+@pytest.mark.parametrize('sampling_rate', [10])
+@pytest.mark.parametrize(
+    'transform', [auglib.transform.Function(lambda x, _: x + 1)]
+)
 @pytest.mark.parametrize(
     'index, num_variants, modified_only, keep_nat',
     [
@@ -841,9 +997,9 @@ def test_augment_seed():
         ),
         (
             audformat.segmented_index(
-                ['f1.wav', 'f1.wav'],
-                ['0.1s', '0.8s'],
-                ['0.2s', '0.9s'],
+                ['f1.wav', 'f2.wav'],
+                [0.1, 0.8],
+                [0.2, 0.9],
             ),
             3,
             True,
@@ -863,14 +1019,19 @@ def test_augment_seed():
         ),
     ]
 )
-def test_augment_variants(tmpdir, index, num_variants, modified_only,
-                          keep_nat):
+def test_augment_variants(
+        tmpdir,
+        signal,
+        sampling_rate,
+        transform,
+        index,
+        num_variants,
+        modified_only,
+        keep_nat,
+):
 
     # create dummy signal and interface
 
-    signal = np.zeros((1, 10))
-    sampling_rate = 10
-    transform = auglib.transform.Function(lambda x, _: x + 1)
     augment = auglib.Augment(transform, keep_nat=keep_nat)
 
     # create input files

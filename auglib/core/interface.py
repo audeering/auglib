@@ -9,7 +9,6 @@ import audformat
 import audinterface
 from audinterface.core.utils import preprocess_signal
 import audiofile
-import audmath
 import audobject
 
 import auglib
@@ -212,10 +211,9 @@ class Augment(audinterface.Process, audobject.Object):
     ) -> typing.Union[pd.Index, pd.Series, pd.DataFrame]:
         r"""Augment an index, column, or table conform to audformat.
 
-        Creates ``num_variants`` copies of the files referenced in the index
+        Creates ``num_variants`` copies of the segments referenced in the index
         and augments them.
-        If the index is segmented, only the segments are augmented.
-        Augmented files are stored as
+        Files of augmented segments are stored as
         ``<cache_root>/<short_id>/<index_id>/<variant>/<original_path>``.
         The ``<index_id>`` is the identifier of the index of ``data``.
         Note that the ``<index_id>`` of a filewise index
@@ -226,8 +224,8 @@ class Augment(audinterface.Process, audobject.Object):
         It is possible to shorten the path by setting ``remove_root``
         to a directory that should be removed from ``<original_path>``
         (e.g. the ``audb`` cache folder).
-        Parts of the signals that are not covered by at least one segment
-        are not augmented.
+        If more than one segment of the same file is augmented,
+        a counter is added at the end of the filename.
         The result is an index, column or table that references the
         augmented files.
         If the input is a column or table data, the original content is kept.
@@ -416,7 +414,7 @@ class Augment(audinterface.Process, audobject.Object):
                     out_file,
                     index[
                         index.get_level_values(0) == file
-                    ].droplevel(0),
+                    ].droplevel(0),  # start, end values for given file
                 ),
                 {},
             )
@@ -443,49 +441,62 @@ class Augment(audinterface.Process, audobject.Object):
             self,
             file: str,
             index: pd.Index,
-    ) -> typing.Tuple[np.ndarray, int, pd.Index]:
+    ) -> typing.Tuple[typing.List, typing.List, typing.List, int]:
         r"""Augment file at every segment."""
         signal, sampling_rate = audiofile.read(file, always_2d=True)
-        augmented_signal, augmented_rate, augmented_index = \
-            self._augment_signal(signal, sampling_rate, index)
-
-        return augmented_signal, augmented_rate, augmented_index
+        signals, starts, ends, augmented_rate = self._augment_signal(
+            signal,
+            sampling_rate,
+            index,
+        )
+        return signals, starts, ends, augmented_rate
 
     def _augment_file_to_cache(
             self,
             file: str,
             augmented_file: str,
-            index: pd.Index,
+            index: pd.Index,  # containing (several) start, end values
     ) -> pd.Index:
-        r"""Augment file and store to cache."""
-        signal, sampling_rate, augmented_index = self._augment_file(
-            file,
-            index,
-        )
+        r"""Augment file and store to cache.
+
+        Store augmented signals in separate files,
+        adding a counter at the end of the filename:
+
+            <augmented_file>-0
+            <augmented_file>-1
+            ...
+
+        If we have more than 10 files,
+        the counter will use two digits:
+
+            <augmented_file>-00
+            <augmented_file>-01
+            ...
+
+        and so on.
+
+        """
+        signals, starts, ends, sampling_rate = self._augment_file(file, index)
+
         audeer.mkdir(os.path.dirname(augmented_file))
-        audiofile.write(augmented_file, signal, sampling_rate)
+        if len(signals) > 1:
+            # number of needed digits for file names
+            digits = len(str(len(signals) - 1))
+            root, ext = os.path.splitext(augmented_file)
+            files = [
+                f'{root}-{str(n).zfill(digits)}{ext}'
+                for n in range(len(signals))
+            ]
+        else:
+            files = [augmented_file]
+        for file, signal in zip(files, signals):
+            audiofile.write(file, signal, sampling_rate)
 
         # insert augmented file name at first level
-        augmented_index_with_file = pd.MultiIndex(
-            levels=[
-                [augmented_file],
-                augmented_index.levels[0],
-                augmented_index.levels[1]
-            ],
-            codes=[
-                [0] * len(index),
-                augmented_index.codes[0],
-                augmented_index.codes[1],
-            ],
-            names=[
-                audformat.define.IndexField.FILE,
-                audformat.define.IndexField.START,
-                audformat.define.IndexField.END
-            ],
-        )
-        augmented_index_with_file = audformat.utils.set_index_dtypes(
-            augmented_index_with_file,
-            {'file': 'string'},
+        augmented_index_with_file = audformat.segmented_index(
+            files,
+            starts,
+            ends,
         )
 
         return augmented_index_with_file
@@ -495,9 +506,9 @@ class Augment(audinterface.Process, audobject.Object):
             signal: np.ndarray,
             sampling_rate: int,
             index: pd.Index,
-    ) -> typing.Tuple[np.ndarray, int, pd.Index]:
+    ) -> typing.Tuple[typing.List, typing.List, typing.List, int]:
         r"""Augment signal at every segment in index."""
-        signal, augmented_rate = preprocess_signal(
+        signal, sampling_rate = preprocess_signal(
             signal,
             sampling_rate=sampling_rate,
             expected_rate=self.sampling_rate,
@@ -505,80 +516,17 @@ class Augment(audinterface.Process, audobject.Object):
             channels=self.channels,
             mixdown=self.mixdown,
         )
-        y_augmented = self.process_signal_from_index(
-            signal,
-            augmented_rate,
-            index,
-        )
-        # fix index in case augmentation has changed the segments
-        y_augmented = _fix_segments(y_augmented, augmented_rate)
-
-        # if augmented segments match original segments
-        # we can replace processed segments in original signal
-        # otherwise, we have to create the augmented signal
-        # by concatenating unprocessed and augment segments
-        if y_augmented.index.equals(index):
-            _insert_segments_into_signal(y_augmented, signal, augmented_rate)
-            augmented_signal = signal
-        else:
-
-            # series with unprocessed segments
-            dur = pd.to_timedelta(
-                signal.shape[1] / augmented_rate,
-                unit='s',
-            )
-            y_unprocessed = audinterface.Process(
-                process_func=lambda x, sr: x,
-            ).process_signal_from_index(
-                signal,
-                augmented_rate,
-                _invert_index(index, dur),
-            )
-
-            if y_unprocessed.empty:
-
-                # calculate new signal duration
-                new_dur = _index_duration(y_augmented.index).sum()
-
-                # create empty signal and insert processed segments
-                num_samples = int(
-                    round(new_dur.total_seconds() * augmented_rate))
-                augmented_signal = np.zeros((1, num_samples))
-                _insert_segments_into_signal(
-                    y_augmented,
-                    augmented_signal,
-                    augmented_rate,
-                )
-
-            else:
-
-                # calculate new signal duration
-                # and fix index of unprocessed segments
-                new_dur = _index_duration(y_augmented.index).sum() +\
-                    _index_duration(y_unprocessed.index).sum()
-                y_unprocessed.index = _invert_index(
-                    y_augmented.index,
-                    new_dur,
-                )
-
-                # create empty signal and insert
-                # processed and unprocessed segments
-                num_samples = int(
-                    round(new_dur.total_seconds() * augmented_rate)
-                )
-                augmented_signal = np.zeros((1, num_samples))
-                _insert_segments_into_signal(
-                    y_augmented,
-                    augmented_signal,
-                    augmented_rate,
-                )
-                _insert_segments_into_signal(
-                    y_unprocessed,
-                    augmented_signal,
-                    augmented_rate,
-                )
-
-        return augmented_signal, augmented_rate, y_augmented.index
+        y = self.process_signal_from_index(signal, sampling_rate, index)
+        # adjust index to always start at 0
+        # and end at NaT or duration
+        signals = list(y.values)
+        starts = [0] * len(signals)
+        ends = y.index.get_level_values('end')
+        ends = [
+            end if pd.isna(end) else signal.shape[1] / sampling_rate
+            for signal, end in zip(signals, ends)
+        ]
+        return signals, starts, ends, sampling_rate
 
     @staticmethod
     def _process_func(
@@ -664,77 +612,3 @@ def _augmented_files(
             file.replace(remove_root, cache_root, 1) for file in files
         ]
     return augmented_files
-
-
-def _fix_segments(
-        y: pd.Series,
-        sampling_rate: int,
-) -> pd.Series:
-    r"""Align index with signal samples."""
-    delta = pd.to_timedelta(0)
-    new_starts = []
-    new_ends = []
-
-    for (start, end), signal in y.items():
-        start_i = audmath.samples(start.total_seconds(), sampling_rate)
-        end_i = audmath.samples(end.total_seconds(), sampling_rate)
-        duration_i = end_i - start_i
-        new_starts.append(start + delta)
-        delta += pd.to_timedelta(
-            (signal.shape[1] - duration_i) / sampling_rate,
-            unit='s',
-        )
-        new_ends.append(end + delta)
-
-    y.index = audinterface.utils.signal_index(new_starts, new_ends)
-
-    return y
-
-
-def _index_duration(
-        index: pd.Index,
-) -> pd.TimedeltaIndex:
-    r"""Calculate segment duration."""
-    starts = index.get_level_values(audformat.define.IndexField.START)
-    ends = index.get_level_values(audformat.define.IndexField.END)
-
-    return ends - starts
-
-
-def _invert_index(
-        index: pd.Index,
-        duration: pd.Timedelta,
-) -> pd.Index:
-    r"""Invert an index with start and end timestamps."""
-    ends = index.get_level_values(audformat.define.IndexField.START)
-    starts = index.get_level_values(audformat.define.IndexField.END)
-
-    # if original index starts at 0
-    # skip first entry in ends
-    # otherwise prepend 0 to starts
-    if ends[0] == pd.to_timedelta(0):
-        ends = ends[1:]
-    else:
-        starts = starts.insert(0, pd.to_timedelta(0))
-
-    # if original index ends at duration
-    # skip last entry in starts
-    # otherwise append duration to ends
-    if starts[-1] == duration:
-        starts = starts[:-1]
-    else:
-        ends = ends.insert(len(ends), duration)
-
-    return audinterface.utils.signal_index(starts, ends)
-
-
-def _insert_segments_into_signal(
-        y: pd.Series,
-        signal: np.ndarray,
-        sampling_rate: int,
-):
-    r"""Insert segments into signal."""
-    for (start, end), segment in y.items():
-        start_i = audmath.samples(start.total_seconds(), sampling_rate)
-        end_i = start_i + segment.shape[1]
-        signal[:, start_i:end_i] = segment
