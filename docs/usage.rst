@@ -10,21 +10,9 @@
     import audb
     import audplot
 
-    blue = '#6649ff'
-    green = '#55dbb1'
+    grey = '#5d6370'
+    red = '#e13b41'
 
-
-    def plot(signal, color, text):
-        signal = np.atleast_2d(signal)
-        signal = signal[0, :]
-        fig, ax = plt.subplots(1, figsize=(8, 1.5))
-        audplot.waveform(
-            signal,
-            text=text,
-            color=color,
-            ax=ax,
-        )
-    
     
     def series_to_html(self):
         df = self.to_frame()
@@ -38,17 +26,28 @@
     setattr(pd.Index, '_repr_html_', index_to_html)
 
 
+.. === Document starts here ===
+
 .. _usage:
 
 Usage
 =====
 
-:mod:`auglib` lets you augment your audio data.
-It provides a large collection of augmentations
-in its sub-module :mod:`auglib.transform`,
-which can be easily applied to a signal,
-or whole database,
-with :class:`auglib.Augment`.
+:mod:`auglib` lets you augment audio data.
+It provides transformations
+in its sub-module :mod:`auglib.transform`.
+:class:`auglib.Augment` can then apply
+those transformations
+to a signal,
+a file,
+or a whole dataset.
+
+Check how to include :ref:`external solutions <external>`
+and look at the :ref:`examples <examples>`
+for further inspiration.
+Or continue reading here,
+to see how to apply the augmentations
+to different inputs.
 
 
 .. jupyter-execute::
@@ -63,13 +62,6 @@ with :class:`auglib.Augment`.
         ]
     )
     augment = auglib.Augment(transform)
-
-Check how to include :ref:`external solutions <external>`
-and look at the :ref:`examples <examples>`
-for further inspiration.
-Or continue reading here,
-to see how to apply the augmentations
-to different inputs.
 
 
 Augment a signal
@@ -86,16 +78,16 @@ and apply our augmentation to it.
     files = audb.load_media(
         'emodb',
         'wav/03a01Fa.wav',
-        version='1.3.0',
+        version='1.4.1',
         verbose=False,
     )
-    signal, sampling_rate = audiofile.read(files[0], always_2d=True)
+    signal, sampling_rate = audiofile.read(files[0])
     signal_augmented = augment(signal, sampling_rate)
 
 .. jupyter-execute::
     :hide-code:
 
-    plot(signal, blue, 'Original\nAudio')
+    audplot.waveform(signal, color=grey, text='Original\nAudio')
 
 .. jupyter-execute::
     :hide-code:
@@ -109,7 +101,7 @@ and apply our augmentation to it.
 .. jupyter-execute::
     :hide-code:
 
-    plot(signal_augmented, green, 'Augmented\nAudio')
+    audplot.waveform(signal_augmented, color=red, text='Augmented\nAudio')
 
 .. jupyter-execute::
     :hide-code:
@@ -120,89 +112,113 @@ and apply our augmentation to it.
 
 |
 
-.. _emodb: http://data.pp.audeering.com/databases/emodb/emodb.html
-
   
-Augment a database in memory
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Augment files in memory
+~~~~~~~~~~~~~~~~~~~~~~~
 
 :class:`auglib.Augment` can apply the augmentation
-to an audformat_ database.
-To demonstrate this,
-we load a subset of the emodb_ database
-and augment it.
+to a list of files.
+We load three files from emodb_,
+and augment them using :meth:`auglib.Augment.process_files`.
+
+.. jupyter-execute::
+
+    files = audb.load_media(
+        'emodb',
+        ['wav/03a01Fa.wav', 'wav/03a01Nc.wav', 'wav/03a01Wa.wav'],
+        version='1.4.1',
+        verbose=False,
+    )
+    y_augmented = augment.process_files(files)
+    y_augmented
+
+All :meth:`process_*` methods
+return a series
+(:class:`pd.Series`)
+holding the augmented signals
+with a :class:`pd.MultiIndex`
+containing the levels ``file``,
+``start``,
+``end``
+(`segmented index`_).
+
+
+Augment a dataset to disk
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:meth:`auglib.Augment.augment` augments
+a dataset to a cache folder on disk.
+It takes as input an index,
+series or dataframe.
+The index needs at least one level,
+named ``file``
+holding file paths
+(`filewise index`_)
+or the three levels ``file``,
+``start``,
+and ``end``,
+holding information on start and end
+for segments of the file
+provided as :class:`pd.Timedelta`
+(`segmented index`_).
+:meth:`auglib.Augment.augment`
+returns an index, series, or table
+with a `segmented index`_
+that points to the augmented files.
+
+The next example
+loads the emodb_ dataset,
+limited to three files for this example.
+It then uses :class:`audformat.Database.files`
+to get a `filewise index`_
+pointing to the files of the dataset.
 
 .. jupyter-execute::
 
     db = audb.load(
         'emodb',
-        version='1.3.0',
+        version='1.4.1',
         media=['wav/03a01Fa.wav', 'wav/03a01Nc.wav', 'wav/03a01Wa.wav'],
         verbose=False,
     )
-    y_augmented = augment.process_index(db.files)
-    y_augmented
-
-All :meth:`process_*` methods
-return a column (:class:`pd.Series`)
-with a segmented index
-holding the augmented signals.
-However, this has two drawbacks.
-Keeping results in memory may exceed available resources
-for a large database.
-And it may be expensive to redo the augmentation
-every time we run an experiment.
-
-
-Augment a database to disk
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Therefore, the interface offers another method
-:meth:`auglib.Augment.augment`, which takes
-as input an index, column or table conform to audformat_,
-but instead of returning the augmented signals
-it stores them back to disk.
-The result is an index, column or table pointing to the augmented files.
-
-.. jupyter-execute::
-
-    index_augmented = augment.augment(data=db.files, cache_root='cache')
+    index = db.files
+    index_augmented = augment.augment(index, cache_root='cache')
     index_augmented
 
-The files are stored inside the :file:`cache_root` folder,
-and :meth:`auglib.Augment.augment`
-will detect if the requested augmentation
-is already in stored in cache,
-or if it has to perform the augmentation.
-If you don't specify :file:`cache_root`,
+The augmented files are stored inside the ``cache_root`` folder.
+If :meth:`auglib.Augment.augment`
+is called again on the same index,
+it detects the requested augmentation
+in cache,
+and returns directly its result.
+If you don't specify ``cache_root``,
 the default value of ``$HOME/auglib``
 will be used.
 
-If we pass a column instead of an index
-the column data will be kept:
+If we pass a series instead of an index
+a series will be returned:
 
 .. jupyter-execute::
 
     y = db['files']['speaker'].get()
-    y_augmented = augment.augment(data=y, cache_root='cache')
+    y_augmented = augment.augment(y, cache_root='cache')
     y_augmented
 
-Finally, we the repeat last command on a table,
-this time keeping the original files
+Finally,
+we augment a dataframe,
+this time keeping the original files in the result
 and augmenting every file twice.
 
 .. jupyter-execute::
 
     df = db['files'].get()
     df_augmented = augment.augment(
-        data=df,
+        df,
         cache_root='cache',
         modified_only=False,
         num_variants=2,
     )
     df_augmented
-
-.. _audformat: https://audeering.github.io/audformat/data-format.html
 
 
 Serialize
@@ -267,3 +283,8 @@ we can also overwrite the value.
 
     import os
     os.remove(file)
+
+
+.. _emodb: https://audeering.github.io/datasets/datasets/emodb.html
+.. _filewise index: https://audeering.github.io/audformat/data-tables.html#filewise
+.. _segmented index: https://audeering.github.io/audformat/data-tables.html#segmented

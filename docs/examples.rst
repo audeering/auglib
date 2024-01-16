@@ -1,8 +1,3 @@
-.. _examples:
-
-Examples
-========
-
 .. jupyter-execute::
     :hide-code:
     :hide-output:
@@ -17,23 +12,16 @@ Examples
     import audplot
     import auglib
 
-    blue = '#6649ff'
-    green = '#55dbb1'
-
-    def plot(signal, color, text):
-        signal = np.atleast_2d(signal)
-        signal = signal[0, :]
-
-        fig, ax = plt.subplots(1, figsize=(8, 1.5))
-        audplot.waveform(
-            signal,
-            text=text,
-            color=color,
-            ax=ax,
-        )
+    grey = '#5d6370'
+    red = '#e13b41'
 
 
 .. === Document starts here ===
+
+.. _examples:
+
+Examples
+========
 
 Augmentation examples,
 showing you
@@ -49,15 +37,16 @@ Let's start with loading an example file to augment.
     files = audb.load_media(
         'emodb',
         'wav/03a01Fa.wav',
-        version='1.3.0',
+        version='1.4.1',
         verbose=False,
     )
-    signal, sampling_rate = audiofile.read(files[0], always_2d=True)
+    signal, sampling_rate = audiofile.read(files[0])
 
 .. jupyter-execute::
     :hide-code:
 
-    plot(signal, blue, 'Original\nAudio')
+    audplot.waveform(signal, color=grey, text='Original\nAudio')
+
 
 .. jupyter-execute::
     :hide-code:
@@ -77,17 +66,11 @@ Recorded Reverb
 Recorded reverb can be used
 to make machine learning models robust
 against changes of the room.
-We have a few databases
-with recorded reverb,
-including air_,
-ir-c4dm_,
-and mardy_.
-In the following we focus on air_,
-which can be used commercially
-and provides binaural `impulse responses`_
+In the following we
+use binaural `impulse responses`_
 recorded with a `dummy head`_
-for different rooms.
-Its `rir` table holds recordings
+from the air_ dataset.
+Its ``rir`` table holds recordings
 for four different rooms
 at different distances.
 
@@ -98,7 +81,7 @@ at different distances.
 
 We load the left channel
 of all impulse responses
-stored in the `air` table
+stored in the ``rir`` table
 and resample them to 16000 Hz.
 We then randomly pick
 an impulse response
@@ -132,7 +115,7 @@ with :class:`auglib.observe.List`.
 .. jupyter-execute::
     :hide-code:
 
-    plot(signal_augmented, green, 'Recorded\nReverb')
+    audplot.waveform(signal_augmented, color=red, text='Recorded\nReverb')
 
 .. jupyter-execute::
     :hide-code:
@@ -142,12 +125,6 @@ with :class:`auglib.observe.List`.
 .. empty line for some extra space
 
 |
-
-.. _air: http://data.pp.audeering.com/databases/air/air.html
-.. _ir-c4dm: http://data.pp.audeering.com/databases/ir-c4dm/ir-c4dm.html
-.. _mardy: http://data.pp.audeering.com/databases/mardy/mardy.html
-.. _impulse responses: https://en.wikipedia.org/wiki/Impulse_response
-.. _dummy head: https://en.wikipedia.org/wiki/Dummy_head_recording
 
 
 .. _examples-artificial-reverb:
@@ -218,11 +195,11 @@ randomly from a normal distribution.
     )
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
-    
+
 .. jupyter-execute::
     :hide-code:
 
-    plot(signal_augmented, green, 'Artificial\nReverb')
+    audplot.waveform(signal_augmented, color=red, text='Artificial\nReverb')
 
 .. jupyter-execute::
     :hide-code:
@@ -232,8 +209,6 @@ randomly from a normal distribution.
 .. empty line for some extra space
 
 |
-
-.. _Pedalboard: https://github.com/spotify/pedalboard
 
 
 .. _examples-music:
@@ -247,7 +222,7 @@ during training of a machine learning model.
 We load a single music file from musan_
 in this example.
 We recommend to use all media files
-from the `music` table,
+from the ``music`` table,
 when using the augmentation in a real application.
 We randomly crop each music sample
 with repetition,
@@ -279,7 +254,7 @@ and add it to the original input signal.
 .. jupyter-execute::
     :hide-code:
 
-    plot(signal_augmented, green, 'Music')
+    audplot.waveform(signal_augmented, color=red, text='Music')
 
 .. jupyter-execute::
     :hide-code:
@@ -321,7 +296,7 @@ to the input signal.
 .. jupyter-execute::
     :hide-code:
 
-    plot(signal_augmented, green, 'Pink\nNoise')
+    audplot.waveform(signal_augmented, color=red, text='Pink\nNoise')
 
 .. jupyter-execute::
     :hide-code:
@@ -370,7 +345,7 @@ to the input signal.
 .. jupyter-execute::
     :hide-code:
 
-    plot(signal_augmented, green, 'Band-Pass\nNoise')
+    audplot.waveform(signal_augmented, color=red, text='Band-Pass\nNoise')
 
 .. jupyter-execute::
     :hide-code:
@@ -426,7 +401,7 @@ when using the augmentation in a real application.
 .. jupyter-execute::
     :hide-code:
 
-    plot(signal_augmented, green, 'Babble\nNoise')
+    audplot.waveform(signal_augmented, color=red, text='Babble\nNoise')
 
 .. jupyter-execute::
     :hide-code:
@@ -436,9 +411,6 @@ when using the augmentation in a real application.
 .. empty line for some extra space
 
 |
-
-.. _musan: http://data.pp.audeering.com/databases/musan/musan.html
-.. _Snyder et al. 2018: https://www.danielpovey.com/files/2018_icassp_xvectors.pdf
 
 
 Telephone
@@ -488,7 +460,7 @@ which :class:`auglib.Augment` can take care of.
 .. jupyter-execute::
     :hide-code:
 
-    plot(signal_augmented, green, 'Telephone')
+    audplot.waveform(signal_augmented, color=red, text='Telephone')
 
 .. jupyter-execute::
     :hide-code:
@@ -498,8 +470,6 @@ which :class:`auglib.Augment` can take care of.
 .. empty line for some extra space
 
 |
-
-.. _Vu et al. 2019: http://www.apsipa.org/proceedings/2019/pdfs/216.pdf
 
 
 .. _examples-random-crop:
@@ -517,8 +487,8 @@ to randomly crop the input to a length of 0.5 s.
 If you are training with :mod:`torch`
 and you want to apply the transform
 during every epoch
-you might also consider
-using :class:`audtorch.transforms.RandomCrop` instead.
+you might consider
+:class:`audtorch.transforms.RandomCrop` instead.
 
 .. jupyter-execute::
 
@@ -536,9 +506,9 @@ using :class:`audtorch.transforms.RandomCrop` instead.
 .. jupyter-execute::
     :hide-code:
 
-    plot(signal_augmented, green, 'Random\nCrop')
+    audplot.waveform(signal_augmented, color=red, text='Random\nCrop')
     ax = plt.gca()
-    ax.set_xlim(0, signal.shape[1])
+    _ = ax.set_xlim(0, signal.shape[0])
 
 .. jupyter-execute::
     :hide-code:
@@ -562,7 +532,7 @@ is to simply switch the noise on and off
 and generate gated background noise.
 In the example,
 we select a single noise file
-from the `noise` table of musan_,
+from the ``noise`` table of musan_,
 which includes 930 different files.
 In a real application
 you should augment with all of them.
@@ -602,7 +572,7 @@ to the target signal.
 .. jupyter-execute::
     :hide-code:
 
-    plot(signal_augmented, green, 'Gated\nNoise')
+    audplot.waveform(signal_augmented, color=red, text='Gated\nNoise')
 
 .. jupyter-execute::
     :hide-code:
@@ -647,7 +617,7 @@ and re-synthesises the audio signal.
         praat([pitch_tier, manipulation], 'Replace pitch tier')
         sound_transposed = praat(manipulation, 'Get resynthesis (overlap-add)')
         return sound_transposed.values.flatten()
-        
+
     transform = auglib.transform.Function(
         function=pitch_shift,
         function_args={'semitones': auglib.observe.IntUni(-4, 4)},
@@ -658,7 +628,7 @@ and re-synthesises the audio signal.
 .. jupyter-execute::
     :hide-code:
 
-    plot(signal_augmented, green, 'Pitch\nShift')
+    audplot.waveform(signal_augmented, color=red, text='Pitch\nShift')
 
 .. jupyter-execute::
     :hide-code:
@@ -668,8 +638,6 @@ and re-synthesises the audio signal.
 .. empty line for some extra space
 
 |
-
-.. _praat: https://github.com/praat/praat/
 
 
 .. _examples-constant-pitch:
@@ -709,7 +677,7 @@ which preserves the natural pitch fluctuations per speaker.
         praat([pitch_tier, manipulation], 'Replace pitch tier')
         sound_transposed = praat(manipulation, 'Get resynthesis (overlap-add)')
         return sound_transposed.values.flatten()
-        
+
     transform = auglib.transform.Function(
         function=constant_pitch,
         function_args={'desired_pitch': 100},
@@ -720,7 +688,7 @@ which preserves the natural pitch fluctuations per speaker.
 .. jupyter-execute::
     :hide-code:
 
-    plot(signal_augmented, green, 'Constant\nPitch')
+    audplot.waveform(signal_augmented, color=red, text='Constant\nPitch')
 
 .. jupyter-execute::
     :hide-code:
@@ -749,7 +717,7 @@ after re-synthesis.
         praat([pitch_tier, manipulation], 'Replace pitch tier')
         sound_transposed = praat(manipulation, 'Get resynthesis (overlap-add)')
         return sound_transposed.values.flatten()
-        
+
     transform = auglib.transform.Function(
         function=constant_pitch,
         function_args={'desired_pitch': 100},
@@ -760,7 +728,7 @@ after re-synthesis.
 .. jupyter-execute::
     :hide-code:
 
-    plot(signal_augmented, green, 'Constant\nPitch')
+    audplot.waveform(signal_augmented, color=red, text='Constant\nPitch')
 
 .. jupyter-execute::
     :hide-code:
@@ -771,4 +739,13 @@ after re-synthesis.
 
 |
 
+
+.. === Links ===
+.. _air: https://audeering.github.io/datasets/datasets/air.html
+.. _dummy head: https://en.wikipedia.org/wiki/Dummy_head_recording
+.. _impulse responses: https://en.wikipedia.org/wiki/Impulse_response
+.. _musan: https://audeering.github.io/datasets/datasets/musan.html
+.. _Pedalboard: https://github.com/spotify/pedalboard
 .. _praat: https://github.com/praat/praat/
+.. _Snyder et al. 2018: https://www.danielpovey.com/files/2018_icassp_xvectors.pdf
+.. _Vu et al. 2019: http://www.apsipa.org/proceedings/2019/pdfs/216.pdf

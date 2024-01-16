@@ -1,8 +1,3 @@
-.. _external:
-
-External Solutions
-==================
-
 .. jupyter-execute::
     :hide-code:
     :hide-output:
@@ -19,23 +14,16 @@ External Solutions
     import auglib
 
 
-    blue = '#6649ff'
-    green = '#55dbb1'
-
-
-    def plot(signal, color, text):
-        signal = np.atleast_2d(signal)
-        signal = signal[0, :]
-        fig, ax = plt.subplots(1, figsize=(8, 1.5))
-        audplot.waveform(
-            signal,
-            text=text,
-            color=color,
-            ax=ax,
-        )
+    grey = '#5d6370'
+    red = '#e13b41'
 
 
 .. === Document starts here ===
+
+.. _external:
+
+External Solutions
+==================
 
 Augmentation examples,
 showing you
@@ -52,15 +40,15 @@ Let's start with loading an example file to augment.
     files = audb.load_media(
         'emodb',
         'wav/03a01Fa.wav',
-        version='1.3.0',
+        version='1.4.1',
         verbose=False,
     )
-    signal, sampling_rate = audiofile.read(files[0], always_2d=True)
+    signal, sampling_rate = audiofile.read(files[0])
 
 .. jupyter-execute::
     :hide-code:
 
-    plot(signal, blue, 'Original\nAudio')
+    audplot.waveform(signal, color=grey, text='Original\nAudio')
 
 .. jupyter-execute::
     :hide-code:
@@ -84,24 +72,17 @@ It also allows you
 to include VST plugins
 in your augmentation pipeline.
 
-Pedalboard_ lacks direct documentation
-of the parameters you can set for each of their classes.
-You can list available parameters
-by inspecting the attributes of a class:
-
-.. jupyter-execute::
-
-    import pedalboard
-
-    [attr for attr in dir(pedalboard.Reverb) if not attr.startswith('_')]
-
+The documentation of Pedalboard_
+does not discuss all the used parameters
+of the augmentations.
 For the value range
 and an explanation
 of the parameters,
 you might want to look
 at the corresponding documentation
 of the underlying JUCE C code.
-For reverb it is located at
+E.g. for :class:`pedalboard.Reverb`
+it is located at
 https://docs.juce.com/master/structReverb_1_1Parameters.html
 
 In the following example,
@@ -109,7 +90,7 @@ we use the compressor,
 chorus,
 phaser,
 and reverb
-augmentation from pedalboard_,
+from pedalboard_,
 as part of our :mod:`auglib`
 augmentation chain
 with the help of the :class:`auglib.transform.Function` class.
@@ -141,7 +122,7 @@ with the help of the :class:`auglib.transform.Function` class.
 .. jupyter-execute::
     :hide-code:
 
-    plot(signal_augmented, green, 'Augmented\nAudio')
+    audplot.waveform(signal_augmented, color=red, text='Augmented\nAudio')
 
 .. jupyter-execute::
     :hide-code:
@@ -175,14 +156,14 @@ torch-audiomentations_
 is available.
 
 In the following example,
-we combine gaussian noise,
+we combine Gaussian noise,
 time stretching,
 and pitch shifting.
 Similar to :mod:`auglib`
 a probability controls if
 a transformation is applied or bypassed.
 Again,
-we use the :class:`auglib.transform.Function` class
+we use :class:`auglib.transform.Function`
 to include transforms from audiomentations_
 into our :mod:`auglib` augmentation chain.
 
@@ -210,7 +191,7 @@ into our :mod:`auglib` augmentation chain.
 .. jupyter-execute::
     :hide-code:
 
-    plot(signal_augmented, green, 'Augmented\nAudio')
+    audplot.waveform(signal_augmented, color=red, text='Augmented\nAudio')
 
 .. jupyter-execute::
     :hide-code:
@@ -264,7 +245,7 @@ and apply a `Flanger effect`_.
 .. jupyter-execute::
     :hide-code:
 
-    plot(signal_augmented, green, 'Augmented\nAudio')
+    audplot.waveform(signal_augmented, color=red, text='Augmented\nAudio')
 
 .. jupyter-execute::
     :hide-code:
