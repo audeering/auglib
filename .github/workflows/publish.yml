@@ -46,7 +46,7 @@ jobs:
     # Docuemntation
     - name: Install doc dependencies
       run: |
-        sudo apt-get install --no-install-recommends --yes libsndfile1 ffmpeg sox libavcodec-extra59
+        sudo apt-get install --no-install-recommends --yes libsndfile1 ffmpeg sox libavcodec-extra
         pip install -r requirements.txt
         pip install -r docs/requirements.txt
 

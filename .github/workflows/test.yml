@@ -39,7 +39,7 @@ jobs:
     - name: Ubuntu - install libsndfile
       run: |
         sudo apt-get update
-        sudo apt-get install --no-install-recommends --yes libsndfile1 ffmpeg sox libavcodec-extra59
+        sudo apt-get install --no-install-recommends --yes libsndfile1 ffmpeg sox libavcodec-extra
       if: matrix.os == 'ubuntu-latest'
 
     - name: Install package
