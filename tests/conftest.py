@@ -11,15 +11,6 @@ class Ones(auglib.transform.Base):
         return np.ones(base.shape)
 
 
-# Add access to audEERING data repos
-audb.config.REPOSITORIES = [
-    audb.Repository(
-        name="data-public-local",
-        host="https://artifactory.audeering.com/artifactory",
-        backend="artifactory",
-    )
-]
-
 db = audb.load(
     "emodb",
     version="1.4.1",

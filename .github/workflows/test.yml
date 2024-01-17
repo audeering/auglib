@@ -9,10 +9,16 @@ on:
 jobs:
   build:
 
+    # Make sure .bashrc is read by shell for micromamba,
+    # see https://github.com/mamba-org/setup-micromamba#about-login-shells
+    defaults:
+      run:
+        shell: bash -l {0}
+
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest, macOS-latest ]
+        os: [ ubuntu-latest, macOS-latest, windows-latest ]
         python-version: [ '3.10' ]
         include:
           - os: ubuntu-latest
@@ -31,20 +37,34 @@ jobs:
         path: ~/audb/emodb/1.4.1
         key: emodb-1.4.1
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+    - name: Set up Python ${{ matrix.python-version }} with Micromamba
+      uses: mamba-org/setup-micromamba@v1
       with:
-        python-version: ${{ matrix.python-version }}
+        cache-environment: true
+        environment-name: venv
+        create-args: >-
+          pip
+          python=${{ matrix.python-version }}
+
+    - name: Activate Python virtual environment
+      run: micromamba activate venv
+
+    - name: Install sox with Micromamba
+      run: micromamba install sox
 
     - name: Ubuntu - install audio packages
       run: |
         sudo apt-get update
-        sudo apt-get install --no-install-recommends --yes libsndfile1 ffmpeg sox libavcodec-extra
+        sudo apt-get install --no-install-recommends --yes libsndfile1 ffmpeg libavcodec-extra
       if: matrix.os == 'ubuntu-latest'
 
     - name: OSX - install audio packages
       run: brew install ffmpeg mediainfo
       if: matrix.os == 'macOS-latest'
+
+    - name: Windows - install audio packages
+      run: choco install ffmpeg mediainfo-cli
+      if: matrix.os == 'windows-latest'
 
     - name: Install package
       run: |
