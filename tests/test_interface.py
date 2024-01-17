@@ -838,7 +838,8 @@ def test_augment_num_workers(tmpdir, transform):
         None,
         pytest.AUDB_ROOT,
         pytest.param(
-            "/invalid/directory", marks=pytest.mark.xfail(raises=RuntimeError)
+            "/invalid/directory",
+            marks=pytest.mark.xfail(raises=RuntimeError),
         ),
         pytest.param(
             pytest.AUDB_ROOT[: len(pytest.AUDB_ROOT) - 1],
