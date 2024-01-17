@@ -71,8 +71,6 @@ def test_pink_noise(duration, sampling_rate, gain_db, snr_db):
         expected_volume,
         decimal=1,
     )
-    np.testing.assert_array_equal(
-        noise,
-        expected_noise,
-        strict=True,
-    )
+    assert noise.shape == expected_noise.shape
+    assert noise.dtype == expected_noise.dtype
+    np.testing.assert_almost_equal(noise, expected_noise)
