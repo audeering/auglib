@@ -317,7 +317,7 @@ import auglib
         (
             # Time values might change due to pandas.to_timedelta()
             # see
-            # https://gitlab.audeering.com/tools/pyauglib/-/merge_requests/206
+            # https://github.com/pandas-dev/pandas/issues/56629
             audformat.segmented_index(
                 ["f1.wav"],
                 [0],
