@@ -49,6 +49,9 @@ jobs:
     - name: Activate Python virtual environment
       run: micromamba activate venv
 
+    - name: Install sox with Micromamba
+      run: micromamba install sox
+
     - name: Ubuntu - install audio packages
       run: |
         sudo apt-get update
