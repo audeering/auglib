@@ -137,7 +137,7 @@ class Augment(audinterface.Process, audobject.Object):
         >>> label = df_augmented.iloc[0, 0]
         >>> file = df_augmented.index[0][0]
         >>> file, label
-        ('.../0/wav/03a01Fa.wav', 'happiness')
+        ('...03a01Fa.wav', 'happiness')
 
     """  # noqa: E501
 
