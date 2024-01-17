@@ -25,10 +25,10 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Cache audb
+    - name: Cache emodb
       uses: actions/cache@v3
       with:
-        path: ~/audb
+        path: ~/audb/emodb/1.4.1
         key: emodb-1.4.1
 
     - name: Set up Python ${{ matrix.python-version }}
