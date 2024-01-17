@@ -20,7 +20,6 @@ audb.config.REPOSITORIES = [
     )
 ]
 
-
 db = audb.load(
     "emodb",
     version="1.4.1",
