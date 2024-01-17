@@ -31,15 +31,22 @@ jobs:
         path: ~/audb/emodb/1.4.1
         key: emodb-1.4.1
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+    - name: Set up Python ${{ matrix.python-version }} with Micromamba
+      uses: mamba-org/setup-micromamba@v1
       with:
-        python-version: ${{ matrix.python-version }}
+        cache-environment: true
+        environment-name: venv
+        create-args: >-
+          pip
+          python=${{ matrix.python-version }}
+
+    - name: Activate Python virtual environment
+      run: micromamba activate venv
 
     - name: Ubuntu - install audio packages
       run: |
         sudo apt-get update
-        sudo apt-get install --no-install-recommends --yes libsndfile1 ffmpeg sox libavcodec-extra
+        sudo apt-get install --no-install-recommends --yes libsndfile1 ffmpeg libavcodec-extra
       if: matrix.os == 'ubuntu-latest'
 
     - name: OSX - install audio packages
