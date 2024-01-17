@@ -20,9 +20,12 @@ audb.config.REPOSITORIES = [
     )
 ]
 
-db = audb.load("testdata", version="1.5.0")
+db = audb.load(
+    "emodb",
+    version="1.4.1",
+    media=["wav/03a01Fa.wav", "wav/03a01Nc.wav", "wav/03a01Wa.wav"],
+    verbose=False,
+)
 pytest.AUDB_ROOT = audb.default_cache_root()
-pytest.DATA_COLUMN = db["happiness.dev.gold"]["happiness"].get()
-pytest.DATA_FILES = db.files[:5]
-pytest.DATA_TABLE = db["happiness.dev.gold"].get()
+pytest.DATA_FILES = db.files
 pytest.TRANSFORM_ONES = Ones()

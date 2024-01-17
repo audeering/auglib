@@ -1,0 +1,73 @@
+name: Documentation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
+        python-version: [ '3.10' ]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Cache air
+      uses: actions/cache@v3
+      with:
+        path: ~/audb/air/1.4.2
+        key: air-1.4.2
+
+    - name: Cache cough-speech-sneeze
+      uses: actions/cache@v3
+      with:
+        path: ~/audb/cough-speech-sneeze/2.0.1
+        key: cough-speech-sneeze-2.0.1
+
+    - name: Cache emodb
+      uses: actions/cache@v3
+      with:
+        path: ~/audb/emodb/1.4.1
+        key: emodb-1.4.1
+
+    - name: Cache micirp
+      uses: actions/cache@v3
+      with:
+        path: ~/audb/micirp/1.0.0
+        key: micirp-1.0.0
+
+    - name: Cache musan
+      uses: actions/cache@v3
+      with:
+        path: ~/audb/musan/1.0.0
+        key: musan-1.0.0
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Ubuntu - install libsndfile
+      run: |
+        sudo apt-get update
+        sudo apt-get install --no-install-recommends --yes libsndfile1 ffmpeg sox libavcodec-extra
+
+    - name: Install package
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Install docs requirements
+      run: pip install -r docs/requirements.txt
+
+    - name: Test building documentation
+      run: python -m sphinx docs/ docs/_build/ -b html -W
+
+    #- name: Check links in documentation
+    #  run: python -m sphinx docs/ docs/_build/ -b linkcheck -W

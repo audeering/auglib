@@ -117,29 +117,27 @@ class Augment(audinterface.Process, audobject.Object):
         >>> import audiofile
         >>> import auglib
         >>> db = audb.load(
-        ...     "testdata",
-        ...     version="1.5.0",
-        ...     full_path=False,
+        ...     "emodb",
+        ...     version="1.4.1",
+        ...     media=["wav/03a01Fa.wav", "wav/03a01Nc.wav", "wav/03a01Wa.wav"],
         ...     verbose=False,
         ... )
         >>> transform = auglib.transform.WhiteNoiseUniform()
         >>> augment = auglib.Augment(transform)
         >>> # Augment a numpy array
-        >>> file = os.path.join(db.root, db.files[0])
-        >>> signal, sampling_rate = audiofile.read(file)
+        >>> signal, sampling_rate = audiofile.read(db.files[0])
         >>> signal_augmented = augment(signal, sampling_rate)
         >>> # Augment (parts of) a database
-        >>> column = db["emotion.test.gold"]["emotion"].get()
-        >>> augmented_column = augment.augment(
-        ...     column,
+        >>> df = db.get("emotion")
+        >>> df_augmented = augment.augment(
+        ...     df,
         ...     cache_root="cache",
-        ...     data_root=db.root,
+        ...     remove_root=db.root,
         ... )
-        >>> label = augmented_column.iloc[0]
-        >>> file = augmented_column.index[0][0]
-        >>> file = file.replace(audeer.path("."), ".")  # remove absolute path
-        >>> file, label  # doctest: +SKIP
-        ('./cache/decdec83/-6100627981361312836/0/audio/006.wav', 'unhappy')
+        >>> label = df_augmented.iloc[0, 0]
+        >>> file = df_augmented.index[0][0]
+        >>> file, label
+        ('.../0/wav/03a01Fa.wav', 'happiness')
 
     """  # noqa: E501
 

@@ -317,7 +317,7 @@ import auglib
         (
             # Time values might change due to pandas.to_timedelta()
             # see
-            # https://gitlab.audeering.com/tools/pyauglib/-/merge_requests/206
+            # https://github.com/pandas-dev/pandas/issues/56629
             audformat.segmented_index(
                 ["f1.wav"],
                 [0],
@@ -838,7 +838,8 @@ def test_augment_num_workers(tmpdir, transform):
         None,
         pytest.AUDB_ROOT,
         pytest.param(
-            "/invalid/directory", marks=pytest.mark.xfail(raises=RuntimeError)
+            "/invalid/directory",
+            marks=pytest.mark.xfail(raises=RuntimeError),
         ),
         pytest.param(
             pytest.AUDB_ROOT[: len(pytest.AUDB_ROOT) - 1],
