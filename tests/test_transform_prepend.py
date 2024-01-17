@@ -4,78 +4,78 @@ import pytest
 import auglib
 
 
-@pytest.mark.parametrize('sampling_rate', [8000])
-@pytest.mark.parametrize('signal', [np.array([1, 1])])
+@pytest.mark.parametrize("sampling_rate", [8000])
+@pytest.mark.parametrize("signal", [np.array([1, 1])])
 @pytest.mark.parametrize(
-    'read_pos_aux, read_dur_aux, unit, aux, expected',
+    "read_pos_aux, read_dur_aux, unit, aux, expected",
     [
         (
             0,
             None,
-            'samples',
+            "samples",
             np.array([0, 2]),
             np.array([0, 2, 1, 1]),
         ),
         (
             0,
             0,
-            'samples',
+            "samples",
             np.array([0, 2]),
             np.array([0, 2, 1, 1]),
         ),
         (
             1,
             None,
-            'samples',
+            "samples",
             np.array([0, 2]),
             np.array([2, 1, 1]),
         ),
         (
             0,
             1,
-            'samples',
+            "samples",
             np.array([0, 2]),
             np.array([0, 1, 1]),
         ),
         (
             0,
             None,
-            'relative',
+            "relative",
             np.array([0, 2]),
             np.array([0, 2, 1, 1]),
         ),
         (
             0.5,
             None,
-            'relative',
+            "relative",
             np.array([0, 2]),
             np.array([2, 1, 1]),
         ),
         (
             0,
             0.5,
-            'relative',
+            "relative",
             np.array([0, 2]),
             np.array([0, 1, 1]),
         ),
         (
             0,
             1.5,
-            'relative',
+            "relative",
             np.array([0, 2]),
             np.array([0, 2, 1, 1]),
         ),
     ],
 )
 def test_Prepend(
-        tmpdir,
-        sampling_rate,
-        signal,
-        read_pos_aux,
-        read_dur_aux,
-        unit,
-        aux,
-        expected,
+    tmpdir,
+    sampling_rate,
+    signal,
+    read_pos_aux,
+    read_dur_aux,
+    unit,
+    aux,
+    expected,
 ):
     expected = expected.astype(auglib.core.transform.DTYPE)
     transform = auglib.transform.Prepend(

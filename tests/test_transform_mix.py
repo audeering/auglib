@@ -7,16 +7,15 @@ import auglib
 
 
 @pytest.mark.parametrize(
-    'base_dur, aux_dur, sampling_rate, unit',
+    "base_dur, aux_dur, sampling_rate, unit",
     [
         (1.0, 1.0, 8000, None),
-        (16000, 8000, 16000, 'samples'),
-        (500, 1000, 44100, 'ms'),
+        (16000, 8000, 16000, "samples"),
+        (500, 1000, 44100, "ms"),
     ],
 )
 def test_mix_1(tmpdir, base_dur, aux_dur, sampling_rate, unit):
-
-    unit = unit or 'seconds'
+    unit = unit or "seconds"
     n_base = auglib.utils.to_samples(
         base_dur,
         sampling_rate=sampling_rate,
@@ -85,11 +84,8 @@ def test_mix_1(tmpdir, base_dur, aux_dur, sampling_rate, unit):
     expected_mix = np.zeros((1, n_base))
     for n in range(values.shape[1]):
         expected_mix += np.concatenate(
-                [
-                    values[:, n:],
-                    np.zeros((1, n_base - values[:, n:].shape[1]))
-                ],
-                axis=1,
+            [values[:, n:], np.zeros((1, n_base - values[:, n:].shape[1]))],
+            axis=1,
         )
     expected_mix = expected_mix.astype(auglib.core.transform.DTYPE)
 
@@ -97,7 +93,7 @@ def test_mix_1(tmpdir, base_dur, aux_dur, sampling_rate, unit):
     transform = auglib.transform.Mix(
         values,
         read_pos_aux=auglib.observe.List(values[0]),
-        unit='samples',
+        unit="samples",
         num_repeat=values.shape[1],
     )
     error_msg = (
@@ -116,12 +112,7 @@ def test_mix_1(tmpdir, base_dur, aux_dur, sampling_rate, unit):
 
     # Shift aux by observe list of signals
     transform = auglib.transform.Mix(
-        auglib.observe.List(
-            [
-                values[:, n:]
-                for n in range(values.shape[1])
-            ]
-        ),
+        auglib.observe.List([values[:, n:] for n in range(values.shape[1])]),
         num_repeat=values.shape[1],
     )
     error_msg = (
@@ -139,16 +130,16 @@ def test_mix_1(tmpdir, base_dur, aux_dur, sampling_rate, unit):
     )
 
 
-@pytest.mark.parametrize('base_duration', [5, 10])
-@pytest.mark.parametrize('aux_duration', [5, 10])
-@pytest.mark.parametrize('write_pos_base', [0, 1])
-@pytest.mark.parametrize('extend_base', [False, True])
-@pytest.mark.parametrize('read_pos_aux', [0, 1])
-@pytest.mark.parametrize('read_dur_aux', [None, 3, 6])
-@pytest.mark.parametrize('loop_aux', [False, True])
-@pytest.mark.parametrize('gain_base_db', [0, 10])
+@pytest.mark.parametrize("base_duration", [5, 10])
+@pytest.mark.parametrize("aux_duration", [5, 10])
+@pytest.mark.parametrize("write_pos_base", [0, 1])
+@pytest.mark.parametrize("extend_base", [False, True])
+@pytest.mark.parametrize("read_pos_aux", [0, 1])
+@pytest.mark.parametrize("read_dur_aux", [None, 3, 6])
+@pytest.mark.parametrize("loop_aux", [False, True])
+@pytest.mark.parametrize("gain_base_db", [0, 10])
 @pytest.mark.parametrize(
-    'gain_aux_db, snr_db',
+    "gain_aux_db, snr_db",
     [
         (0, None),
         (10, None),
@@ -156,21 +147,20 @@ def test_mix_1(tmpdir, base_dur, aux_dur, sampling_rate, unit):
         (None, 0),
         (None, 10),
         (0, 10),
-    ]
+    ],
 )
 def test_mix_2(
-        base_duration,
-        aux_duration,
-        write_pos_base,
-        extend_base,
-        read_pos_aux,
-        read_dur_aux,
-        loop_aux,
-        gain_base_db,
-        gain_aux_db,
-        snr_db,
+    base_duration,
+    aux_duration,
+    write_pos_base,
+    extend_base,
+    read_pos_aux,
+    read_dur_aux,
+    loop_aux,
+    gain_base_db,
+    gain_aux_db,
+    snr_db,
 ):
-
     aux = np.array([range(aux_duration)])
     base_value = 0.1
     base = base_value * np.ones((1, base_duration))
@@ -198,10 +188,7 @@ def test_mix_2(
     len_mix_base = base.shape[1] - write_pos_base
 
     # Number of samples read for mix from aux
-    if (
-            read_dur_aux is None
-            or read_dur_aux == 0
-    ):
+    if read_dur_aux is None or read_dur_aux == 0:
         len_mix_aux = max(
             [
                 aux_expected.shape[1],
@@ -219,12 +206,13 @@ def test_mix_2(
     expected_mix = gain_base * base_value * np.ones(base.shape)
     if len_mix_aux > len_mix_base:
         if (
-                extend_base and not has_looped
-                or (
-                    extend_base
-                    and read_dur_aux is not None
-                    and read_dur_aux > base_duration
-                )
+            extend_base
+            and not has_looped
+            or (
+                extend_base
+                and read_dur_aux is not None
+                and read_dur_aux > base_duration
+            )
         ):
             expected_mix = np.concatenate(
                 [expected_mix, np.zeros((1, len_mix_aux - len_mix_base))],
@@ -241,30 +229,20 @@ def test_mix_2(
         len_mix_aux,
     )  # this seems to be not needed
     # len_mix_aux = len_mix_aux - write_pos_base
-    if (
-            loop_aux
-            and write_pos_base > 0
-            and base_duration > aux_duration
-    ):
+    if loop_aux and write_pos_base > 0 and base_duration > aux_duration:
         len_mix_aux = min([len_mix_aux, len_mix_base])
     aux_expected = aux_expected[:, :len_mix_aux]
 
     # As we use a fixed signal for `base`
     # the RMS_db value is independent of signal length
     rms_base_start = write_pos_base
-    rms_base_end = min(
-        [base_duration, aux_expected.shape[1] + write_pos_base]
-    )
-    rms_aux_end = min(
-        base_duration - write_pos_base, aux_expected.shape[1]
-    )
+    rms_base_end = min([base_duration, aux_expected.shape[1] + write_pos_base])
+    rms_aux_end = min(base_duration - write_pos_base, aux_expected.shape[1])
 
     rms_db_base = audmath.db(  # includes already gain_base_db
         audmath.rms(expected_mix[:, rms_base_start:rms_base_end])
     )
-    rms_db_aux = audmath.db(
-        audmath.rms(aux_expected[:, :rms_aux_end])
-    )
+    rms_db_aux = audmath.db(audmath.rms(aux_expected[:, :rms_aux_end]))
 
     # Get gain factor for aux
     if gain_aux_db is None:
@@ -275,9 +253,7 @@ def test_mix_2(
 
     # Add aux values to expected mix
     mix_start = write_pos_base
-    expected_mix[:, mix_start:mix_start + len_mix_aux] += (
-        gain_aux * aux_expected
-    )
+    expected_mix[:, mix_start : mix_start + len_mix_aux] += gain_aux * aux_expected
 
     expected_mix = expected_mix.astype(auglib.core.transform.DTYPE)
     transform = auglib.transform.Mix(
@@ -289,7 +265,7 @@ def test_mix_2(
         read_pos_aux=read_pos_aux,
         read_dur_aux=read_dur_aux,
         extend_base=extend_base,
-        unit='samples',
+        unit="samples",
         loop_aux=loop_aux,
     )
     augmented_signal = transform(base)
@@ -302,28 +278,28 @@ def test_mix_2(
     )
 
 
-@pytest.mark.parametrize('unit', ['relative'])
+@pytest.mark.parametrize("unit", ["relative"])
 @pytest.mark.parametrize(
-    'base, aux, write_pos_base, read_pos_aux, read_dur_aux, expected',
+    "base, aux, write_pos_base, read_pos_aux, read_dur_aux, expected",
     [
         (
-            np.array([.1, .1, .1, .1]),
+            np.array([0.1, 0.1, 0.1, 0.1]),
             np.array([1, 2, 3, 4]),
             0.5,
             0.5,
             0.5,
-            np.array([.1, .1, 3.1, 4.1], dtype='float32'),
+            np.array([0.1, 0.1, 3.1, 4.1], dtype="float32"),
         ),
     ],
 )
 def test_mix_3(
-        unit,
-        base,
-        aux,
-        write_pos_base,
-        read_pos_aux,
-        read_dur_aux,
-        expected,
+    unit,
+    base,
+    aux,
+    write_pos_base,
+    read_pos_aux,
+    read_dur_aux,
+    expected,
 ):
     transform = auglib.transform.Mix(
         aux,

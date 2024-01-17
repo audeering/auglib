@@ -6,45 +6,45 @@ import pytest
 import auglib
 
 
-@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize("sampling_rate", [8000])
 @pytest.mark.parametrize(
-    'signal, aux, read_pos_aux, read_dur_aux, unit, expected',
+    "signal, aux, read_pos_aux, read_dur_aux, unit, expected",
     [
-        ([1, 1], [0, 2], 0, 0, 'samples', [1, 1, 0, 2]),
-        ([1, 1], [0, 2], 0, None, 'samples', [1, 1, 0, 2]),
-        ([1, 1], [0, 2], 1, 0, 'samples', [1, 1, 2]),
-        ([1, 1], [0, 2], 0, 1, 'samples', [1, 1, 0]),
-        ([1, 1], [], 0, None, 'samples', [1, 1]),
-        ([1, 1], [[0, 2]], 0, 0, 'samples', [1, 1, 0, 2]),
-        ([1, 1], [[0, 2]], 0, None, 'samples', [1, 1, 0, 2]),
-        ([1, 1], [[0, 2]], 1, 0, 'samples', [1, 1, 2]),
-        ([1, 1], [[0, 2]], 0, 1, 'samples', [1, 1, 0]),
-        ([1, 1], [[]], 0, None, 'samples', [1, 1]),
-        ([[1, 1]], [0, 2], 0, 0, 'samples', [[1, 1, 0, 2]]),
-        ([[1, 1]], [0, 2], 0, None, 'samples', [[1, 1, 0, 2]]),
-        ([[1, 1]], [0, 2], 1, 0, 'samples', [[1, 1, 2]]),
-        ([[1, 1]], [0, 2], 0, 1, 'samples', [[1, 1, 0]]),
-        ([[1, 1]], [], 0, None, 'samples', [[1, 1]]),
-        ([[1, 1]], [[0, 2]], 0, 0, 'samples', [[1, 1, 0, 2]]),
-        ([[1, 1]], [[0, 2]], 0, None, 'samples', [[1, 1, 0, 2]]),
-        ([[1, 1]], [[0, 2]], 1, 0, 'samples', [[1, 1, 2]]),
-        ([[1, 1]], [[0, 2]], 0, 1, 'samples', [[1, 1, 0]]),
-        ([[1, 1]], [[]], 0, None, 'samples', [[1, 1]]),
-        ([[1, 1]], [[0, 2]], 0.5, None, 'relative', [[1, 1, 2]]),
-        ([[1, 1]], [[0, 2]], 0.5, 0.5, 'relative', [[1, 1, 2]]),
-        ([[1, 1]], [[0, 2]], 0.5, 1, 'relative', [[1, 1, 2]]),
-        ([[1, 1]], [[0, 2]], 0, 0.5, 'relative', [[1, 1, 0]]),
+        ([1, 1], [0, 2], 0, 0, "samples", [1, 1, 0, 2]),
+        ([1, 1], [0, 2], 0, None, "samples", [1, 1, 0, 2]),
+        ([1, 1], [0, 2], 1, 0, "samples", [1, 1, 2]),
+        ([1, 1], [0, 2], 0, 1, "samples", [1, 1, 0]),
+        ([1, 1], [], 0, None, "samples", [1, 1]),
+        ([1, 1], [[0, 2]], 0, 0, "samples", [1, 1, 0, 2]),
+        ([1, 1], [[0, 2]], 0, None, "samples", [1, 1, 0, 2]),
+        ([1, 1], [[0, 2]], 1, 0, "samples", [1, 1, 2]),
+        ([1, 1], [[0, 2]], 0, 1, "samples", [1, 1, 0]),
+        ([1, 1], [[]], 0, None, "samples", [1, 1]),
+        ([[1, 1]], [0, 2], 0, 0, "samples", [[1, 1, 0, 2]]),
+        ([[1, 1]], [0, 2], 0, None, "samples", [[1, 1, 0, 2]]),
+        ([[1, 1]], [0, 2], 1, 0, "samples", [[1, 1, 2]]),
+        ([[1, 1]], [0, 2], 0, 1, "samples", [[1, 1, 0]]),
+        ([[1, 1]], [], 0, None, "samples", [[1, 1]]),
+        ([[1, 1]], [[0, 2]], 0, 0, "samples", [[1, 1, 0, 2]]),
+        ([[1, 1]], [[0, 2]], 0, None, "samples", [[1, 1, 0, 2]]),
+        ([[1, 1]], [[0, 2]], 1, 0, "samples", [[1, 1, 2]]),
+        ([[1, 1]], [[0, 2]], 0, 1, "samples", [[1, 1, 0]]),
+        ([[1, 1]], [[]], 0, None, "samples", [[1, 1]]),
+        ([[1, 1]], [[0, 2]], 0.5, None, "relative", [[1, 1, 2]]),
+        ([[1, 1]], [[0, 2]], 0.5, 0.5, "relative", [[1, 1, 2]]),
+        ([[1, 1]], [[0, 2]], 0.5, 1, "relative", [[1, 1, 2]]),
+        ([[1, 1]], [[0, 2]], 0, 0.5, "relative", [[1, 1, 0]]),
     ],
 )
 def test_append(
-        tmpdir,
-        sampling_rate,
-        signal,
-        read_pos_aux,
-        read_dur_aux,
-        unit,
-        aux,
-        expected,
+    tmpdir,
+    sampling_rate,
+    signal,
+    read_pos_aux,
+    read_dur_aux,
+    unit,
+    aux,
+    expected,
 ):
     signal = np.array(signal)
     aux = np.array(aux)
@@ -64,14 +64,14 @@ def test_append(
 
 
 @pytest.mark.parametrize(
-    'signal, sampling_rate, read_pos_aux, unit, aux, serialize, '
-    'expected_error, expected_error_message',
+    "signal, sampling_rate, read_pos_aux, unit, aux, serialize, "
+    "expected_error, expected_error_message",
     [
         (
             np.ones((1, 8000)),
             None,
             0.1,
-            'seconds',
+            "seconds",
             np.zeros((1, 2000)),
             False,
             ValueError,
@@ -84,7 +84,7 @@ def test_append(
             np.ones((1, 4)),
             None,
             None,
-            'samples',
+            "samples",
             np.array([0, 1]),
             True,
             ValueError,
@@ -96,14 +96,14 @@ def test_append(
     ],
 )
 def test_append_error(
-        signal,
-        sampling_rate,
-        read_pos_aux,
-        unit,
-        aux,
-        serialize,
-        expected_error,
-        expected_error_message,
+    signal,
+    sampling_rate,
+    read_pos_aux,
+    unit,
+    aux,
+    serialize,
+    expected_error,
+    expected_error_message,
 ):
     transform = auglib.transform.Append(
         aux,

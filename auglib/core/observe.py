@@ -12,6 +12,7 @@ class Base(audobject.Object):
     An observable object only reveals its value when it is called.
 
     """
+
     def __call__(self) -> typing.Any:  # pragma: no cover
         r"""Observe next value.
 
@@ -29,9 +30,10 @@ class Bool(Base):
         prob_true: probability for True values to be drawn
 
     """
+
     def __init__(
-            self,
-            prob_true: float = 0.5,
+        self,
+        prob_true: float = 0.5,
     ):
         self.prob_true = prob_true
 
@@ -73,13 +75,14 @@ class FloatNorm(Base):
         0.87
 
     """
+
     def __init__(
-            self,
-            mean: float,
-            std: float,
-            *,
-            minimum: float = None,
-            maximum: float = None,
+        self,
+        mean: float,
+        std: float,
+        *,
+        minimum: float = None,
+        maximum: float = None,
     ):
         minimum = minimum if minimum is not None else -np.inf
         maximum = maximum if maximum is not None else np.inf
@@ -119,10 +122,11 @@ class FloatUni(Base):
         0.72
 
     """
+
     def __init__(
-            self,
-            low: float,
-            high: float,
+        self,
+        low: float,
+        high: float,
     ):
         self.low = low
         self.high = high
@@ -157,10 +161,11 @@ class IntUni(Base):
         3
 
     """
+
     def __init__(
-            self,
-            low: int,
-            high: int,
+        self,
+        low: int,
+        high: int,
     ):
         self.low = low
         self.high = high
@@ -197,13 +202,13 @@ class List(Base):
     Examples:
         >>> import auglib
         >>> auglib.seed(1)
-        >>> o = List([0, 'b', 'c'])
+        >>> o = List([0, "b", "c"])
         >>> [o() for _ in range(5)]
         [0, 'b', 'c', 0, 'b']
-        >>> o = List([0, 'b', 'c'], shuffle=True)
+        >>> o = List([0, "b", "c"], shuffle=True)
         >>> [o() for _ in range(5)]
         ['b', 'c', 0, 0, 'b']
-        >>> o = List([0, 'b', 'c'], draw=True)
+        >>> o = List([0, "b", "c"], draw=True)
         >>> [o() for _ in range(5)]
         ['b', 'b', 'b', 'c', 'b']
         >>> o = List([IntUni(0, 5), 99])
@@ -211,22 +216,22 @@ class List(Base):
         [5, 99, 3, 99, 4]
 
     """
+
     # import here to avoid circulate import error
     from auglib.core.resolver import ObservableListResolver
 
     @audobject.init_decorator(
         resolvers={
-            'elements': ObservableListResolver,
+            "elements": ObservableListResolver,
         }
     )
     def __init__(
-            self,
-            elements: typing.MutableSequence[typing.Any],
-            *,
-            shuffle: bool = False,
-            draw: bool = False,
+        self,
+        elements: typing.MutableSequence[typing.Any],
+        *,
+        shuffle: bool = False,
+        draw: bool = False,
     ):
-
         if draw and shuffle:
             raise ValueError("Cannot draw and shuffle at the same time.")
 
@@ -276,7 +281,7 @@ class List(Base):
 
 
 def observe(
-        x: typing.Union[typing.Any, Base],
+    x: typing.Union[typing.Any, Base],
 ) -> typing.Any:
     r"""Convenient function to observe a value.
 
@@ -305,10 +310,10 @@ def observe(
 
 
 def _truncnorm(
-        mu: float,
-        sigma: float,
-        minimum: float,
-        maximum: float,
+    mu: float,
+    sigma: float,
+    minimum: float,
+    maximum: float,
 ) -> float:
     r"""Truncated standard normal distribution.
 

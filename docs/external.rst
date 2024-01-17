@@ -14,8 +14,8 @@
     import auglib
 
 
-    grey = '#5d6370'
-    red = '#e13b41'
+    grey = "#5d6370"
+    red = "#e13b41"
 
 
 .. === Document starts here ===
@@ -38,9 +38,9 @@ Let's start with loading an example file to augment.
     import audiofile
 
     files = audb.load_media(
-        'emodb',
-        'wav/03a01Fa.wav',
-        version='1.4.1',
+        "emodb",
+        "wav/03a01Fa.wav",
+        version="1.4.1",
         verbose=False,
     )
     signal, sampling_rate = audiofile.read(files[0])
@@ -48,7 +48,7 @@ Let's start with loading an example file to augment.
 .. jupyter-execute::
     :hide-code:
 
-    audplot.waveform(signal, color=grey, text='Original\nAudio')
+    audplot.waveform(signal, color=grey, text="Original\nAudio")
 
 .. jupyter-execute::
     :hide-code:
@@ -122,7 +122,7 @@ with the help of the :class:`auglib.transform.Function` class.
 .. jupyter-execute::
     :hide-code:
 
-    audplot.waveform(signal_augmented, color=red, text='Augmented\nAudio')
+    audplot.waveform(signal_augmented, color=red, text="Augmented\nAudio")
 
 .. jupyter-execute::
     :hide-code:
@@ -181,7 +181,7 @@ into our :mod:`auglib` augmentation chain.
 
     transform = auglib.transform.Compose(
         [
-            auglib.transform.Function(audiomentations_transform, {'p': 1.0}),
+            auglib.transform.Function(audiomentations_transform, {"p": 1.0}),
             auglib.transform.NormalizeByPeak(),
         ]
     )
@@ -191,7 +191,7 @@ into our :mod:`auglib` augmentation chain.
 .. jupyter-execute::
     :hide-code:
 
-    audplot.waveform(signal_augmented, color=red, text='Augmented\nAudio')
+    audplot.waveform(signal_augmented, color=red, text="Augmented\nAudio")
 
 .. jupyter-execute::
     :hide-code:
@@ -245,7 +245,7 @@ and apply a `Flanger effect`_.
 .. jupyter-execute::
     :hide-code:
 
-    audplot.waveform(signal_augmented, color=red, text='Augmented\nAudio')
+    audplot.waveform(signal_augmented, color=red, text="Augmented\nAudio")
 
 .. jupyter-execute::
     :hide-code:

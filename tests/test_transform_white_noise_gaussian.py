@@ -7,11 +7,11 @@ import audobject
 import auglib
 
 
-@pytest.mark.parametrize('duration', [1.0])
-@pytest.mark.parametrize('sampling_rate', [8000])
-@pytest.mark.parametrize('stddev', [0.1, 0.2, 0.3, 0.4])
+@pytest.mark.parametrize("duration", [1.0])
+@pytest.mark.parametrize("sampling_rate", [8000])
+@pytest.mark.parametrize("stddev", [0.1, 0.2, 0.3, 0.4])
 @pytest.mark.parametrize(
-    'gain_db, snr_db',
+    "gain_db, snr_db",
     [
         (-10, None),
         (0, None),
@@ -20,16 +20,15 @@ import auglib
         (None, 0),
         (None, 10),
         (0, 10),
-    ]
+    ],
 )
 def test_white_noise_gaussian(
-        duration,
-        sampling_rate,
-        stddev,
-        gain_db,
-        snr_db,
+    duration,
+    sampling_rate,
+    stddev,
+    gain_db,
+    snr_db,
 ):
-
     seed = 0
     auglib.seed(seed)
 
@@ -49,7 +48,7 @@ def test_white_noise_gaussian(
         gain_db = 0.0
 
     # Power of white noise is given by std^2
-    noise_volume = 10 * np.log10(stddev ** 2)
+    noise_volume = 10 * np.log10(stddev**2)
 
     if snr_db is not None:
         # We add noise to an empty signal,

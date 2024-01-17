@@ -6,24 +6,23 @@ import audobject
 import auglib
 
 
-@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize("sampling_rate", [8000])
 @pytest.mark.parametrize(
-    'duration, unit, signal, expected',
+    "duration, unit, signal, expected",
     [
-        (None, 'samples', [1, 2, 3], [1, 2, 3]),
-        (0, 'samples', [1, 2, 3], [1, 2, 3]),
-        (1, 'samples', [1, 2, 3], [2, 3, 1]),
-        (2, 'samples', [1, 2, 3], [3, 1, 2]),
-        (3, 'samples', [1, 2, 3], [1, 2, 3]),
-        (4, 'samples', [1, 2, 3], [2, 3, 1]),
-        (1./3, 'relative', [1, 2, 3], [2, 3, 1]),
-        (2./3, 'relative', [1, 2, 3], [3, 1, 2]),
-        (3./3, 'relative', [1, 2, 3], [1, 2, 3]),
-        (4./3, 'relative', [1, 2, 3], [2, 3, 1]),
+        (None, "samples", [1, 2, 3], [1, 2, 3]),
+        (0, "samples", [1, 2, 3], [1, 2, 3]),
+        (1, "samples", [1, 2, 3], [2, 3, 1]),
+        (2, "samples", [1, 2, 3], [3, 1, 2]),
+        (3, "samples", [1, 2, 3], [1, 2, 3]),
+        (4, "samples", [1, 2, 3], [2, 3, 1]),
+        (1.0 / 3, "relative", [1, 2, 3], [2, 3, 1]),
+        (2.0 / 3, "relative", [1, 2, 3], [3, 1, 2]),
+        (3.0 / 3, "relative", [1, 2, 3], [1, 2, 3]),
+        (4.0 / 3, "relative", [1, 2, 3], [2, 3, 1]),
     ],
 )
 def test_shift(sampling_rate, duration, unit, signal, expected):
-
     signal = np.array(signal)
     expected = np.array(
         expected,

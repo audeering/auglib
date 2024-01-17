@@ -12,8 +12,8 @@
     import audplot
     import auglib
 
-    grey = '#5d6370'
-    red = '#e13b41'
+    grey = "#5d6370"
+    red = "#e13b41"
 
 
 .. === Document starts here ===
@@ -35,9 +35,9 @@ Let's start with loading an example file to augment.
     import audiofile
 
     files = audb.load_media(
-        'emodb',
-        'wav/03a01Fa.wav',
-        version='1.4.1',
+        "emodb",
+        "wav/03a01Fa.wav",
+        version="1.4.1",
         verbose=False,
     )
     signal, sampling_rate = audiofile.read(files[0])
@@ -45,7 +45,7 @@ Let's start with loading an example file to augment.
 .. jupyter-execute::
     :hide-code:
 
-    audplot.waveform(signal, color=grey, text='Original\nAudio')
+    audplot.waveform(signal, color=grey, text="Original\nAudio")
 
 
 .. jupyter-execute::
@@ -76,7 +76,7 @@ at different distances.
 
 .. jupyter-execute::
 
-    df = audb.load_table('air', 'rir', version='1.4.2', verbose=False)
+    df = audb.load_table("air", "rir", version="1.4.2", verbose=False)
     set(df.room)
 
 We load the left channel
@@ -93,9 +93,9 @@ with :class:`auglib.observe.List`.
     auglib.seed(0)
 
     db = audb.load(
-        'air',
-        version='1.4.2',
-        tables='rir',
+        "air",
+        version="1.4.2",
+        tables="rir",
         channels=[0],
         sampling_rate=16000,
         verbose=False,
@@ -115,7 +115,7 @@ with :class:`auglib.observe.List`.
 .. jupyter-execute::
     :hide-code:
 
-    audplot.waveform(signal_augmented, color=red, text='Recorded\nReverb')
+    audplot.waveform(signal_augmented, color=red, text="Recorded\nReverb")
 
 .. jupyter-execute::
     :hide-code:
@@ -183,11 +183,11 @@ randomly from a normal distribution.
             auglib.transform.Function(
                 reverb,
                 function_args={
-                    'room_size': random_params,
-                    'damping': random_params,
-                    'wet_level': random_params,
-                    'dry_level': random_params,
-                    'width': random_params,
+                    "room_size": random_params,
+                    "damping": random_params,
+                    "wet_level": random_params,
+                    "dry_level": random_params,
+                    "width": random_params,
                 },
             ),
             auglib.transform.NormalizeByPeak(),
@@ -199,7 +199,7 @@ randomly from a normal distribution.
 .. jupyter-execute::
     :hide-code:
 
-    audplot.waveform(signal_augmented, color=red, text='Artificial\nReverb')
+    audplot.waveform(signal_augmented, color=red, text="Artificial\nReverb")
 
 .. jupyter-execute::
     :hide-code:
@@ -234,10 +234,10 @@ and add it to the original input signal.
     auglib.seed(0)
 
     db = audb.load(
-        'musan',
-        tables='music',
-        media='music/fma/music-fma-0097.wav',
-        version='1.0.0',
+        "musan",
+        tables="music",
+        media="music/fma/music-fma-0097.wav",
+        version="1.0.0",
         verbose=False,
     )
 
@@ -245,7 +245,7 @@ and add it to the original input signal.
         auglib.observe.List(db.files, draw=True),
         gain_aux_db=auglib.observe.IntUni(-15, -10),
         read_pos_aux=auglib.observe.FloatUni(0, 1),
-        unit='relative',
+        unit="relative",
         loop_aux=True,
     )
     augment = auglib.Augment(transform)
@@ -254,7 +254,7 @@ and add it to the original input signal.
 .. jupyter-execute::
     :hide-code:
 
-    audplot.waveform(signal_augmented, color=red, text='Music')
+    audplot.waveform(signal_augmented, color=red, text="Music")
 
 .. jupyter-execute::
     :hide-code:
@@ -296,7 +296,7 @@ to the input signal.
 .. jupyter-execute::
     :hide-code:
 
-    audplot.waveform(signal_augmented, color=red, text='Pink\nNoise')
+    audplot.waveform(signal_augmented, color=red, text="Pink\nNoise")
 
 .. jupyter-execute::
     :hide-code:
@@ -345,7 +345,7 @@ to the input signal.
 .. jupyter-execute::
     :hide-code:
 
-    audplot.waveform(signal_augmented, color=red, text='Band-Pass\nNoise')
+    audplot.waveform(signal_augmented, color=red, text="Band-Pass\nNoise")
 
 .. jupyter-execute::
     :hide-code:
@@ -383,10 +383,10 @@ when using the augmentation in a real application.
     auglib.seed(1)
 
     db = audb.load(
-        'musan',
-        tables='speech',
-        media='.*speech-librivox-000\d',
-        version='1.0.0',
+        "musan",
+        tables="speech",
+        media=".*speech-librivox-000\d",
+        version="1.0.0",
         verbose=False,
     )
 
@@ -401,7 +401,7 @@ when using the augmentation in a real application.
 .. jupyter-execute::
     :hide-code:
 
-    audplot.waveform(signal_augmented, color=red, text='Babble\nNoise')
+    audplot.waveform(signal_augmented, color=red, text="Babble\nNoise")
 
 .. jupyter-execute::
     :hide-code:
@@ -460,7 +460,7 @@ which :class:`auglib.Augment` can take care of.
 .. jupyter-execute::
     :hide-code:
 
-    audplot.waveform(signal_augmented, color=red, text='Telephone')
+    audplot.waveform(signal_augmented, color=red, text="Telephone")
 
 .. jupyter-execute::
     :hide-code:
@@ -495,10 +495,10 @@ you might consider
     auglib.seed(0)
 
     transform = auglib.transform.Trim(
-        start_pos=auglib.Time(auglib.observe.FloatUni(0, 1), unit='relative'),
+        start_pos=auglib.Time(auglib.observe.FloatUni(0, 1), unit="relative"),
         duration=0.5,
-        fill='loop',
-        unit='seconds',
+        fill="loop",
+        unit="seconds",
     )
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
@@ -506,7 +506,7 @@ you might consider
 .. jupyter-execute::
     :hide-code:
 
-    audplot.waveform(signal_augmented, color=red, text='Random\nCrop')
+    audplot.waveform(signal_augmented, color=red, text="Random\nCrop")
     ax = plt.gca()
     _ = ax.set_xlim(0, signal.shape[0])
 
@@ -549,10 +549,10 @@ to the target signal.
     auglib.seed(0)
 
     db = audb.load(
-        'musan',
-        tables='noise',
-        media='noise/free-sound/noise-free-sound-0003.wav',
-        version='1.0.0',
+        "musan",
+        tables="noise",
+        media="noise/free-sound/noise-free-sound-0003.wav",
+        version="1.0.0",
         verbose=False,
     )
 
@@ -561,7 +561,7 @@ to the target signal.
             auglib.observe.List(db.files, draw=True),
             gain_aux_db=auglib.observe.IntUni(-15, 0),
             read_pos_aux=auglib.observe.FloatUni(0, 1),
-            unit='relative',
+            unit="relative",
             loop_aux=True,
         ),
         step=0.5,
@@ -572,7 +572,7 @@ to the target signal.
 .. jupyter-execute::
     :hide-code:
 
-    audplot.waveform(signal_augmented, color=red, text='Gated\nNoise')
+    audplot.waveform(signal_augmented, color=red, text="Gated\nNoise")
 
 .. jupyter-execute::
     :hide-code:
@@ -610,17 +610,17 @@ and re-synthesises the audio signal.
 
     def pitch_shift(signal, sampling_rate, semitones):
         sound = parselmouth.Sound(signal, sampling_rate)
-        manipulation = praat(sound, 'To Manipulation', 0.01, 75, 600)
-        pitch_tier = praat(manipulation, 'Extract pitch tier')
+        manipulation = praat(sound, "To Manipulation", 0.01, 75, 600)
+        pitch_tier = praat(manipulation, "Extract pitch tier")
         factor = 2 ** (semitones / 12)
-        praat(pitch_tier, 'Multiply frequencies', sound.xmin, sound.xmax, factor)
-        praat([pitch_tier, manipulation], 'Replace pitch tier')
-        sound_transposed = praat(manipulation, 'Get resynthesis (overlap-add)')
+        praat(pitch_tier, "Multiply frequencies", sound.xmin, sound.xmax, factor)
+        praat([pitch_tier, manipulation], "Replace pitch tier")
+        sound_transposed = praat(manipulation, "Get resynthesis (overlap-add)")
         return sound_transposed.values.flatten()
 
     transform = auglib.transform.Function(
         function=pitch_shift,
-        function_args={'semitones': auglib.observe.IntUni(-4, 4)},
+        function_args={"semitones": auglib.observe.IntUni(-4, 4)},
     )
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
@@ -628,7 +628,7 @@ and re-synthesises the audio signal.
 .. jupyter-execute::
     :hide-code:
 
-    audplot.waveform(signal_augmented, color=red, text='Pitch\nShift')
+    audplot.waveform(signal_augmented, color=red, text="Pitch\nShift")
 
 .. jupyter-execute::
     :hide-code:
@@ -666,21 +666,21 @@ which preserves the natural pitch fluctuations per speaker.
         sound = parselmouth.Sound(signal, sampling_rate)
         # Estimate average pitch of signal
         pitch = sound.to_pitch()
-        pitch = pitch.selected_array['frequency']
+        pitch = pitch.selected_array["frequency"]
         pitch[pitch == 0] = np.NaN
         pitch = np.nanmean(pitch)
         # Adjust signal to desired pitch
-        manipulation = praat(sound, 'To Manipulation', 0.01, 75, 600)
-        pitch_tier = praat(manipulation, 'Extract pitch tier')
+        manipulation = praat(sound, "To Manipulation", 0.01, 75, 600)
+        pitch_tier = praat(manipulation, "Extract pitch tier")
         factor = desired_pitch / pitch
-        praat(pitch_tier, 'Multiply frequencies', sound.xmin, sound.xmax, factor)
-        praat([pitch_tier, manipulation], 'Replace pitch tier')
-        sound_transposed = praat(manipulation, 'Get resynthesis (overlap-add)')
+        praat(pitch_tier, "Multiply frequencies", sound.xmin, sound.xmax, factor)
+        praat([pitch_tier, manipulation], "Replace pitch tier")
+        sound_transposed = praat(manipulation, "Get resynthesis (overlap-add)")
         return sound_transposed.values.flatten()
 
     transform = auglib.transform.Function(
         function=constant_pitch,
-        function_args={'desired_pitch': 100},
+        function_args={"desired_pitch": 100},
     )
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
@@ -688,7 +688,7 @@ which preserves the natural pitch fluctuations per speaker.
 .. jupyter-execute::
     :hide-code:
 
-    audplot.waveform(signal_augmented, color=red, text='Constant\nPitch')
+    audplot.waveform(signal_augmented, color=red, text="Constant\nPitch")
 
 .. jupyter-execute::
     :hide-code:
@@ -711,16 +711,16 @@ after re-synthesis.
 
     def constant_pitch(signal, sampling_rate, desired_pitch):
         sound = parselmouth.Sound(signal, sampling_rate)
-        manipulation = praat(sound, 'To Manipulation', 0.01, 75, 600)
-        pitch_tier = praat(manipulation, 'Create PitchTier', 'Name', sound.xmin, sound.xmax)
+        manipulation = praat(sound, "To Manipulation", 0.01, 75, 600)
+        pitch_tier = praat(manipulation, "Create PitchTier", "Name", sound.xmin, sound.xmax)
         praat(pitch_tier, "Add point", sound.xmax / 2, desired_pitch)
-        praat([pitch_tier, manipulation], 'Replace pitch tier')
-        sound_transposed = praat(manipulation, 'Get resynthesis (overlap-add)')
+        praat([pitch_tier, manipulation], "Replace pitch tier")
+        sound_transposed = praat(manipulation, "Get resynthesis (overlap-add)")
         return sound_transposed.values.flatten()
 
     transform = auglib.transform.Function(
         function=constant_pitch,
-        function_args={'desired_pitch': 100},
+        function_args={"desired_pitch": 100},
     )
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
@@ -728,7 +728,7 @@ after re-synthesis.
 .. jupyter-execute::
     :hide-code:
 
-    audplot.waveform(signal_augmented, color=red, text='Constant\nPitch')
+    audplot.waveform(signal_augmented, color=red, text="Constant\nPitch")
 
 .. jupyter-execute::
     :hide-code:

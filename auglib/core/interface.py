@@ -117,8 +117,8 @@ class Augment(audinterface.Process, audobject.Object):
         >>> import audiofile
         >>> import auglib
         >>> db = audb.load(
-        ...     'testdata',
-        ...     version='1.5.0',
+        ...     "testdata",
+        ...     version="1.5.0",
         ...     full_path=False,
         ...     verbose=False,
         ... )
@@ -129,40 +129,41 @@ class Augment(audinterface.Process, audobject.Object):
         >>> signal, sampling_rate = audiofile.read(file)
         >>> signal_augmented = augment(signal, sampling_rate)
         >>> # Augment (parts of) a database
-        >>> column = db['emotion.test.gold']['emotion'].get()
+        >>> column = db["emotion.test.gold"]["emotion"].get()
         >>> augmented_column = augment.augment(
         ...     column,
-        ...     cache_root='cache',
+        ...     cache_root="cache",
         ...     data_root=db.root,
         ... )
         >>> label = augmented_column.iloc[0]
         >>> file = augmented_column.index[0][0]
-        >>> file = file.replace(audeer.path('.'), '.')  # remove absolute path
+        >>> file = file.replace(audeer.path("."), ".")  # remove absolute path
         >>> file, label  # doctest: +SKIP
         ('./cache/decdec83/-6100627981361312836/0/audio/006.wav', 'unhappy')
 
     """  # noqa: E501
+
     @audobject.init_decorator(
         hide=[
-            'keep_nat',
-            'multiprocessing',
-            'num_workers',
-            'verbose',
+            "keep_nat",
+            "multiprocessing",
+            "num_workers",
+            "verbose",
         ]
     )
     def __init__(
-            self,
-            transform: transform.Base,
-            *,
-            sampling_rate: int = None,
-            resample: bool = False,
-            channels: typing.Union[int, typing.Sequence[int]] = None,
-            mixdown: bool = False,
-            keep_nat: bool = False,
-            num_workers: typing.Optional[int] = 1,
-            multiprocessing: bool = False,
-            seed: int = None,
-            verbose: bool = False,
+        self,
+        transform: transform.Base,
+        *,
+        sampling_rate: int = None,
+        resample: bool = False,
+        channels: typing.Union[int, typing.Sequence[int]] = None,
+        mixdown: bool = False,
+        keep_nat: bool = False,
+        num_workers: typing.Optional[int] = 1,
+        multiprocessing: bool = False,
+        seed: int = None,
+        verbose: bool = False,
     ):
         if seed is not None:
             seed_func(seed)
@@ -175,7 +176,7 @@ class Augment(audinterface.Process, audobject.Object):
 
         super().__init__(
             process_func=Augment._process_func,
-            process_func_args={'transform': transform},
+            process_func_args={"transform": transform},
             sampling_rate=sampling_rate,
             resample=resample,
             channels=channels,
@@ -188,7 +189,7 @@ class Augment(audinterface.Process, audobject.Object):
 
     @property
     def short_id(
-            self,
+        self,
     ) -> str:
         r"""Short flavor ID.
 
@@ -199,15 +200,15 @@ class Augment(audinterface.Process, audobject.Object):
         return self.id[-8:]
 
     def augment(
-            self,
-            data: typing.Union[pd.Index, pd.Series, pd.DataFrame],
-            cache_root: str = None,
-            *,
-            data_root: str = None,
-            remove_root: str = None,
-            modified_only: bool = True,
-            num_variants: int = 1,
-            force: bool = False,
+        self,
+        data: typing.Union[pd.Index, pd.Series, pd.DataFrame],
+        cache_root: str = None,
+        *,
+        data_root: str = None,
+        remove_root: str = None,
+        modified_only: bool = True,
+        num_variants: int = 1,
+        force: bool = False,
     ) -> typing.Union[pd.Index, pd.Series, pd.DataFrame]:
         r"""Augment an index, column, or table conform to audformat.
 
@@ -288,9 +289,7 @@ class Augment(audinterface.Process, audobject.Object):
             allow_nat=True,
         )
         if self.keep_nat:
-            nat_mask = index.get_level_values(
-                audformat.define.IndexField.END
-            ).isna()
+            nat_mask = index.get_level_values(audformat.define.IndexField.END).isna()
 
         if data_root is not None:
             index = audformat.utils.expand_file_path(index, data_root)
@@ -302,12 +301,13 @@ class Augment(audinterface.Process, audobject.Object):
         if cache_root is None:
             # Import here to avoid circular import
             from auglib.core.cache import default_cache_root
+
             cache_root = default_cache_root()
         else:
             cache_root = audeer.path(cache_root)
         cache_root = os.path.join(cache_root, self.short_id)
 
-        transform_path = os.path.join(cache_root, 'transform.yaml')
+        transform_path = os.path.join(cache_root, "transform.yaml")
         if not os.path.exists(transform_path):
             self.transform.to_yaml(
                 transform_path,
@@ -331,25 +331,19 @@ class Augment(audinterface.Process, audobject.Object):
                 )
                 augmented_indices = [non_nat_index]
 
-
         for idx in range(num_variants):
-
-            cache_root_idx = os.path.join(
-                cache_root,
-                index_hash,
-                str(idx)
-            )
+            cache_root_idx = os.path.join(cache_root, index_hash, str(idx))
 
             index_cache_path = os.path.join(
                 cache_root_idx,
-                'index.pkl',
+                "index.pkl",
             )
             if not force and os.path.exists(index_cache_path):
                 augmented_index = pd.read_pickle(index_cache_path)
                 # Make sure old cache entries use correct dtype
                 augmented_index = audformat.utils.set_index_dtypes(
                     augmented_index,
-                    {'file': 'string'},
+                    {"file": "string"},
                 )
             else:
                 # We always replace NaT when storing in cache
@@ -368,7 +362,7 @@ class Augment(audinterface.Process, audobject.Object):
                     non_nat_index,
                     cache_root_idx,
                     remove_root,
-                    f'Augment ({idx+1} of {num_variants})',
+                    f"Augment ({idx+1} of {num_variants})",
                 )
                 pd.to_pickle(
                     augmented_index,
@@ -394,11 +388,11 @@ class Augment(audinterface.Process, audobject.Object):
         return augmented_data
 
     def _augment_index(
-            self,
-            index: pd.Index,
-            cache_root: str,
-            remove_root: str,
-            description: str,
+        self,
+        index: pd.Index,
+        cache_root: str,
+        remove_root: str,
+        description: str,
     ) -> pd.Index:
         r"""Augment segments and store augmented files to cache."""
         files = index.get_level_values(0).unique()
@@ -412,9 +406,9 @@ class Augment(audinterface.Process, audobject.Object):
                 (
                     file,
                     out_file,
-                    index[
-                        index.get_level_values(0) == file
-                    ].droplevel(0),  # start, end values for given file
+                    index[index.get_level_values(0) == file].droplevel(
+                        0
+                    ),  # start, end values for given file
                 ),
                 {},
             )
@@ -438,9 +432,9 @@ class Augment(audinterface.Process, audobject.Object):
         return augmented_index
 
     def _augment_file(
-            self,
-            file: str,
-            index: pd.Index,
+        self,
+        file: str,
+        index: pd.Index,
     ) -> typing.Tuple[typing.List, typing.List, typing.List, int]:
         r"""Augment file at every segment."""
         signal, sampling_rate = audiofile.read(file, always_2d=True)
@@ -452,10 +446,10 @@ class Augment(audinterface.Process, audobject.Object):
         return signals, starts, ends, augmented_rate
 
     def _augment_file_to_cache(
-            self,
-            file: str,
-            augmented_file: str,
-            index: pd.Index,  # containing (several) start, end values
+        self,
+        file: str,
+        augmented_file: str,
+        index: pd.Index,  # containing (several) start, end values
     ) -> pd.Index:
         r"""Augment file and store to cache.
 
@@ -483,10 +477,7 @@ class Augment(audinterface.Process, audobject.Object):
             # number of needed digits for file names
             digits = len(str(len(signals) - 1))
             root, ext = os.path.splitext(augmented_file)
-            files = [
-                f'{root}-{str(n).zfill(digits)}{ext}'
-                for n in range(len(signals))
-            ]
+            files = [f"{root}-{str(n).zfill(digits)}{ext}" for n in range(len(signals))]
         else:
             files = [augmented_file]
         for file, signal in zip(files, signals):
@@ -502,10 +493,10 @@ class Augment(audinterface.Process, audobject.Object):
         return augmented_index_with_file
 
     def _augment_signal(
-            self,
-            signal: np.ndarray,
-            sampling_rate: int,
-            index: pd.Index,
+        self,
+        signal: np.ndarray,
+        sampling_rate: int,
+        index: pd.Index,
     ) -> typing.Tuple[typing.List, typing.List, typing.List, int]:
         r"""Augment signal at every segment in index."""
         signal, sampling_rate = preprocess_signal(
@@ -521,7 +512,7 @@ class Augment(audinterface.Process, audobject.Object):
         # and end at NaT or duration
         signals = list(y.values)
         starts = [0] * len(signals)
-        ends = y.index.get_level_values('end')
+        ends = y.index.get_level_values("end")
         ends = [
             end if pd.isna(end) else signal.shape[1] / sampling_rate
             for signal, end in zip(signals, ends)
@@ -530,9 +521,9 @@ class Augment(audinterface.Process, audobject.Object):
 
     @staticmethod
     def _process_func(
-            signal: np.ndarray,
-            sampling_rate: int,
-            transform: auglib.transform.Base,
+        signal: np.ndarray,
+        sampling_rate: int,
+        transform: auglib.transform.Base,
     ) -> np.ndarray:
         r"""Internal processing function.
 
@@ -553,30 +544,24 @@ class Augment(audinterface.Process, audobject.Object):
         # combine into single output array and fill short channels with zeros
         augmented_signal = np.zeros(
             (signal.shape[0], max_samples),
-            dtype='float32',
+            dtype="float32",
         )
         for idx, channel in enumerate(signals):
-            augmented_signal[idx, :len(channel)] = channel
+            augmented_signal[idx, : len(channel)] = channel
 
         return augmented_signal
 
 
 def _apply_nat_mask(
-        index: pd.Index,
-        mask: np.ndarray,
+    index: pd.Index,
+    mask: np.ndarray,
 ) -> pd.Index:
     r"""Within mask set end level to NaT."""
-    ends = index.get_level_values(
-        audformat.define.IndexField.END
-    ).to_series()
+    ends = index.get_level_values(audformat.define.IndexField.END).to_series()
     ends[mask] = pd.NaT
     index = audformat.segmented_index(
-        index.get_level_values(
-            audformat.define.IndexField.FILE
-        ),
-        index.get_level_values(
-            audformat.define.IndexField.START
-        ),
+        index.get_level_values(audformat.define.IndexField.FILE),
+        index.get_level_values(audformat.define.IndexField.START),
         ends,
     )
 
@@ -584,31 +569,29 @@ def _apply_nat_mask(
 
 
 def _augmented_files(
-        files: typing.Sequence[str],
-        cache_root: str,
-        remove_root: str = None,
+    files: typing.Sequence[str],
+    cache_root: str,
+    remove_root: str = None,
 ) -> typing.Sequence[str]:
     r"""Return cache file names by joining with the cache directory."""
     cache_root = audeer.path(cache_root)
     if remove_root is None:
+
         def join(path1: str, path2: str) -> str:
             seps = os.sep + os.altsep if os.altsep else os.sep
             return os.path.join(
-                path1, os.path.splitdrive(path2)[1].lstrip(seps),
+                path1,
+                os.path.splitdrive(path2)[1].lstrip(seps),
             )
-        augmented_files = [
-            join(cache_root, file) for file in files
-        ]
+
+        augmented_files = [join(cache_root, file) for file in files]
     else:
         remove_root = audeer.path(remove_root)
         dirs = [os.path.dirname(file) for file in files]
         common_root = audeer.common_directory(dirs)
-        if not audeer.common_directory(
-            [remove_root, common_root]
-        ) == remove_root:
-            raise RuntimeError(f"Cannot remove '{remove_root}' "
-                               f"from '{common_root}'.")
-        augmented_files = [
-            file.replace(remove_root, cache_root, 1) for file in files
-        ]
+        if not audeer.common_directory([remove_root, common_root]) == remove_root:
+            raise RuntimeError(
+                f"Cannot remove '{remove_root}' " f"from '{common_root}'."
+            )
+        augmented_files = [file.replace(remove_root, cache_root, 1) for file in files]
     return augmented_files

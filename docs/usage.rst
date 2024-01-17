@@ -10,20 +10,20 @@
     import audb
     import audplot
 
-    grey = '#5d6370'
-    red = '#e13b41'
+    grey = "#5d6370"
+    red = "#e13b41"
 
     
     def series_to_html(self):
         df = self.to_frame()
-        df.columns = ['']
+        df.columns = [""]
         return df._repr_html_()
-    setattr(pd.Series, '_repr_html_', series_to_html)
+    setattr(pd.Series, "_repr_html_", series_to_html)
 
 
     def index_to_html(self):
         return self.to_frame(index=False)._repr_html_()
-    setattr(pd.Index, '_repr_html_', index_to_html)
+    setattr(pd.Index, "_repr_html_", index_to_html)
 
 
 .. === Document starts here ===
@@ -76,9 +76,9 @@ and apply our augmentation to it.
     import audiofile
 
     files = audb.load_media(
-        'emodb',
-        'wav/03a01Fa.wav',
-        version='1.4.1',
+        "emodb",
+        "wav/03a01Fa.wav",
+        version="1.4.1",
         verbose=False,
     )
     signal, sampling_rate = audiofile.read(files[0])
@@ -87,7 +87,7 @@ and apply our augmentation to it.
 .. jupyter-execute::
     :hide-code:
 
-    audplot.waveform(signal, color=grey, text='Original\nAudio')
+    audplot.waveform(signal, color=grey, text="Original\nAudio")
 
 .. jupyter-execute::
     :hide-code:
@@ -101,7 +101,7 @@ and apply our augmentation to it.
 .. jupyter-execute::
     :hide-code:
 
-    audplot.waveform(signal_augmented, color=red, text='Augmented\nAudio')
+    audplot.waveform(signal_augmented, color=red, text="Augmented\nAudio")
 
 .. jupyter-execute::
     :hide-code:
@@ -124,9 +124,9 @@ and augment them using :meth:`auglib.Augment.process_files`.
 .. jupyter-execute::
 
     files = audb.load_media(
-        'emodb',
-        ['wav/03a01Fa.wav', 'wav/03a01Nc.wav', 'wav/03a01Wa.wav'],
-        version='1.4.1',
+        "emodb",
+        ["wav/03a01Fa.wav", "wav/03a01Nc.wav", "wav/03a01Wa.wav"],
+        version="1.4.1",
         verbose=False,
     )
     y_augmented = augment.process_files(files)
@@ -176,13 +176,13 @@ pointing to the files of the dataset.
 .. jupyter-execute::
 
     db = audb.load(
-        'emodb',
-        version='1.4.1',
-        media=['wav/03a01Fa.wav', 'wav/03a01Nc.wav', 'wav/03a01Wa.wav'],
+        "emodb",
+        version="1.4.1",
+        media=["wav/03a01Fa.wav", "wav/03a01Nc.wav", "wav/03a01Wa.wav"],
         verbose=False,
     )
     index = db.files
-    index_augmented = augment.augment(index, cache_root='cache')
+    index_augmented = augment.augment(index, cache_root="cache")
     index_augmented
 
 The augmented files are stored inside the ``cache_root`` folder.
@@ -200,8 +200,8 @@ a series will be returned:
 
 .. jupyter-execute::
 
-    y = db['files']['speaker'].get()
-    y_augmented = augment.augment(y, cache_root='cache')
+    y = db["files"]["speaker"].get()
+    y_augmented = augment.augment(y, cache_root="cache")
     y_augmented
 
 Finally,
@@ -211,10 +211,10 @@ and augmenting every file twice.
 
 .. jupyter-execute::
 
-    df = db['files'].get()
+    df = db["files"].get()
     df_augmented = augment.augment(
         df,
-        cache_root='cache',
+        cache_root="cache",
         modified_only=False,
         num_variants=2,
     )
@@ -239,7 +239,7 @@ and re-instantiate it from there.
 
     import audobject
 
-    file = 'transform.yaml'
+    file = "transform.yaml"
     augment.to_yaml(file)
     augment_from_yaml = audobject.from_yaml(file)
     augment_from_yaml(signal, sampling_rate)
@@ -272,7 +272,7 @@ we can also overwrite the value.
 
 .. jupyter-execute::
 
-    augment_other_seed = audobject.from_yaml(file, override_args={'seed': 1})
+    augment_other_seed = audobject.from_yaml(file, override_args={"seed": 1})
     augment_other_seed(signal, sampling_rate)
 
 

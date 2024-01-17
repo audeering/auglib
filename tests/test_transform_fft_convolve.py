@@ -5,7 +5,7 @@ import auglib
 
 
 @pytest.mark.parametrize(
-    'keep_tail, impulse_response, signal, expected',
+    "keep_tail, impulse_response, signal, expected",
     [
         (
             False,

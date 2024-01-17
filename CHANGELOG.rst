@@ -107,7 +107,7 @@ Version 0.11.0 (2022-10-13)
   no longer supports providing a ``start_pos``
   that is larger than the buffer length
 * Changed: ``auglib.transform.Trim``
-  with argument ``fill='loop'``
+  with argument ``fill="loop"``
   no longer loops the whole input signal,
   but only the trimmed version
   specified by ``start_pos``

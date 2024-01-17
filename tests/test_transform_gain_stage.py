@@ -7,12 +7,11 @@ import audobject
 import auglib
 
 
-@pytest.mark.parametrize('signal', [np.random.uniform(-0.1, 1.0, 10)])
-@pytest.mark.parametrize('gain', [20.0])
-@pytest.mark.parametrize('max_peak', [None, 10.0])
-@pytest.mark.parametrize('clip', [False, True])
+@pytest.mark.parametrize("signal", [np.random.uniform(-0.1, 1.0, 10)])
+@pytest.mark.parametrize("gain", [20.0])
+@pytest.mark.parametrize("max_peak", [None, 10.0])
+@pytest.mark.parametrize("clip", [False, True])
 def test_GainStage(signal, gain, max_peak, clip):
-
     transform = auglib.transform.GainStage(
         gain,
         max_peak_db=max_peak,

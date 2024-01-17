@@ -7,12 +7,11 @@ import audobject
 import auglib
 
 
-@pytest.mark.parametrize('sampling_rate', [8000, 44100])
-@pytest.mark.parametrize('duration', [10])
-@pytest.mark.parametrize('order', [1, 4])
-@pytest.mark.parametrize('cutoff', [1000, 3000])
+@pytest.mark.parametrize("sampling_rate", [8000, 44100])
+@pytest.mark.parametrize("duration", [10])
+@pytest.mark.parametrize("order", [1, 4])
+@pytest.mark.parametrize("cutoff", [1000, 3000])
 def test_lowpass(duration, sampling_rate, order, cutoff):
-
     # generate a boxcar signal (step up...step down)
     signal = np.zeros((1, int(duration * sampling_rate)))
     start = int(duration * sampling_rate / 4)
@@ -23,7 +22,7 @@ def test_lowpass(duration, sampling_rate, order, cutoff):
     b, a = scipy.signal.butter(
         order,
         cutoff,
-        'lowpass',
+        "lowpass",
         fs=sampling_rate,
     )
     expected = scipy.signal.lfilter(b, a, signal)
@@ -47,10 +46,10 @@ def test_lowpass(duration, sampling_rate, order, cutoff):
 
 
 @pytest.mark.parametrize(
-    'design, sampling_rate, expected_error, expected_error_msg',
+    "design, sampling_rate, expected_error, expected_error_msg",
     [
         (
-            'non-supported',
+            "non-supported",
             16000,
             ValueError,
             (
@@ -59,7 +58,7 @@ def test_lowpass(duration, sampling_rate, order, cutoff):
             ),
         ),
         (
-            'butter',
+            "butter",
             None,
             ValueError,
             "sampling_rate is 'None', but required.",
@@ -67,10 +66,10 @@ def test_lowpass(duration, sampling_rate, order, cutoff):
     ],
 )
 def test_bandpass_errors(
-        design,
-        sampling_rate,
-        expected_error,
-        expected_error_msg,
+    design,
+    sampling_rate,
+    expected_error,
+    expected_error_msg,
 ):
     with pytest.raises(expected_error, match=expected_error_msg):
         transform = auglib.transform.LowPass(1, design=design)

@@ -23,42 +23,42 @@ class Time(audobject.Object):
         ValueError: if ``unit`` is not supported
 
     Examples:
-        >>> Time(0.5, 'seconds')(sampling_rate=8)
+        >>> Time(0.5, "seconds")(sampling_rate=8)
         4
-        >>> Time(1000, 'ms')(sampling_rate=8)
+        >>> Time(1000, "ms")(sampling_rate=8)
         8
-        >>> Time(16, 'samples')()
+        >>> Time(16, "samples")()
         16
-        >>> Time(0.5, 'relative')(length=64)
+        >>> Time(0.5, "relative")(length=64)
         32
         >>> # generate randomized values
         >>> seed(0)
-        >>> t = Time(observe.FloatUni(0.25, 0.75), 'relative')
+        >>> t = Time(observe.FloatUni(0.25, 0.75), "relative")
         >>> t(length=64)
         33
         >>> t(length=64)
         38
 
     """
-    def __init__(
-            self,
-            value: typing.Union[int, float, observe.Base],
-            unit: str,
-    ):
 
+    def __init__(
+        self,
+        value: typing.Union[int, float, observe.Base],
+        unit: str,
+    ):
         self.value = value
         self.unit = unit.strip()
 
-        if self.unit not in ('samples', 'relative'):
+        if self.unit not in ("samples", "relative"):
             # raises ValueError if unit is not supported
             pd.to_timedelta(0, unit=self.unit)
 
     def __call__(
-            self,
-            *,
-            sampling_rate: int = None,
-            length: int = None,
-            allow_negative: bool = False,
+        self,
+        *,
+        sampling_rate: int = None,
+        length: int = None,
+        allow_negative: bool = False,
     ) -> int:
         r"""Convert timestamp or timespan to number of samples.
 
@@ -90,20 +90,17 @@ class Time(audobject.Object):
 
         """
         if sampling_rate is not None:
-            if (
-                    not isinstance(sampling_rate, int)
-                    or sampling_rate <= 0
-            ):
+            if not isinstance(sampling_rate, int) or sampling_rate <= 0:
                 raise ValueError(
-                    'Sampling rate must be an integer and greater than zero, '
-                    f'not {sampling_rate} Hz'
+                    "Sampling rate must be an integer and greater than zero, "
+                    f"not {sampling_rate} Hz"
                 )
 
         value = observe.observe(self.value)
 
-        if self.unit == 'samples':
+        if self.unit == "samples":
             num_samples = int(value)
-        elif self.unit == 'relative':
+        elif self.unit == "relative":
             if length is None:
                 raise ValueError(
                     "Unit is set to 'relative', "

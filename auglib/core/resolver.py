@@ -9,14 +9,14 @@ class ArrayResolver(audobject.resolver.Base):
     r"""Raise error if an array is encoded."""
 
     def decode(
-            self,
-            value: typing.Any,
+        self,
+        value: typing.Any,
     ) -> typing.Any:
         return value
 
     def encode(
-            self,
-            value: typing.Any,
+        self,
+        value: typing.Any,
     ) -> typing.Any:
         if isinstance(value, np.ndarray):
             raise ValueError(
@@ -36,14 +36,14 @@ class ObservableListResolver(audobject.resolver.Base):
     r"""Raise error if list containing a signal is encoded."""
 
     def decode(
-            self,
-            value: typing.Any,
+        self,
+        value: typing.Any,
     ) -> typing.Any:
         return value
 
     def encode(
-            self,
-            value: typing.MutableSequence[typing.Any],
+        self,
+        value: typing.MutableSequence[typing.Any],
     ) -> typing.Any:
         for v in value:
             if isinstance(v, np.ndarray):

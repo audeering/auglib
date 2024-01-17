@@ -7,17 +7,17 @@ import auglib
 
 
 @pytest.mark.parametrize(
-    'signal, sampling_rate, transform',
+    "signal, sampling_rate, transform",
     [
         (
             np.zeros((1, 10)),
             8000,
             auglib.transform.Function(lambda x, sr: x + 1),
         )
-    ]
+    ],
 )
 @pytest.mark.parametrize(
-    'start_pos, duration, step, invert, expected',
+    "start_pos, duration, step, invert, expected",
     [
         (0, None, None, False, np.zeros((1, 10))),
         (0, None, None, True, np.ones((1, 10))),
@@ -43,19 +43,18 @@ import auglib
         (0, 0, (1, 3), True, np.zeros((1, 10))),
         (3, 5, (1, 3), False, [[1, 1, 1, 0, 1, 1, 1, 0, 1, 1]]),
         (3, 5, (1, 3), True, [[0, 0, 0, 1, 0, 0, 0, 1, 0, 0]]),
-    ]
+    ],
 )
 def test_mask(
-        signal,
-        sampling_rate,
-        transform,
-        start_pos,
-        duration,
-        step,
-        invert,
-        expected,
+    signal,
+    sampling_rate,
+    transform,
+    start_pos,
+    duration,
+    step,
+    invert,
+    expected,
 ):
-
     if isinstance(expected, np.ndarray):
         expected = expected.astype(auglib.core.transform.DTYPE)
     else:
@@ -69,14 +68,10 @@ def test_mask(
         duration=duration,
         step=step,
         invert=invert,
-        unit='samples',
+        unit="samples",
     )
     mask = audobject.from_yaml_s(
         mask.to_yaml_s(include_version=False),
     )
 
-    np.testing.assert_array_equal(
-        mask(signal),
-        expected,
-        strict=True
-    )
+    np.testing.assert_array_equal(mask(signal), expected, strict=True)

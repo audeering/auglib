@@ -7,7 +7,7 @@ import auglib
 
 
 @pytest.mark.parametrize(
-    'threshold, normalize, signal, expected_signal',
+    "threshold, normalize, signal, expected_signal",
     [
         (
             1.0,
@@ -36,7 +36,6 @@ import auglib
     ],
 )
 def test_Clip(threshold, normalize, signal, expected_signal):
-
     expected_signal = expected_signal.astype(auglib.core.transform.DTYPE)
 
     transform = auglib.transform.Clip(

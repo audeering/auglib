@@ -8,7 +8,6 @@ import auglib
 
 
 def test_cache_root(tmpdir):
-
     auglib.config.CACHE_ROOT = tmpdir
 
     transform = pytest.TRANSFORM_ONES

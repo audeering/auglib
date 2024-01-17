@@ -7,13 +7,10 @@ import audobject
 import auglib
 
 
-@pytest.mark.parametrize(
-    'bit_rate', [4750, 5150, 5900, 6700, 7400, 7950, 10200, 12200]
-)
+@pytest.mark.parametrize("bit_rate", [4750, 5150, 5900, 6700, 7400, 7950, 10200, 12200])
 def test_AMRNB(bit_rate):
-
-    original_wav = 'tests/test-assets/opensmile.wav'
-    target_wav = f'tests/test-assets/opensmile_amrnb_rate{bit_rate}_ffmpeg.wav'
+    original_wav = "tests/test-assets/opensmile.wav"
+    target_wav = f"tests/test-assets/opensmile_amrnb_rate{bit_rate}_ffmpeg.wav"
 
     transform = auglib.transform.AMRNB(bit_rate)
     transform = audobject.from_yaml_s(
@@ -32,17 +29,17 @@ def test_AMRNB(bit_rate):
 
 
 @pytest.mark.parametrize(
-    'sampling_rate, expected_error, expected_error_msg',
+    "sampling_rate, expected_error, expected_error_msg",
     [
         (
             None,
             RuntimeError,
-            'AMRNB requires a sampling rate of 8000 Hz. You have None Hz.'
+            "AMRNB requires a sampling rate of 8000 Hz. You have None Hz.",
         ),
         (
             4000,
             RuntimeError,
-            'AMRNB requires a sampling rate of 8000 Hz. You have 4000 Hz.'
+            "AMRNB requires a sampling rate of 8000 Hz. You have 4000 Hz.",
         ),
     ],
 )

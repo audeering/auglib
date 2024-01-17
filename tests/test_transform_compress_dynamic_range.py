@@ -7,11 +7,11 @@ import audobject
 import auglib
 
 
-@pytest.mark.parametrize('duration', [1.0])
-@pytest.mark.parametrize('sampling_rate', [8000])
-@pytest.mark.parametrize('threshold', [-12])
+@pytest.mark.parametrize("duration", [1.0])
+@pytest.mark.parametrize("sampling_rate", [8000])
+@pytest.mark.parametrize("threshold", [-12])
 @pytest.mark.parametrize(
-    'signal_peak_db, ratio, makeup_db, clip, expected_peak_db',
+    "signal_peak_db, ratio, makeup_db, clip, expected_peak_db",
     [
         (-3, 20.0, None, False, -3),
         (10, 20.0, None, False, 10),
@@ -21,7 +21,7 @@ import auglib
         (10, 2.0, 0.0, True, 0),
         (-3, 2.0, 0.0, True, -3),
         (-3, 2.0, 4.0, True, 0),
-    ]
+    ],
 )
 def test_compress_dynamic_range(
     duration,
@@ -33,9 +33,8 @@ def test_compress_dynamic_range(
     clip,
     expected_peak_db,
 ):
-
     signal = np.zeros((1, int(duration * sampling_rate)))
-    tone = auglib.transform.Tone(220.0, shape='square')
+    tone = auglib.transform.Tone(220.0, shape="square")
     normalize = auglib.transform.NormalizeByPeak(peak_db=signal_peak_db)
     signal = normalize(tone(signal, sampling_rate))
 
@@ -58,7 +57,7 @@ def test_compress_dynamic_range(
 
 
 @pytest.mark.parametrize(
-    'sampling_rate, expected_error, expected_error_msg',
+    "sampling_rate, expected_error, expected_error_msg",
     [
         (
             None,
@@ -68,9 +67,9 @@ def test_compress_dynamic_range(
     ],
 )
 def test_compress_dynamic_range_errors(
-        sampling_rate,
-        expected_error,
-        expected_error_msg,
+    sampling_rate,
+    expected_error,
+    expected_error_msg,
 ):
     with pytest.raises(expected_error, match=expected_error_msg):
         transform = auglib.transform.CompressDynamicRange(-12, 1)

@@ -11,7 +11,6 @@ import auglib
 
 # Define transform without aux
 class Transform(auglib.transform.Base):
-
     def __init__(self, bypass_prob, preserve_level):
         super().__init__(
             bypass_prob=bypass_prob,
@@ -24,7 +23,6 @@ class Transform(auglib.transform.Base):
 
 # Define transform with aux
 class TransformAux(auglib.transform.Base):
-
     def __init__(self, aux, *, preserve_level=False, transform=None):
         super().__init__(
             preserve_level=preserve_level,
@@ -36,9 +34,9 @@ class TransformAux(auglib.transform.Base):
         return base + aux
 
 
-@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize("sampling_rate", [8000])
 @pytest.mark.parametrize(
-    'bypass_prob, preserve_level, base, expected',
+    "bypass_prob, preserve_level, base, expected",
     [
         (None, False, [1, 1], [2, 2]),
         (None, True, [1, 1], [1, 1]),
@@ -47,7 +45,6 @@ class TransformAux(auglib.transform.Base):
     ],
 )
 def test_base(sampling_rate, bypass_prob, preserve_level, base, expected):
-
     transform = Transform(bypass_prob, preserve_level)
     transform = audobject.from_yaml_s(
         transform.to_yaml_s(include_version=False),
@@ -56,18 +53,18 @@ def test_base(sampling_rate, bypass_prob, preserve_level, base, expected):
     assert transform.bypass_prob == bypass_prob
     assert transform.preserve_level == preserve_level
     np.testing.assert_almost_equal(
-        transform(np.array(base, dtype='float32')),
-        np.array(expected, dtype='float32'),
+        transform(np.array(base, dtype="float32")),
+        np.array(expected, dtype="float32"),
         decimal=4,
     )
 
 
-@pytest.mark.parametrize('sampling_rate', [8000])
-@pytest.mark.parametrize('base', [[0, 0]])
-@pytest.mark.parametrize('from_file', [True, False])
-@pytest.mark.parametrize('observe', [True, False])
+@pytest.mark.parametrize("sampling_rate", [8000])
+@pytest.mark.parametrize("base", [[0, 0]])
+@pytest.mark.parametrize("from_file", [True, False])
+@pytest.mark.parametrize("observe", [True, False])
 @pytest.mark.parametrize(
-    'transform, preserve_level, aux, expected',
+    "transform, preserve_level, aux, expected",
     [
         (
             None,
@@ -79,7 +76,7 @@ def test_base(sampling_rate, bypass_prob, preserve_level, base, expected):
             None,
             True,
             [1, 1],
-            [1.e-06, 1.e-06],
+            [1.0e-06, 1.0e-06],
         ),
         (
             auglib.transform.Function(lambda x, sr: x + 1),
@@ -91,25 +88,24 @@ def test_base(sampling_rate, bypass_prob, preserve_level, base, expected):
             auglib.transform.Function(lambda x, sr: x + 1),
             True,
             [1, 1],
-            [1.e-06, 1.e-06],
+            [1.0e-06, 1.0e-06],
         ),
     ],
 )
 def test_base_aux(
-        tmpdir,
-        sampling_rate,
-        base,
-        from_file,
-        observe,
-        transform,
-        preserve_level,
-        aux,
-        expected,
+    tmpdir,
+    sampling_rate,
+    base,
+    from_file,
+    observe,
+    transform,
+    preserve_level,
+    aux,
+    expected,
 ):
-
-    aux = np.array(aux, dtype='float32')
+    aux = np.array(aux, dtype="float32")
     if from_file:
-        path = os.path.join(tmpdir, 'test.wav')
+        path = os.path.join(tmpdir, "test.wav")
         audiofile.write(path, aux, sampling_rate)
         aux = path
     if observe:
@@ -150,16 +146,16 @@ def test_base_aux(
         assert base_transform.aux == aux
     assert base_transform.transform == transform
     np.testing.assert_almost_equal(
-        base_transform(np.array(base, dtype='float32')),
-        np.array(expected, dtype='float32'),
+        base_transform(np.array(base, dtype="float32")),
+        np.array(expected, dtype="float32"),
         decimal=4,
     )
 
 
-@pytest.mark.parametrize('sampling_rate', [8000])
-@pytest.mark.parametrize('base', [[0, 0]])
+@pytest.mark.parametrize("sampling_rate", [8000])
+@pytest.mark.parametrize("base", [[0, 0]])
 @pytest.mark.parametrize(
-    'aux, transform, expected',
+    "aux, transform, expected",
     [
         (
             auglib.transform.Function(lambda x, sr: x + 1),
@@ -171,17 +167,16 @@ def test_base_aux(
             auglib.transform.Function(lambda x, sr: x + 1),
             [2, 2],
         ),
-    ]
+    ],
 )
 def test_base_aux_transform(sampling_rate, base, aux, transform, expected):
-
     transform = TransformAux(aux, transform=transform)
     transform = audobject.from_yaml_s(
         transform.to_yaml_s(include_version=False),
     )
 
     np.testing.assert_almost_equal(
-        transform(np.array(base, dtype='float32')),
-        np.array(expected, dtype='float32'),
+        transform(np.array(base, dtype="float32")),
+        np.array(expected, dtype="float32"),
         decimal=4,
     )

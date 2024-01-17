@@ -7,10 +7,10 @@ import audobject
 import auglib
 
 
-@pytest.mark.parametrize('duration', [1.0])
-@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize("duration", [1.0])
+@pytest.mark.parametrize("sampling_rate", [8000])
 @pytest.mark.parametrize(
-    'gain_db, snr_db',
+    "gain_db, snr_db",
     [
         (-10, None),
         (0, None),
@@ -19,7 +19,7 @@ import auglib
         (None, 0),
         (None, 10),
         (0, 10),
-    ]
+    ],
 )
 def test_pink_noise(duration, sampling_rate, gain_db, snr_db):
     seed = 0

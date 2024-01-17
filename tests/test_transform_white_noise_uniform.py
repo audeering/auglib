@@ -7,10 +7,10 @@ import audobject
 import auglib
 
 
-@pytest.mark.parametrize('duration', [1.0])
-@pytest.mark.parametrize('sampling_rate', [8000])
+@pytest.mark.parametrize("duration", [1.0])
+@pytest.mark.parametrize("sampling_rate", [8000])
 @pytest.mark.parametrize(
-    'gain_db, snr_db',
+    "gain_db, snr_db",
     [
         (-10, None),
         (0, None),
@@ -19,10 +19,9 @@ import auglib
         (None, 0),
         (None, 10),
         (0, 10),
-    ]
+    ],
 )
 def test_white_noise_uniform(duration, sampling_rate, gain_db, snr_db):
-
     seed = 0
     auglib.seed(seed)
 
@@ -50,9 +49,8 @@ def test_white_noise_uniform(duration, sampling_rate, gain_db, snr_db):
 
     # Create expected noise signal
     noise_generator = np.random.default_rng(seed=seed)
-    expected_noise = (
-        audmath.inverse_db(gain_db, bottom=-140)
-        * noise_generator.uniform(-1, 1, signal.shape)
+    expected_noise = audmath.inverse_db(gain_db, bottom=-140) * noise_generator.uniform(
+        -1, 1, signal.shape
     )
 
     # Double check volume is correct

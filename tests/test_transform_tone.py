@@ -8,12 +8,12 @@ import audobject
 import auglib
 
 
-@pytest.mark.parametrize('duration', [1.0])
-@pytest.mark.parametrize('sampling_rate', [96000])
-@pytest.mark.parametrize('frequency', [1000])
-@pytest.mark.parametrize('shape', ['sine', 'square', 'triangle', 'sawtooth'])
+@pytest.mark.parametrize("duration", [1.0])
+@pytest.mark.parametrize("sampling_rate", [96000])
+@pytest.mark.parametrize("frequency", [1000])
+@pytest.mark.parametrize("shape", ["sine", "square", "triangle", "sawtooth"])
 @pytest.mark.parametrize(
-    'gain_db, snr_db',
+    "gain_db, snr_db",
     [
         (-10, None),
         (0, None),
@@ -22,10 +22,9 @@ import auglib
         (None, 0),
         (None, 10),
         (0, 10),
-    ]
+    ],
 )
 def test_tone(duration, sampling_rate, frequency, shape, gain_db, snr_db):
-
     transform = auglib.transform.Tone(
         frequency,
         shape=shape,
@@ -43,21 +42,18 @@ def test_tone(duration, sampling_rate, frequency, shape, gain_db, snr_db):
 
     # Expected root mean square values,
     # see https://en.wikipedia.org/wiki/Root_mean_square
-    time = (
-        np.arange(duration * sampling_rate, dtype=float)
-        / sampling_rate
-    )
+    time = np.arange(duration * sampling_rate, dtype=float) / sampling_rate
     omega = 2 * np.pi * frequency
-    if shape == 'sine':
+    if shape == "sine":
         expected_tone = np.sin(omega * time)
         expected_rms_db = audmath.db(1 / np.sqrt(2))
-    elif shape == 'square':
+    elif shape == "square":
         expected_tone = -1 * scipy.signal.square(omega * time, duty=0.5)
         expected_rms_db = audmath.db(1)
-    elif shape == 'triangle':
+    elif shape == "triangle":
         expected_tone = -1 * scipy.signal.sawtooth(omega * time, width=0.5)
         expected_rms_db = audmath.db(1 / np.sqrt(3))
-    elif shape == 'sawtooth':
+    elif shape == "sawtooth":
         expected_tone = scipy.signal.sawtooth(omega * time, width=1)
         expected_rms_db = audmath.db(1 / np.sqrt(3))
     # Check reference signal has expected RMS value
@@ -72,10 +68,7 @@ def test_tone(duration, sampling_rate, frequency, shape, gain_db, snr_db):
         # which is limited to -120 dB
         gain_db = -120 - snr_db - audmath.db(audmath.rms(expected_tone))
 
-    expected_volume = (
-        audmath.db(audmath.rms(expected_tone), bottom=-140)
-        + gain_db
-    )
+    expected_volume = audmath.db(audmath.rms(expected_tone), bottom=-140) + gain_db
 
     # Add gain to expected tone
     gain = 10 ** (gain_db / 20)
@@ -98,10 +91,10 @@ def test_tone(duration, sampling_rate, frequency, shape, gain_db, snr_db):
 
 
 @pytest.mark.parametrize(
-    'shape, sampling_rate, expected_error, expected_error_msg',
+    "shape, sampling_rate, expected_error, expected_error_msg",
     [
         (
-            'non-supported',
+            "non-supported",
             16000,
             ValueError,
             (
@@ -110,7 +103,7 @@ def test_tone(duration, sampling_rate, frequency, shape, gain_db, snr_db):
             ),
         ),
         (
-            'sine',
+            "sine",
             None,
             ValueError,
             "sampling_rate is 'None', but required.",
@@ -118,10 +111,10 @@ def test_tone(duration, sampling_rate, frequency, shape, gain_db, snr_db):
     ],
 )
 def test_tone_errors(
-        shape,
-        sampling_rate,
-        expected_error,
-        expected_error_msg,
+    shape,
+    sampling_rate,
+    expected_error,
+    expected_error_msg,
 ):
     with pytest.raises(expected_error, match=expected_error_msg):
         transform = auglib.transform.Tone(440, shape=shape)

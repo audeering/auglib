@@ -7,7 +7,7 @@ import auglib
 
 
 @pytest.mark.parametrize(
-    'ratio, normalize, soft, signal, expected_signal',
+    "ratio, normalize, soft, signal, expected_signal",
     [
         (
             0.1,
@@ -82,13 +82,12 @@ import auglib
     ],
 )
 def test_ClipByRatio(
-        ratio,
-        normalize,
-        soft,
-        signal,
-        expected_signal,
+    ratio,
+    normalize,
+    soft,
+    signal,
+    expected_signal,
 ):
-
     expected_signal = expected_signal.astype(auglib.core.transform.DTYPE)
 
     transform = auglib.transform.ClipByRatio(

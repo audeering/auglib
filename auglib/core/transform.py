@@ -34,49 +34,49 @@ from auglib.core.utils import to_samples
 
 
 __doctest_skip__ = [
-    'AMRNB',
-    'Append',
-    'AppendValue',
-    'BabbleNoise',
-    'BandPass',
-    'BandStop',
-    'Clip',
-    'ClipByRatio',
-    'Compose',
-    'CompressDynamicRange',
-    'Fade',
-    'FFTConvolve',
-    'Function',
-    'GainStage',
-    'HighPass',
-    'LowPass',
-    'Mask',
-    'Mix',
-    'NormalizeByPeak',
-    'PinkNoise',
-    'Prepend',
-    'PrependValue',
-    'Resample',
-    'Select',
-    'Shift',
-    'Tone',
-    'Trim',
-    'WhiteNoiseGaussian',
-    'WhiteNoiseUniform',
+    "AMRNB",
+    "Append",
+    "AppendValue",
+    "BabbleNoise",
+    "BandPass",
+    "BandStop",
+    "Clip",
+    "ClipByRatio",
+    "Compose",
+    "CompressDynamicRange",
+    "Fade",
+    "FFTConvolve",
+    "Function",
+    "GainStage",
+    "HighPass",
+    "LowPass",
+    "Mask",
+    "Mix",
+    "NormalizeByPeak",
+    "PinkNoise",
+    "Prepend",
+    "PrependValue",
+    "Resample",
+    "Select",
+    "Shift",
+    "Tone",
+    "Trim",
+    "WhiteNoiseGaussian",
+    "WhiteNoiseUniform",
 ]
 
-DTYPE = 'float32'
+DTYPE = "float32"
 SUPPORTED_FADE_SHAPES = [
-    'tukey',
-    'kaiser',
-    'linear',
-    'exponential',
-    'logarithmic',
+    "tukey",
+    "kaiser",
+    "linear",
+    "exponential",
+    "logarithmic",
 ]
-SUPPORTED_FILL_STRATEGIES = ['none', 'zeros', 'loop']
-SUPPORTED_FILL_POSITIONS = ['right', 'left', 'both']
-SUPPORTED_FILTER_DESIGNS = ['butter']
-SUPPORTED_TONE_SHAPES = ['sine', 'square', 'triangle', 'sawtooth']
+SUPPORTED_FILL_STRATEGIES = ["none", "zeros", "loop"]
+SUPPORTED_FILL_POSITIONS = ["right", "left", "both"]
+SUPPORTED_FILTER_DESIGNS = ["butter"]
+SUPPORTED_TONE_SHAPES = ["sine", "square", "triangle", "sawtooth"]
 
 
 def get_noise_gain_from_snr(rms_signal_db, rms_noise_db, snr_db):
@@ -126,20 +126,21 @@ class Base(audobject.Object):
         num_repeat: number of repetitions
 
     """
+
     @audobject.init_decorator(
         resolvers={
-            'aux': ArrayResolver,
+            "aux": ArrayResolver,
         }
     )
     def __init__(
-            self,
-            bypass_prob: Union[float, observe.Base] = None,
-            *,
-            unit: str = 'seconds',
-            preserve_level: Union[bool, observe.Base] = False,
-            aux: Union[str, observe.Base, np.ndarray, 'Base'] = None,
-            transform: 'Base' = None,
-            num_repeat: int = None,
+        self,
+        bypass_prob: Union[float, observe.Base] = None,
+        *,
+        unit: str = "seconds",
+        preserve_level: Union[bool, observe.Base] = False,
+        aux: Union[str, observe.Base, np.ndarray, "Base"] = None,
+        transform: "Base" = None,
+        num_repeat: int = None,
     ):
         self.unit = unit
         self.bypass_prob = bypass_prob
@@ -149,11 +150,11 @@ class Base(audobject.Object):
         self.num_repeat = num_repeat
 
     def _call(
-            self,
-            signal: np.ndarray,
-            aux: np.ndarray = None,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        aux: np.ndarray = None,
+        *,
+        sampling_rate: int = None,
     ):  # pragma: no cover
         r"""Transform a signal.
 
@@ -169,9 +170,9 @@ class Base(audobject.Object):
         raise NotImplementedError()
 
     def __call__(
-            self,
-            signal: np.ndarray,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        sampling_rate: int = None,
     ) -> np.ndarray:
         r"""Apply transform to signal.
 
@@ -194,10 +195,7 @@ class Base(audobject.Object):
         """
         bypass_prob = observe.observe(self.bypass_prob)
         preserve_level = observe.observe(self.preserve_level)
-        if (
-                bypass_prob is None
-                or np.random.random_sample() >= bypass_prob
-        ):
+        if bypass_prob is None or np.random.random_sample() >= bypass_prob:
             # (sample) => (channel, samples)
             ndim = signal.ndim
             signal = np.atleast_2d(signal)
@@ -256,12 +254,12 @@ class Base(audobject.Object):
         return signal
 
     def to_samples(
-            self,
-            value: typing.Union[int, float, observe.Base, Time],
-            sampling_rate: int = None,
-            *,
-            length: int = None,
-            allow_negative=True,
+        self,
+        value: typing.Union[int, float, observe.Base, Time],
+        sampling_rate: int = None,
+        *,
+        length: int = None,
+        allow_negative=True,
     ) -> int:
         r"""Convert duration value to samples."""
         return to_samples(
@@ -308,9 +306,9 @@ class AMRNB(Base):
             >>> import auglib
             >>> transform = auglib.transform.AMRNB(7400)
             >>> files = audb.load_media(
-            ...     'emodb',
-            ...     'wav/03a01Fa.wav',
-            ...     version='1.4.1',
+            ...     "emodb",
+            ...     "wav/03a01Fa.wav",
+            ...     version="1.4.1",
             ...     sampling_rate=8000,
             ... )
             >>> signal, sampling_rate = audiofile.read(files[0])
@@ -334,13 +332,14 @@ class AMRNB(Base):
             </p>
 
     """  # noqa: E501
+
     def __init__(
-            self,
-            bit_rate: Union[int, observe.Base],
-            *,
-            dtx: Union[bool, observe.Base] = False,
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: Union[float, observe.Base] = None,
+        self,
+        bit_rate: Union[int, observe.Base],
+        *,
+        dtx: Union[bool, observe.Base] = False,
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             bypass_prob=bypass_prob,
@@ -350,10 +349,10 @@ class AMRNB(Base):
         self.dtx = dtx
 
     def _call(
-            self,
-            signal: np.ndarray,
-            *,
-            sampling_rate: int,
+        self,
+        signal: np.ndarray,
+        *,
+        sampling_rate: int,
     ) -> np.ndarray:
         if sampling_rate != 8000:
             raise RuntimeError(
@@ -366,14 +365,17 @@ class AMRNB(Base):
         # ffmpeg requires libavcodec-extra57 under Ubuntu
         # (which install also libvo-amrwbenc0)
         with tempfile.TemporaryDirectory() as tmp:
-            infile = audeer.path(tmp, 'infile.wav')
-            outfile = audeer.path(tmp, 'outfile.amr')
+            infile = audeer.path(tmp, "infile.wav")
+            outfile = audeer.path(tmp, "outfile.amr")
             audiofile.write(infile, signal, sampling_rate)
             cmd = [
-                'ffmpeg',
-                '-i', infile,
-                '-b:a', str(bit_rate),
-                '-dtx', str(int(dtx)),
+                "ffmpeg",
+                "-i",
+                infile,
+                "-b:a",
+                str(bit_rate),
+                "-dtx",
+                str(int(dtx)),
                 outfile,
             ]
             audiofile.core.utils.run(cmd)
@@ -423,14 +425,14 @@ class Append(Base):
             >>> import audplot
             >>> import auglib
             >>> files = audb.load_media(
-            ...     'cough-speech-sneeze',
-            ...     'coughing/kopzxumj430_40.94-41.8.wav',
-            ...     version='2.0.1',
+            ...     "cough-speech-sneeze",
+            ...     "coughing/kopzxumj430_40.94-41.8.wav",
+            ...     version="2.0.1",
             ...     sampling_rate=16000,
             ... )
             >>> cough, _ = audiofile.read(files[0])
             >>> transform = auglib.transform.Append(cough)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, _ = audiofile.read(files[0])
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
@@ -452,16 +454,17 @@ class Append(Base):
             </p>
 
     """  # noqa: E501
+
     def __init__(
-            self,
-            aux: Union[str, observe.Base, np.ndarray, Base],
-            *,
-            read_pos_aux: Union[int, float, observe.Base, Time] = 0.0,
-            read_dur_aux: Union[int, float, observe.Base, Time] = None,
-            unit: str = 'seconds',
-            transform: Base = None,
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: Union[float, observe.Base] = None,
+        self,
+        aux: Union[str, observe.Base, np.ndarray, Base],
+        *,
+        read_pos_aux: Union[int, float, observe.Base, Time] = 0.0,
+        read_dur_aux: Union[int, float, observe.Base, Time] = None,
+        unit: str = "seconds",
+        transform: Base = None,
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             aux=aux,
@@ -474,11 +477,11 @@ class Append(Base):
         self.read_dur_aux = read_dur_aux or 0
 
     def _call(
-            self,
-            signal: np.ndarray,
-            aux: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        aux: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
         if self.read_pos_aux != 0:
             read_pos_aux = self.to_samples(
@@ -497,7 +500,7 @@ class Append(Base):
                 length=aux.shape[1],
             )
         signal = np.concatenate(
-            [signal, aux[:, read_pos_aux:read_pos_aux + read_dur_aux]],
+            [signal, aux[:, read_pos_aux : read_pos_aux + read_dur_aux]],
             axis=1,
         )
         return signal
@@ -531,8 +534,8 @@ class AppendValue(Base):
             >>> import audiofile
             >>> import audplot
             >>> import auglib
-            >>> transform = auglib.transform.AppendValue(8000, value=0, unit='samples')
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> transform = auglib.transform.AppendValue(8000, value=0, unit="samples")
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, _ = audiofile.read(files[0])
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
@@ -554,14 +557,15 @@ class AppendValue(Base):
             </p>
 
     """  # noqa: E501
+
     def __init__(
-            self,
-            duration: Union[int, float, observe.Base, Time],
-            value: Union[float, observe.Base] = 0,
-            *,
-            unit: str = 'seconds',
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: Union[float, observe.Base] = None,
+        self,
+        duration: Union[int, float, observe.Base, Time],
+        value: Union[float, observe.Base] = 0,
+        *,
+        unit: str = "seconds",
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             unit=unit,
@@ -572,10 +576,10 @@ class AppendValue(Base):
         self.value = value
 
     def _call(
-            self,
-            signal: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
         duration = observe.observe(self.duration)
         if duration != 0:
@@ -630,7 +634,7 @@ class BabbleNoise(Base):
             >>> import auglib
             >>> import numpy as np
             >>> auglib.seed(1)
-            >>> db = audb.load('musan', media='.*speech-librivox-000\d', version='1.0.0')
+            >>> db = audb.load("musan", media=".*speech-librivox-000\d", version="1.0.0")
             >>> transform = auglib.transform.BabbleNoise(db.files[:5])
             >>> signal = np.zeros((1, 30372))
             >>> augmented_signal = transform(signal)
@@ -660,7 +664,7 @@ class BabbleNoise(Base):
 
             >>> import audiofile
             >>> auglib.seed(1)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, _ = audiofile.read(files[0])
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
@@ -682,20 +686,21 @@ class BabbleNoise(Base):
             </p>
 
     """  # noqa: E501
+
     @audobject.init_decorator(
         resolvers={
-            'speech': ObservableListResolver,
+            "speech": ObservableListResolver,
         }
     )
     def __init__(
-            self,
-            speech: Sequence[Union[str, np.ndarray]],
-            *,
-            num_speakers: Union[int, observe.Base] = 5,
-            gain_db: Union[float, observe.Base] = 0.0,
-            snr_db: Union[float, observe.Base] = None,
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: Union[float, observe.Base] = None,
+        self,
+        speech: Sequence[Union[str, np.ndarray]],
+        *,
+        num_speakers: Union[int, observe.Base] = 5,
+        gain_db: Union[float, observe.Base] = 0.0,
+        snr_db: Union[float, observe.Base] = None,
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -707,10 +712,10 @@ class BabbleNoise(Base):
         self.snr_db = snr_db
 
     def _call(
-            self,
-            signal: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
         # First create signal containing babble noise
         # by summing speech signals
@@ -724,9 +729,9 @@ class BabbleNoise(Base):
             # Cycle the input signal
             transform=Shift(
                 observe.FloatUni(0, signal.shape[1]),
-                unit='samples',
+                unit="samples",
             ),
-            unit='samples',
+            unit="samples",
         )
         babble = transform(babble)
         # Mix the babble noise to aux signal
@@ -734,7 +739,7 @@ class BabbleNoise(Base):
             babble,
             gain_aux_db=self.gain_db,
             snr_db=self.snr_db,
-            unit='samples',
+            unit="samples",
         )
         signal = transform(signal)
 
@@ -774,7 +779,7 @@ class BandPass(Base):
             >>> import audplot
             >>> import auglib
             >>> transform = auglib.transform.BandPass(center=2000, bandwidth=1000)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -805,31 +810,32 @@ class BandPass(Base):
             >>> import matplotlib.pyplot as plt
             >>> import seaborn as sns
             >>> sigs = [signal, augmented_signal]
-            >>> colors = ['#5d6370', '#e13b41']
+            >>> colors = ["#5d6370", "#e13b41"]
             >>> for sig, color in zip(sigs, colors):
             ...     magnitude, f = plt.mlab.magnitude_spectrum(sig, Fs=sampling_rate)
             ...     # Smooth magnitude
-            ...     magnitude = np.convolve(magnitude, np.ones(14) / 14, mode='same')
+            ...     magnitude = np.convolve(magnitude, np.ones(14) / 14, mode="same")
             ...     plt.plot(f, audmath.db(magnitude), color=color)
             >>> plt.xlim([10, 8000])
             >>> plt.ylim([-100, -45])
-            >>> plt.ylabel('Magnitude / dB')
-            >>> plt.xlabel('Frequency / Hz')
-            >>> plt.legend(['signal', 'augmented signal'])
+            >>> plt.ylabel("Magnitude / dB")
+            >>> plt.xlabel("Frequency / Hz")
+            >>> plt.legend(["signal", "augmented signal"])
             >>> plt.grid(alpha=0.4)
             >>> sns.despine()
             >>> plt.tight_layout()
 
     """  # noqa: E501
+
     def __init__(
-            self,
-            center: Union[float, observe.Base],
-            bandwidth: Union[float, observe.Base],
-            *,
-            order: Union[int, observe.Base] = 1,
-            design: str = 'butter',
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: Union[float, observe.Base] = None,
+        self,
+        center: Union[float, observe.Base],
+        bandwidth: Union[float, observe.Base],
+        *,
+        order: Union[int, observe.Base] = 1,
+        design: str = "butter",
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -847,10 +853,10 @@ class BandPass(Base):
         self.design = design
 
     def _call(
-            self,
-            signal: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
         if sampling_rate is None:
             raise ValueError("sampling_rate is 'None', but required.")
@@ -859,11 +865,11 @@ class BandPass(Base):
         order = observe.observe(self.order)
         lowcut = center - bandwidth / 2
         highcut = center + bandwidth / 2
-        if self.design == 'butter':
+        if self.design == "butter":
             b, a = scipy.signal.butter(
                 order,
                 [lowcut, highcut],
-                btype='bandpass',
+                btype="bandpass",
                 fs=sampling_rate,
             )
             signal = scipy.signal.lfilter(b, a, signal)
@@ -903,7 +909,7 @@ class BandStop(Base):
             >>> import audplot
             >>> import auglib
             >>> transform = auglib.transform.BandStop(center=2000, bandwidth=3000)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -934,31 +940,32 @@ class BandStop(Base):
             >>> import matplotlib.pyplot as plt
             >>> import seaborn as sns
             >>> sigs = [signal, augmented_signal]
-            >>> colors = ['#5d6370', '#e13b41']
+            >>> colors = ["#5d6370", "#e13b41"]
             >>> for sig, color in zip(sigs, colors):
             ...     magnitude, f = plt.mlab.magnitude_spectrum(sig, Fs=sampling_rate)
             ...     # Smooth magnitude
-            ...     magnitude = np.convolve(magnitude, np.ones(14) / 14, mode='same')
+            ...     magnitude = np.convolve(magnitude, np.ones(14) / 14, mode="same")
             ...     plt.plot(f, audmath.db(magnitude), color=color)
             >>> plt.xlim([10, 8000])
             >>> plt.ylim([-100, -45])
-            >>> plt.ylabel('Magnitude / dB')
-            >>> plt.xlabel('Frequency / Hz')
-            >>> plt.legend(['signal', 'augmented signal'])
+            >>> plt.ylabel("Magnitude / dB")
+            >>> plt.xlabel("Frequency / Hz")
+            >>> plt.legend(["signal", "augmented signal"])
             >>> plt.grid(alpha=0.4)
             >>> sns.despine()
             >>> plt.tight_layout()
 
     """  # noqa: E501
+
     def __init__(
-            self,
-            center: Union[float, observe.Base],
-            bandwidth: Union[float, observe.Base],
-            *,
-            order: Union[int, observe.Base] = 1,
-            design: str = 'butter',
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: Union[float, observe.Base] = None,
+        self,
+        center: Union[float, observe.Base],
+        bandwidth: Union[float, observe.Base],
+        *,
+        order: Union[int, observe.Base] = 1,
+        design: str = "butter",
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -976,10 +983,10 @@ class BandStop(Base):
         self.design = design
 
     def _call(
-            self,
-            signal: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
         if sampling_rate is None:
             raise ValueError("sampling_rate is 'None', but required.")
@@ -988,11 +995,11 @@ class BandStop(Base):
         order = observe.observe(self.order)
         lowcut = center - bandwidth / 2
         highcut = center + bandwidth / 2
-        if self.design == 'butter':
+        if self.design == "butter":
             b, a = scipy.signal.butter(
                 order,
                 [lowcut, highcut],
-                btype='bandstop',
+                btype="bandstop",
                 fs=sampling_rate,
             )
             signal = scipy.signal.lfilter(b, a, signal)
@@ -1037,7 +1044,7 @@ class Clip(Base):
             >>> import audplot
             >>> import auglib
             >>> transform = auglib.transform.Clip(threshold=-10)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -1059,14 +1066,15 @@ class Clip(Base):
             </p>
 
     """  # noqa: E501
+
     def __init__(
-            self,
-            *,
-            threshold: Union[float, observe.Base] = 0.0,
-            soft: Union[bool, observe.Base] = False,
-            normalize: Union[bool, observe.Base] = False,
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: Union[float, observe.Base] = None,
+        self,
+        *,
+        threshold: Union[float, observe.Base] = 0.0,
+        soft: Union[bool, observe.Base] = False,
+        normalize: Union[bool, observe.Base] = False,
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -1077,10 +1085,10 @@ class Clip(Base):
         self.normalize = normalize
 
     def _call(
-            self,
-            signal: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
         threshold = observe.observe(self.threshold)
         soft = observe.observe(self.soft)
@@ -1093,8 +1101,8 @@ class Clip(Base):
         # Cubic warping for soft clip
         if soft:
             beta = (1 / threshold) ** 2
-            k = 3 * threshold / (3 * threshold - beta * threshold ** 3)
-            signal = k * (signal - beta * (signal ** 3 / 3))
+            k = 3 * threshold / (3 * threshold - beta * threshold**3)
+            signal = k * (signal - beta * (signal**3 / 3))
 
         if normalize:
             signal = NormalizeByPeak(peak_db=0)(signal)
@@ -1146,7 +1154,7 @@ class ClipByRatio(Base):
             >>> import audplot
             >>> import auglib
             >>> transform = auglib.transform.ClipByRatio(0.05)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -1168,14 +1176,15 @@ class ClipByRatio(Base):
             </p>
 
     """  # noqa: E501
+
     def __init__(
-            self,
-            ratio: Union[float, observe.Base],
-            *,
-            soft: Union[bool, observe.Base] = False,
-            normalize: Union[bool, observe.Base] = False,
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: Union[float, observe.Base] = None,
+        self,
+        ratio: Union[float, observe.Base],
+        *,
+        soft: Union[bool, observe.Base] = False,
+        normalize: Union[bool, observe.Base] = False,
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -1186,10 +1195,10 @@ class ClipByRatio(Base):
         self.normalize = normalize
 
     def _call(
-            self,
-            signal: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
         ratio = observe.observe(self.ratio)
         soft = observe.observe(self.soft)
@@ -1243,9 +1252,9 @@ class Compose(Base):
             >>> import auglib
             >>> auglib.seed(0)
             >>> files = audb.load_media(
-            ...     'cough-speech-sneeze',
-            ...     'coughing/kopzxumj430_40.94-41.8.wav',
-            ...     version='2.0.1',
+            ...     "cough-speech-sneeze",
+            ...     "coughing/kopzxumj430_40.94-41.8.wav",
+            ...     version="2.0.1",
             ...     sampling_rate=16000,
             ... )
             >>> cough, _ = audiofile.read(files[0])
@@ -1256,7 +1265,7 @@ class Compose(Base):
             ...         auglib.transform.ClipByRatio(0.02),
             ...     ],
             ... )
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, _ = audiofile.read(files[0])
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
@@ -1346,12 +1355,13 @@ class Compose(Base):
             </p>
 
     """  # noqa: E501
+
     def __init__(
-            self,
-            transforms: Sequence[Base],
-            *,
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: Union[float, observe.Base] = None,
+        self,
+        transforms: Sequence[Base],
+        *,
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -1360,10 +1370,10 @@ class Compose(Base):
         self.transforms = transforms
 
     def _call(
-            self,
-            signal: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
         for transform in self.transforms:
             signal = transform(signal, sampling_rate)
@@ -1443,8 +1453,8 @@ class CompressDynamicRange(Base):
             >>> import audiofile
             >>> import audplot
             >>> import auglib
-            >>> transform = auglib.transform.CompressDynamicRange(-15, 1/4)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> transform = auglib.transform.CompressDynamicRange(-15, 1 / 4)
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -1466,18 +1476,19 @@ class CompressDynamicRange(Base):
             </p>
 
     """  # noqa: E501
+
     def __init__(
-            self,
-            threshold_db: Union[float, observe.Base],
-            ratio: Union[float, observe.Base],
-            *,
-            attack_time: Union[float, observe.Base] = 0.01,
-            release_time: Union[float, observe.Base] = 0.02,
-            knee_radius_db: Union[float, observe.Base] = 4.0,
-            makeup_db: Union[None, float, observe.Base] = 0.0,
-            clip: Union[bool, observe.Base] = False,
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: Union[float, observe.Base] = None,
+        self,
+        threshold_db: Union[float, observe.Base],
+        ratio: Union[float, observe.Base],
+        *,
+        attack_time: Union[float, observe.Base] = 0.01,
+        release_time: Union[float, observe.Base] = 0.02,
+        knee_radius_db: Union[float, observe.Base] = 4.0,
+        makeup_db: Union[None, float, observe.Base] = 0.0,
+        clip: Union[bool, observe.Base] = False,
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -1492,10 +1503,10 @@ class CompressDynamicRange(Base):
         self.clip = clip
 
     def _call(
-            self,
-            signal: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
         if sampling_rate is None:
             raise ValueError("sampling_rate is 'None', but required.")
@@ -1526,15 +1537,15 @@ class CompressDynamicRange(Base):
                     normalize_db = peak_db
 
         with tempfile.TemporaryDirectory() as tmp:
-            infile = audeer.path(tmp, 'infile.wav')
-            outfile = audeer.path(tmp, 'outfile.wav')
+            infile = audeer.path(tmp, "infile.wav")
+            outfile = audeer.path(tmp, "outfile.wav")
             cmd = [
-                'sox',
+                "sox",
                 infile,
                 outfile,
-                'compand',
-                f'{attack_time},{release_time}',
-                f'{knee_radius_db}:{threshold_db},{ratio * threshold_db}',
+                "compand",
+                f"{attack_time},{release_time}",
+                f"{knee_radius_db}:{threshold_db},{ratio * threshold_db}",
             ]
             audiofile.write(infile, signal, sampling_rate)
             audiofile.core.utils.run(cmd)
@@ -1644,7 +1655,7 @@ class Fade(Base):
             >>> import audplot
             >>> import auglib
             >>> transform = auglib.transform.Fade(in_dur=0.2, out_dur=0.7)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -1677,18 +1688,19 @@ class Fade(Base):
             >>> audplot.waveform(augmented_signal)
 
     """  # noqa: E501
+
     def __init__(
-            self,
-            *,
-            in_dur: Union[int, float, observe.Base, Time] = 0.1,
-            out_dur: Union[int, float, observe.Base, Time] = 0.1,
-            in_shape: str = 'tukey',
-            out_shape: str = 'tukey',
-            in_db: float = -120,
-            out_db: float = -120,
-            unit: str = 'seconds',
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: Union[float, observe.Base] = None,
+        self,
+        *,
+        in_dur: Union[int, float, observe.Base, Time] = 0.1,
+        out_dur: Union[int, float, observe.Base, Time] = 0.1,
+        in_shape: str = "tukey",
+        out_shape: str = "tukey",
+        in_db: float = -120,
+        out_db: float = -120,
+        unit: str = "seconds",
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             unit=unit,
@@ -1705,8 +1717,7 @@ class Fade(Base):
         for level in [in_db, out_db]:
             if level >= 0:
                 raise ValueError(
-                    'Fading level needs to be below 0 dB, '
-                    f'not {level} dB.'
+                    "Fading level needs to be below 0 dB, " f"not {level} dB."
                 )
         self.in_dur = in_dur
         self.out_dur = out_dur
@@ -1716,12 +1727,11 @@ class Fade(Base):
         self.out_db = out_db
 
     def _call(
-            self,
-            signal: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
-
         in_shape = observe.observe(self.in_shape)
         out_shape = observe.observe(self.out_shape)
         in_db = observe.observe(self.in_db)
@@ -1737,8 +1747,8 @@ class Fade(Base):
             length=signal.shape[1],
         )
 
-        fade_in = audmath.window(in_samples, shape=in_shape, half='left')
-        fade_out = audmath.window(out_samples, shape=out_shape, half='right')
+        fade_in = audmath.window(in_samples, shape=in_shape, half="left")
+        fade_out = audmath.window(out_samples, shape=out_shape, half="right")
 
         # Adjust start level of fade-in
         # and/or end level of fade-out
@@ -1752,7 +1762,7 @@ class Fade(Base):
 
         fade_in_win = np.concatenate(
             [
-                fade_in[:signal.shape[1]],
+                fade_in[: signal.shape[1]],
                 np.ones(
                     max(0, signal.shape[1] - in_samples),
                     dtype=DTYPE,
@@ -1765,7 +1775,7 @@ class Fade(Base):
                     max(0, signal.shape[1] - out_samples),
                     dtype=DTYPE,
                 ),
-                fade_out[-signal.shape[1]:],
+                fade_out[-signal.shape[1] :],
             ]
         ).astype(DTYPE)
         signal = fade_in_win * fade_out_win * signal
@@ -1812,13 +1822,13 @@ class FFTConvolve(Base):
             >>> import audplot
             >>> import auglib
             >>> files = audb.load_media(
-            ...     'micirp',
-            ...     'dirs/Telefunken_M201.wav',
-            ...     version='1.0.0',
+            ...     "micirp",
+            ...     "dirs/Telefunken_M201.wav",
+            ...     version="1.0.0",
             ...     sampling_rate=16000,
             ... )
             >>> transform = auglib.transform.FFTConvolve(files[0])
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, _ = audiofile.read(files[0])
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
@@ -1849,30 +1859,31 @@ class FFTConvolve(Base):
             >>> import matplotlib.pyplot as plt
             >>> import seaborn as sns
             >>> sigs = [signal, augmented_signal]
-            >>> colors = ['#5d6370', '#e13b41']
+            >>> colors = ["#5d6370", "#e13b41"]
             >>> for sig, color in zip(sigs, colors):
             ...     magnitude, f = plt.mlab.magnitude_spectrum(sig, Fs=sampling_rate)
             ...     # Smooth magnitude
-            ...     magnitude = np.convolve(magnitude, np.ones(14) / 14, mode='same')
+            ...     magnitude = np.convolve(magnitude, np.ones(14) / 14, mode="same")
             ...     plt.plot(f, audmath.db(magnitude), color=color)
             >>> plt.xlim([10, 8000])
             >>> plt.ylim([-100, -45])
-            >>> plt.ylabel('Magnitude / dB')
-            >>> plt.xlabel('Frequency / Hz')
-            >>> plt.legend(['signal', 'augmented signal'])
+            >>> plt.ylabel("Magnitude / dB")
+            >>> plt.xlabel("Frequency / Hz")
+            >>> plt.legend(["signal", "augmented signal"])
             >>> plt.grid(alpha=0.4)
             >>> sns.despine()
             >>> plt.tight_layout()
 
     """  # noqa: E501
+
     def __init__(
-            self,
-            aux: Union[str, observe.Base, np.ndarray, Base],
-            *,
-            keep_tail: Union[bool, observe.Base] = True,
-            transform: Base = None,
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: Union[float, observe.Base] = None,
+        self,
+        aux: Union[str, observe.Base, np.ndarray, Base],
+        *,
+        keep_tail: Union[bool, observe.Base] = True,
+        transform: Base = None,
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             aux=aux,
@@ -1883,15 +1894,15 @@ class FFTConvolve(Base):
         self.keep_tail = keep_tail
 
     def _call(
-            self,
-            signal: np.ndarray,
-            aux: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        aux: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
         keep_tail = observe.observe(self.keep_tail)
         samples = signal.shape[1]
-        signal = scipy.signal.fftconvolve(aux, signal, mode='full')
+        signal = scipy.signal.fftconvolve(aux, signal, mode="full")
         if not keep_tail:
             signal = signal[:, :samples]
         return signal
@@ -1921,8 +1932,10 @@ class Function(Base):
         def _plus_1(x, sr):
             return x + 1
 
+
         def plus_1(x, sr):
             return _plus_1(x, sr)  # calls local function -> not serializable
+
 
         f = auglib.transform.Function(plus_1)
 
@@ -1955,11 +1968,11 @@ class Function(Base):
             ...     n = 0
             ...     augmented_signal = signal.copy()
             ...     while n < augmented_signal.shape[1]:
-            ...         augmented_signal[:, n + non_block:n + non_block + block] = 0
+            ...         augmented_signal[:, n + non_block : n + non_block + block] = 0
             ...         n += block + non_block
             ...     return augmented_signal
             >>> transform = auglib.transform.Function(shutter)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, _ = audiofile.read(files[0])
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
@@ -1987,7 +2000,7 @@ class Function(Base):
             :context: close-figs
             :include-source: True
 
-            >>> transform = auglib.transform.Function(shutter, {'block': 400, 'non_block': 800})
+            >>> transform = auglib.transform.Function(shutter, {"block": 400, "non_block": 800})
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
 
@@ -2008,18 +2021,19 @@ class Function(Base):
             </p>
 
     """  # noqa: E501
+
     @audobject.init_decorator(
         resolvers={
-            'function': audobject.resolver.Function,
+            "function": audobject.resolver.Function,
         },
     )
     def __init__(
-            self,
-            function: Callable[..., np.ndarray],
-            function_args: typing.Dict = None,
-            *,
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: Union[float, observe.Base] = None,
+        self,
+        function: Callable[..., np.ndarray],
+        function_args: typing.Dict = None,
+        *,
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -2029,12 +2043,11 @@ class Function(Base):
         self.function_args = function_args
 
     def _call(
-            self,
-            signal: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ):
-
         # evaluate function arguments
         args = {}
         if self.function_args:
@@ -2082,7 +2095,7 @@ class GainStage(Base):
             >>> import auglib
             >>> gain = auglib.utils.to_db(0.5)
             >>> transform = auglib.transform.GainStage(gain)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, _ = audiofile.read(files[0])
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
@@ -2104,14 +2117,15 @@ class GainStage(Base):
             </p>
 
     """  # noqa: E501
+
     def __init__(
-            self,
-            gain_db: Union[float, observe.Base],
-            *,
-            max_peak_db: Union[float, observe.Base] = None,
-            clip: Union[bool, observe.Base] = False,
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: Union[float, observe.Base] = None,
+        self,
+        gain_db: Union[float, observe.Base],
+        *,
+        max_peak_db: Union[float, observe.Base] = None,
+        clip: Union[bool, observe.Base] = False,
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -2122,10 +2136,10 @@ class GainStage(Base):
         self.clip = clip
 
     def _call(
-            self,
-            signal: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
         gain_db = observe.observe(self.gain_db)
         clip = observe.observe(self.clip)
@@ -2181,7 +2195,7 @@ class HighPass(Base):
             >>> import audplot
             >>> import auglib
             >>> transform = auglib.transform.HighPass(4000, order=4)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -2212,17 +2226,17 @@ class HighPass(Base):
             >>> import matplotlib.pyplot as plt
             >>> import seaborn as sns
             >>> sigs = [signal, augmented_signal]
-            >>> colors = ['#5d6370', '#e13b41']
+            >>> colors = ["#5d6370", "#e13b41"]
             >>> for sig, color in zip(sigs, colors):
             ...     magnitude, f = plt.mlab.magnitude_spectrum(sig, Fs=sampling_rate)
             ...     # Smooth magnitude
-            ...     magnitude = np.convolve(magnitude, np.ones(14) / 14, mode='same')
+            ...     magnitude = np.convolve(magnitude, np.ones(14) / 14, mode="same")
             ...     plt.plot(f, audmath.db(magnitude), color=color)
             >>> plt.xlim([10, 8000])
             >>> plt.ylim([-100, -45])
-            >>> plt.ylabel('Magnitude / dB')
-            >>> plt.xlabel('Frequency / Hz')
-            >>> plt.legend(['signal', 'augmented signal'])
+            >>> plt.ylabel("Magnitude / dB")
+            >>> plt.xlabel("Frequency / Hz")
+            >>> plt.legend(["signal", "augmented signal"])
             >>> plt.grid(alpha=0.4)
             >>> sns.despine()
             >>> plt.tight_layout()
@@ -2259,14 +2273,15 @@ class HighPass(Base):
             </p>
 
     """  # noqa: E501
+
     def __init__(
-            self,
-            cutoff: Union[float, observe.Base],
-            *,
-            order: Union[int, observe.Base] = 1,
-            design: str = 'butter',
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: Union[float, observe.Base] = None,
+        self,
+        cutoff: Union[float, observe.Base],
+        *,
+        order: Union[int, observe.Base] = 1,
+        design: str = "butter",
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -2283,20 +2298,20 @@ class HighPass(Base):
         self.design = design
 
     def _call(
-            self,
-            signal: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
         if sampling_rate is None:
             raise ValueError("sampling_rate is 'None', but required.")
         cutoff = observe.observe(self.cutoff)
         order = observe.observe(self.order)
-        if self.design == 'butter':
+        if self.design == "butter":
             b, a = scipy.signal.butter(
                 order,
                 cutoff,
-                btype='highpass',
+                btype="highpass",
                 fs=sampling_rate,
             )
             signal = scipy.signal.lfilter(b, a, signal)
@@ -2337,7 +2352,7 @@ class LowPass(Base):
             >>> import audplot
             >>> import auglib
             >>> transform = auglib.transform.LowPass(2000, order=2)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -2368,17 +2383,17 @@ class LowPass(Base):
             >>> import matplotlib.pyplot as plt
             >>> import seaborn as sns
             >>> sigs = [signal, augmented_signal]
-            >>> colors = ['#5d6370', '#e13b41']
+            >>> colors = ["#5d6370", "#e13b41"]
             >>> for sig, color in zip(sigs, colors):
             ...     magnitude, f = plt.mlab.magnitude_spectrum(sig, Fs=sampling_rate)
             ...     # Smooth magnitude
-            ...     magnitude = np.convolve(magnitude, np.ones(14) / 14, mode='same')
+            ...     magnitude = np.convolve(magnitude, np.ones(14) / 14, mode="same")
             ...     plt.plot(f, audmath.db(magnitude), color=color)
             >>> plt.xlim([10, 8000])
             >>> plt.ylim([-100, -45])
-            >>> plt.ylabel('Magnitude / dB')
-            >>> plt.xlabel('Frequency / Hz')
-            >>> plt.legend(['signal', 'augmented signal'])
+            >>> plt.ylabel("Magnitude / dB")
+            >>> plt.xlabel("Frequency / Hz")
+            >>> plt.legend(["signal", "augmented signal"])
             >>> plt.grid(alpha=0.4)
             >>> sns.despine()
             >>> plt.tight_layout()
@@ -2415,14 +2430,15 @@ class LowPass(Base):
             </p>
 
     """  # noqa: E501
+
     def __init__(
-            self,
-            cutoff: Union[float, observe.Base],
-            *,
-            order: Union[int, observe.Base] = 1,
-            design: str = 'butter',
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: Union[float, observe.Base] = None,
+        self,
+        cutoff: Union[float, observe.Base],
+        *,
+        order: Union[int, observe.Base] = 1,
+        design: str = "butter",
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -2439,20 +2455,20 @@ class LowPass(Base):
         self.design = design
 
     def _call(
-            self,
-            signal: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
         if sampling_rate is None:
             raise ValueError("sampling_rate is 'None', but required.")
         cutoff = observe.observe(self.cutoff)
         order = observe.observe(self.order)
-        if self.design == 'butter':
+        if self.design == "butter":
             b, a = scipy.signal.butter(
                 order,
                 cutoff,
-                btype='lowpass',
+                btype="lowpass",
                 fs=sampling_rate,
             )
             signal = scipy.signal.lfilter(b, a, signal)
@@ -2512,7 +2528,7 @@ class Mask(Base):
             ...     start_pos=0.5,
             ...     duration=0.5,
             ... )
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -2595,28 +2611,32 @@ class Mask(Base):
             </p>
 
     """  # noqa: E501
+
     @audobject.init_decorator(
         resolvers={
-            'step': audobject.resolver.Tuple,
+            "step": audobject.resolver.Tuple,
         }
     )
     def __init__(
-            self,
-            transform: Base,
-            *,
-            start_pos: typing.Union[int, float, observe.Base, Time] = 0,
-            duration: typing.Union[int, float, observe.Base, Time] = None,
-            step: typing.Union[
-                int, float, observe.Base, Time,
-                typing.Tuple[
-                    Union[int, float, observe.Base, Time],
-                    Union[int, float, observe.Base, Time],
-                ],
-            ] = None,
-            invert: typing.Union[bool, observe.Base] = False,
-            unit: str = 'seconds',
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: typing.Union[float, observe.Base] = None,
+        self,
+        transform: Base,
+        *,
+        start_pos: typing.Union[int, float, observe.Base, Time] = 0,
+        duration: typing.Union[int, float, observe.Base, Time] = None,
+        step: typing.Union[
+            int,
+            float,
+            observe.Base,
+            Time,
+            typing.Tuple[
+                Union[int, float, observe.Base, Time],
+                Union[int, float, observe.Base, Time],
+            ],
+        ] = None,
+        invert: typing.Union[bool, observe.Base] = False,
+        unit: str = "seconds",
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: typing.Union[float, observe.Base] = None,
     ):
         if step is not None:
             step = audeer.to_list(step)
@@ -2636,12 +2656,11 @@ class Mask(Base):
         self.invert = invert
 
     def _call(
-            self,
-            signal: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
-
         # store original signal, then apply transformation
         org_signal = signal.copy()
         signal = self.transform(signal, sampling_rate)
@@ -2688,7 +2707,7 @@ class Mask(Base):
                 step = min(step, end_pos - start_pos)
                 # if we are not in a masked region, revert changes
                 if not masked_region and step > 0:
-                    mask[:, start_pos:start_pos + step] = True
+                    mask[:, start_pos : start_pos + step] = True
                 # increment position and switch condition
                 start_pos += step
                 masked_region = not masked_region
@@ -2796,13 +2815,13 @@ class Mix(Base):
             >>> import audplot
             >>> import auglib
             >>> auglib.seed(0)
-            >>> db = audb.load('musan', media='.*noise-free-sound-000\d', version='1.0.0')
+            >>> db = audb.load("musan", media=".*noise-free-sound-000\d", version="1.0.0")
             >>> transform = auglib.transform.Mix(
             ...     auglib.observe.List(db.files, draw=True),
             ...     loop_aux=True,
             ...     snr_db=10,
             ... )
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -2833,15 +2852,15 @@ class Mix(Base):
 
             >>> auglib.seed(0)
             >>> files = audb.load_media(
-            ...     'cough-speech-sneeze',
-            ...     'coughing/kopzxumj430_40.94-41.8.wav',
-            ...     version='2.0.1',
+            ...     "cough-speech-sneeze",
+            ...     "coughing/kopzxumj430_40.94-41.8.wav",
+            ...     version="2.0.1",
             ...     sampling_rate=16000,
             ... )
             >>> transform = auglib.transform.Mix(
             ...     files[0],
-            ...     write_pos_base=auglib.observe.FloatUni(0, .9),
-            ...     unit='relative',
+            ...     write_pos_base=auglib.observe.FloatUni(0, 0.9),
+            ...     unit="relative",
             ... )
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -2863,26 +2882,26 @@ class Mix(Base):
             </p>
 
     """  # noqa: E501
-    def __init__(
-            self,
-            aux: Union[str, observe.Base, np.ndarray, Base],
-            *,
-            gain_base_db: Union[float, observe.Base] = 0.0,
-            gain_aux_db: Union[float, observe.Base] = 0.0,
-            snr_db: Union[float, observe.Base] = None,
-            write_pos_base: Union[int, float, observe.Base, Time] = 0.0,
-            read_pos_aux: Union[int, float, observe.Base, Time] = 0.0,
-            read_dur_aux: Union[int, float, observe.Base, Time] = None,
-            clip_mix: Union[bool, observe.Base] = False,
-            loop_aux: Union[bool, observe.Base] = False,
-            extend_base: Union[bool, observe.Base] = False,
-            num_repeat: Union[int, observe.Base] = 1,
-            unit: str = 'seconds',
-            transform: Base = None,
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: Union[float, observe.Base] = None,
-    ):
 
+    def __init__(
+        self,
+        aux: Union[str, observe.Base, np.ndarray, Base],
+        *,
+        gain_base_db: Union[float, observe.Base] = 0.0,
+        gain_aux_db: Union[float, observe.Base] = 0.0,
+        snr_db: Union[float, observe.Base] = None,
+        write_pos_base: Union[int, float, observe.Base, Time] = 0.0,
+        read_pos_aux: Union[int, float, observe.Base, Time] = 0.0,
+        read_dur_aux: Union[int, float, observe.Base, Time] = None,
+        clip_mix: Union[bool, observe.Base] = False,
+        loop_aux: Union[bool, observe.Base] = False,
+        extend_base: Union[bool, observe.Base] = False,
+        num_repeat: Union[int, observe.Base] = 1,
+        unit: str = "seconds",
+        transform: Base = None,
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: Union[float, observe.Base] = None,
+    ):
         super().__init__(
             aux=aux,
             num_repeat=num_repeat,
@@ -2902,11 +2921,11 @@ class Mix(Base):
         self.extend_base = extend_base
 
     def _call(
-            self,
-            signal: np.ndarray,
-            aux: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        aux: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
         write_pos_base = self.to_samples(
             self.write_pos_base,
@@ -2964,7 +2983,7 @@ class Mix(Base):
                 end_pos_base = length_base  # allow looping
 
         # Adjust aux signal to match required length
-        aux = aux[:, read_pos_aux:read_pos_aux + read_dur_aux]
+        aux = aux[:, read_pos_aux : read_pos_aux + read_dur_aux]
         required_length_aux = end_pos_base - write_pos_base
         if aux.shape[1] < required_length_aux and loop_aux:
             repetitions = int(np.ceil(required_length_aux / aux.shape[1]))
@@ -2978,7 +2997,6 @@ class Mix(Base):
 
         # Estimate gain for aux signal
         if self.snr_db is not None:
-
             # Estimate gain for aux signal
             # considering only overlapping parts of the signals
             snr_db = observe.observe(self.snr_db)
@@ -2995,7 +3013,7 @@ class Mix(Base):
         else:
             gain_aux_db = observe.observe(self.gain_aux_db)
 
-        signal[:, write_pos_base:write_pos_base + end_pos] += (
+        signal[:, write_pos_base : write_pos_base + end_pos] += (
             from_db(gain_aux_db) * aux[:, :end_pos]
         )
         if clip_mix:
@@ -3030,7 +3048,7 @@ class NormalizeByPeak(Base):
             >>> import audplot
             >>> import auglib
             >>> transform = auglib.transform.NormalizeByPeak(peak_db=-10)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -3052,13 +3070,14 @@ class NormalizeByPeak(Base):
             </p>
 
     """  # noqa: E501
+
     def __init__(
-            self,
-            *,
-            peak_db: Union[float, observe.Base] = 0.0,
-            clip: Union[bool, observe.Base] = False,
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: Union[float, observe.Base] = None,
+        self,
+        *,
+        peak_db: Union[float, observe.Base] = 0.0,
+        clip: Union[bool, observe.Base] = False,
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -3068,10 +3087,10 @@ class NormalizeByPeak(Base):
         self.clip = clip
 
     def _call(
-            self,
-            signal: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
         peak_db = observe.observe(self.peak_db)
         clip = observe.observe(self.clip)
@@ -3149,12 +3168,12 @@ class PinkNoise(Base):
             >>> import seaborn as sns
             >>> magnitude, f = plt.mlab.magnitude_spectrum(augmented_signal[0, :], Fs=16000)
             >>> # Smooth magnitude
-            >>> magnitude = np.convolve(magnitude, np.ones(14) / 14, mode='same')
-            >>> plt.semilogx(f, audmath.db(magnitude), color='#e13b41')
+            >>> magnitude = np.convolve(magnitude, np.ones(14) / 14, mode="same")
+            >>> plt.semilogx(f, audmath.db(magnitude), color="#e13b41")
             >>> plt.xlim([10, 10010])
             >>> plt.ylim([-75, -45])
-            >>> plt.ylabel('Magnitude / dB')
-            >>> plt.xlabel('Frequency / Hz')
+            >>> plt.ylabel("Magnitude / dB")
+            >>> plt.xlabel("Frequency / Hz")
             >>> plt.grid(alpha=0.4)
             >>> sns.despine()
             >>> plt.tight_layout()
@@ -3168,7 +3187,7 @@ class PinkNoise(Base):
             >>> import audb
             >>> import audiofile
             >>> transform = auglib.transform.PinkNoise(snr_db=10)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, _ = audiofile.read(files[0])
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
@@ -3190,13 +3209,14 @@ class PinkNoise(Base):
             </p>
 
     """  # noqa: E501
+
     def __init__(
-            self,
-            *,
-            gain_db: Union[float, observe.Base] = 0.0,
-            snr_db: Union[float, observe.Base] = None,
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: Union[float, observe.Base] = None,
+        self,
+        *,
+        gain_db: Union[float, observe.Base] = 0.0,
+        snr_db: Union[float, observe.Base] = None,
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -3206,12 +3226,11 @@ class PinkNoise(Base):
         self.snr_db = snr_db
 
     def _call(
-            self,
-            base: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        base: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
-
         noise = self._pink_noise(base.shape[1])
         noise = NormalizeByPeak()(noise)
 
@@ -3240,13 +3259,13 @@ class PinkNoise(Base):
         r"""Generate pink noise signal."""
 
         def psd(f):
-            return 1 / np.where(f == 0, float('inf'), np.sqrt(f))
+            return 1 / np.where(f == 0, float("inf"), np.sqrt(f))
 
         white_noise = np.fft.rfft(np.random.randn(samples))
 
         # Normalized pink noise shape
         pink_shape = psd(np.fft.rfftfreq(samples))
-        pink_shape = pink_shape / np.sqrt(np.mean(pink_shape ** 2))
+        pink_shape = pink_shape / np.sqrt(np.mean(pink_shape**2))
 
         white_noise_shaped = white_noise * pink_shape
         pink_noise = np.fft.irfft(white_noise_shaped)
@@ -3294,14 +3313,14 @@ class Prepend(Base):
             >>> import audplot
             >>> import auglib
             >>> files = audb.load_media(
-            ...     'cough-speech-sneeze',
-            ...     'coughing/kopzxumj430_40.94-41.8.wav',
-            ...     version='2.0.1',
+            ...     "cough-speech-sneeze",
+            ...     "coughing/kopzxumj430_40.94-41.8.wav",
+            ...     version="2.0.1",
             ...     sampling_rate=16000,
             ... )
             >>> cough, _ = audiofile.read(files[0])
             >>> transform = auglib.transform.Prepend(cough)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, _ = audiofile.read(files[0])
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
@@ -3323,16 +3342,17 @@ class Prepend(Base):
             </p>
 
     """  # noqa: E501
+
     def __init__(
-            self,
-            aux: Union[str, observe.Base, np.ndarray, Base],
-            *,
-            read_pos_aux: Union[int, float, observe.Base, Time] = 0.0,
-            read_dur_aux: Union[int, float, observe.Base, Time] = None,
-            unit: str = 'seconds',
-            transform: Base = None,
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: Union[float, observe.Base] = None,
+        self,
+        aux: Union[str, observe.Base, np.ndarray, Base],
+        *,
+        read_pos_aux: Union[int, float, observe.Base, Time] = 0.0,
+        read_dur_aux: Union[int, float, observe.Base, Time] = None,
+        unit: str = "seconds",
+        transform: Base = None,
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             aux=aux,
@@ -3345,11 +3365,11 @@ class Prepend(Base):
         self.read_dur_aux = read_dur_aux or 0
 
     def _call(
-            self,
-            signal: np.ndarray,
-            aux: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        aux: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
         if self.read_pos_aux != 0:
             read_pos_aux = self.to_samples(
@@ -3368,7 +3388,7 @@ class Prepend(Base):
                 length=aux.shape[1],
             )
         signal = np.concatenate(
-            [aux[:, read_pos_aux:read_pos_aux + read_dur_aux], signal],
+            [aux[:, read_pos_aux : read_pos_aux + read_dur_aux], signal],
             axis=1,
         )
         return signal
@@ -3402,8 +3422,8 @@ class PrependValue(Base):
             >>> import audiofile
             >>> import audplot
             >>> import auglib
-            >>> transform = auglib.transform.PrependValue(8000, value=0, unit='samples')
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> transform = auglib.transform.PrependValue(8000, value=0, unit="samples")
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, _ = audiofile.read(files[0])
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
@@ -3425,14 +3445,15 @@ class PrependValue(Base):
             </p>
 
     """  # noqa: E501
+
     def __init__(
-            self,
-            duration: Union[int, float, observe.Base, Time],
-            value: Union[float, observe.Base] = 0,
-            *,
-            unit: str = 'seconds',
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: Union[float, observe.Base] = None,
+        self,
+        duration: Union[int, float, observe.Base, Time],
+        value: Union[float, observe.Base] = 0,
+        *,
+        unit: str = "seconds",
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             unit=unit,
@@ -3443,10 +3464,10 @@ class PrependValue(Base):
         self.value = value
 
     def _call(
-            self,
-            signal: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
         duration = observe.observe(self.duration)
         if duration != 0:
@@ -3497,7 +3518,7 @@ class Resample(Base):
             >>> import audplot
             >>> import auglib
             >>> transform = auglib.transform.Resample(8000)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -3528,17 +3549,17 @@ class Resample(Base):
             >>> import matplotlib.pyplot as plt
             >>> import seaborn as sns
             >>> sigs = [signal, augmented_signal]
-            >>> colors = ['#5d6370', '#e13b41']
+            >>> colors = ["#5d6370", "#e13b41"]
             >>> for sig, color in zip(sigs, colors):
             ...     magnitude, f = plt.mlab.magnitude_spectrum(sig, Fs=sampling_rate)
             ...     # Smooth magnitude
-            ...     magnitude = np.convolve(magnitude, np.ones(14) / 14, mode='same')
+            ...     magnitude = np.convolve(magnitude, np.ones(14) / 14, mode="same")
             ...     plt.plot(f, audmath.db(magnitude), color=color)
             >>> plt.xlim([10, 8000])
             >>> plt.ylim([-100, -45])
-            >>> plt.ylabel('Magnitude / dB')
-            >>> plt.xlabel('Frequency / Hz')
-            >>> plt.legend(['signal', 'augmented signal'])
+            >>> plt.ylabel("Magnitude / dB")
+            >>> plt.xlabel("Frequency / Hz")
+            >>> plt.legend(["signal", "augmented signal"])
             >>> plt.grid(alpha=0.4)
             >>> sns.despine()
             >>> plt.tight_layout()
@@ -3590,33 +3611,34 @@ class Resample(Base):
             >>> for sig, color in zip(sigs, colors):
             ...     magnitude, f = plt.mlab.magnitude_spectrum(sig, Fs=sampling_rate)
             ...     # Smooth magnitude
-            ...     magnitude = np.convolve(magnitude, np.ones(14) / 14, mode='same')
+            ...     magnitude = np.convolve(magnitude, np.ones(14) / 14, mode="same")
             ...     plt.plot(f, audmath.db(magnitude), color=color)
             >>> plt.xlim([10, 8000])
             >>> plt.ylim([-100, -45])
-            >>> plt.ylabel('Magnitude / dB')
-            >>> plt.xlabel('Frequency / Hz')
-            >>> plt.legend(['signal', 'augmented signal'])
+            >>> plt.ylabel("Magnitude / dB")
+            >>> plt.xlabel("Frequency / Hz")
+            >>> plt.legend(["signal", "augmented signal"])
             >>> plt.grid(alpha=0.4)
             >>> sns.despine()
             >>> plt.tight_layout()
 
     """  # noqa: E501
+
     def __init__(
-            self,
-            target_rate: typing.Union[int, observe.List],
-            *,
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: typing.Union[float, observe.Base] = None,
-            **kwargs,
+        self,
+        target_rate: typing.Union[int, observe.List],
+        *,
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: typing.Union[float, observe.Base] = None,
+        **kwargs,
     ):
         super().__init__(
             preserve_level=preserve_level,
             bypass_prob=bypass_prob,
         )
         self.target_rate = target_rate
-        if 'override' in kwargs:
-            self.override = kwargs['override']
+        if "override" in kwargs:
+            self.override = kwargs["override"]
             warnings.warn(
                 "'override' argument is ignored "
                 "and will be removed with version 1.2.0.",
@@ -3625,10 +3647,10 @@ class Resample(Base):
             )
 
     def _call(
-            self,
-            signal: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
         if sampling_rate is None:
             raise ValueError("sampling_rate is 'None', but required.")
@@ -3674,7 +3696,7 @@ class Select(Base):
             ...         auglib.transform.ClipByRatio(0.1),
             ...     ],
             ... )
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, _ = audiofile.read(files[0])
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
@@ -3696,12 +3718,13 @@ class Select(Base):
             </p>
 
     """  # noqa: E501
+
     def __init__(
-            self,
-            transforms: Sequence[Base],
-            *,
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: Union[float, observe.Base] = None,
+        self,
+        transforms: Sequence[Base],
+        *,
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -3710,10 +3733,10 @@ class Select(Base):
         self.transforms = transforms
 
     def _call(
-            self,
-            signal: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
         idx = np.random.randint(len(self.transforms))
         signal = self.transforms[idx](signal, sampling_rate)
@@ -3752,7 +3775,7 @@ class Shift(Base):
             >>> import audplot
             >>> import auglib
             >>> transform = auglib.transform.Shift(1)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -3774,13 +3797,14 @@ class Shift(Base):
             </p>
 
     """  # noqa: E501
+
     def __init__(
-            self,
-            duration: typing.Union[int, float, observe.Base, Time] = None,
-            *,
-            unit: str = 'seconds',
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: typing.Union[float, observe.Base] = None,
+        self,
+        duration: typing.Union[int, float, observe.Base, Time] = None,
+        *,
+        unit: str = "seconds",
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: typing.Union[float, observe.Base] = None,
     ):
         super().__init__(
             unit=unit,
@@ -3790,10 +3814,10 @@ class Shift(Base):
         self.duration = duration
 
     def _call(
-            self,
-            signal: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
         if self.duration is not None:
             duration = self.to_samples(
@@ -3887,8 +3911,8 @@ class Tone(Base):
 
             >>> import audb
             >>> import audiofile
-            >>> transform = auglib.transform.Tone(4000, shape='triangle', snr_db=20)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> transform = auglib.transform.Tone(4000, shape="triangle", snr_db=20)
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -3910,17 +3934,18 @@ class Tone(Base):
             </p>
 
     """  # noqa: E501
+
     def __init__(
-            self,
-            freq: Union[float, observe.Base],
-            *,
-            gain_db: Union[float, observe.Base] = 0.0,
-            snr_db: Union[float, observe.Base] = None,
-            shape: Union[str, observe.Base] = 'sine',
-            lfo_rate: Union[float, observe.Base] = 0.0,
-            lfo_range: Union[float, observe.Base] = 0.0,
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: Union[float, observe.Base] = None,
+        self,
+        freq: Union[float, observe.Base],
+        *,
+        gain_db: Union[float, observe.Base] = 0.0,
+        snr_db: Union[float, observe.Base] = None,
+        shape: Union[str, observe.Base] = "sine",
+        lfo_rate: Union[float, observe.Base] = 0.0,
+        lfo_range: Union[float, observe.Base] = 0.0,
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -3934,10 +3959,10 @@ class Tone(Base):
         self.shape = shape
 
     def _call(
-            self,
-            signal: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
         if sampling_rate is None:
             raise ValueError("sampling_rate is 'None', but required.")
@@ -3959,13 +3984,13 @@ class Tone(Base):
             # For short signals and low sampling rates,
             # rms_tone_db and hence the resulting SNR
             # can slightly deviate from the theoretical value.
-            if shape == 'sine':
+            if shape == "sine":
                 rms = 1 / np.sqrt(2)
-            elif shape == 'square':
+            elif shape == "square":
                 rms = 1
-            elif shape == 'triangle':
+            elif shape == "triangle":
                 rms = 1 / np.sqrt(3)
-            elif shape == 'sawtooth':
+            elif shape == "sawtooth":
                 rms = 1 / np.sqrt(3)
             tone_db = 20 * np.log10(rms)
             signal_db = rms_db(signal)
@@ -3985,17 +4010,14 @@ class Tone(Base):
 
         time = np.array(range(signal.shape[1]), dtype=DTYPE)
         gain = from_db(gain_db)
-        phase = (
-            omega * time
-            + (lfo_amp * np.sin(lfo_omega * time) / lfo_omega)
-        )
-        if shape == 'sine':
+        phase = omega * time + (lfo_amp * np.sin(lfo_omega * time) / lfo_omega)
+        if shape == "sine":
             signal += gain * np.sin(phase)
-        elif shape == 'square':
+        elif shape == "square":
             signal += -gain * scipy.signal.square(phase, duty=0.5)
-        elif shape == 'triangle':
+        elif shape == "triangle":
             signal += -gain * scipy.signal.sawtooth(phase, width=0.5)
-        elif shape == 'sawtooth':
+        elif shape == "sawtooth":
             signal += gain * scipy.signal.sawtooth(phase, width=1)
 
         return signal
@@ -4104,7 +4126,7 @@ class Trim(Base):
             >>> import audplot
             >>> import auglib
             >>> transform = auglib.transform.Trim(start_pos=0.2, end_pos=0.2)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, sampling_rate = audiofile.read(files[0])
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -4131,7 +4153,7 @@ class Trim(Base):
             :context: close-figs
             :include-source: True
 
-            >>> transform = auglib.transform.Trim(duration=0.5, unit='relative')
+            >>> transform = auglib.transform.Trim(duration=0.5, unit="relative")
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
 
@@ -4165,7 +4187,7 @@ class Trim(Base):
             ...     start_pos=0.5,
             ...     end_pos=0.5,
             ...     duration=2.0,
-            ...     fill='loop',
+            ...     fill="loop",
             ... )
             >>> augmented_signal = transform(signal, sampling_rate)
             >>> audplot.waveform(augmented_signal)
@@ -4187,17 +4209,18 @@ class Trim(Base):
             </p>
 
     """  # noqa: E501
+
     def __init__(
-            self,
-            *,
-            start_pos: Union[int, float, observe.Base, Time] = 0,
-            end_pos: Union[int, float, observe.Base, Time] = None,
-            duration: Union[int, float, observe.Base, Time] = None,
-            fill: str = 'none',
-            fill_pos: str = 'right',
-            unit: str = 'seconds',
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: Union[float, observe.Base] = None,
+        self,
+        *,
+        start_pos: Union[int, float, observe.Base, Time] = 0,
+        end_pos: Union[int, float, observe.Base, Time] = None,
+        duration: Union[int, float, observe.Base, Time] = None,
+        fill: str = "none",
+        fill_pos: str = "right",
+        unit: str = "seconds",
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             unit=unit,
@@ -4223,24 +4246,20 @@ class Trim(Base):
         self.fill_pos = fill_pos
 
     def _call(
-            self,
-            signal: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
-
         # start_pos | end_pos | duration
         # --------- | ------- | --------
         # None      | None    | None/0
         #
         # Return signal without trimming
         if (
-                self.start_pos is None
-                and self.end_pos is None
-                and (
-                    self.duration is None
-                    or self.duration == 0
-                )
+            self.start_pos is None
+            and self.end_pos is None
+            and (self.duration is None or self.duration == 0)
         ):
             return signal
 
@@ -4290,7 +4309,6 @@ class Trim(Base):
                     "which is forbidden."
                 )
 
-
         # start_pos | end_pos | duration
         # --------- | ------- | --------
         # value     | value   |
@@ -4299,10 +4317,7 @@ class Trim(Base):
         # we need to ensure
         # that they would not result
         # in an empty array
-        if (
-                self.start_pos is not None
-                and self.end_pos is not None
-        ):
+        if self.start_pos is not None and self.end_pos is not None:
             if length - start_pos - end_pos <= 0:
                 raise ValueError(f"'start_pos' + 'end_pos' must be <{length}.")
 
@@ -4351,10 +4366,7 @@ class Trim(Base):
                 return start, end
 
             # First trim to [start_pos, end_pos]
-            if (
-                    self.start_pos is None
-                    and self.end_pos is None
-            ):
+            if self.start_pos is None and self.end_pos is None:
                 # If signal is longer than duration cut from center
                 start_pos, end_pos = distribute_samples(length - duration)
             elif self.start_pos is None:
@@ -4373,23 +4385,17 @@ class Trim(Base):
 
             # Expand signal if too short
             # and fill is requested
-            if (
-                    difference < 0
-                    and self.fill != 'none'
-            ):
-
-                if self.fill_pos == 'right':
+            if difference < 0 and self.fill != "none":
+                if self.fill_pos == "right":
                     prepend_samples = 0
                     append_samples = -difference
-                elif self.fill_pos == 'left':
+                elif self.fill_pos == "left":
                     prepend_samples = -difference
                     append_samples = 0
-                elif self.fill_pos == 'both':
-                    prepend_samples, append_samples = distribute_samples(
-                        -difference
-                    )
+                elif self.fill_pos == "both":
+                    prepend_samples, append_samples = distribute_samples(-difference)
 
-                if self.fill == 'zeros':
+                if self.fill == "zeros":
                     # Expand signal by zeros
                     prepend_array = np.zeros(
                         (1, prepend_samples),
@@ -4399,14 +4405,10 @@ class Trim(Base):
                         (1, append_samples),
                         dtype=DTYPE,
                     )
-                elif self.fill == 'loop':
+                elif self.fill == "loop":
                     # Repeat signal in the expanded parts
                     repetitions = (
-                        int(
-                            max(prepend_samples, append_samples)
-                            / signal.shape[1]
-                        )
-                        + 1
+                        int(max(prepend_samples, append_samples) / signal.shape[1]) + 1
                     )
                     repeated_array = np.tile(signal, repetitions)
                     prepend_array = repeated_array[:, -prepend_samples:]
@@ -4427,7 +4429,7 @@ class Trim(Base):
             # Set start_pos to 0 for final trim with provided duration
             start_pos = 0
 
-        signal = signal[:, start_pos:start_pos + duration]
+        signal = signal[:, start_pos : start_pos + duration]
 
         return signal
 
@@ -4490,12 +4492,12 @@ class WhiteNoiseGaussian(Base):
             >>> import seaborn as sns
             >>> magnitude, f = plt.mlab.magnitude_spectrum(augmented_signal[0, :], Fs=16000)
             >>> # Smooth magnitude
-            >>> magnitude = np.convolve(magnitude, np.ones(14) / 14, mode='same')
-            >>> plt.semilogx(f, audmath.db(magnitude), color='#e13b41')
+            >>> magnitude = np.convolve(magnitude, np.ones(14) / 14, mode="same")
+            >>> plt.semilogx(f, audmath.db(magnitude), color="#e13b41")
             >>> plt.xlim([10, 10010])
             >>> plt.ylim([-75, -45])
-            >>> plt.ylabel('Magnitude / dB')
-            >>> plt.xlabel('Frequency / Hz')
+            >>> plt.ylabel("Magnitude / dB")
+            >>> plt.xlabel("Frequency / Hz")
             >>> plt.grid(alpha=0.4)
             >>> sns.despine()
             >>> plt.tight_layout()
@@ -4509,7 +4511,7 @@ class WhiteNoiseGaussian(Base):
             >>> import audb
             >>> import audiofile
             >>> transform = auglib.transform.WhiteNoiseGaussian(snr_db=10)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, _ = audiofile.read(files[0])
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
@@ -4531,14 +4533,15 @@ class WhiteNoiseGaussian(Base):
             </p>
 
     """  # noqa: E501
+
     def __init__(
-            self,
-            *,
-            gain_db: Union[float, observe.Base] = 0.0,
-            snr_db: Union[float, observe.Base] = None,
-            stddev: Union[float, observe.Base] = 0.3,
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: Union[float, observe.Base] = None,
+        self,
+        *,
+        gain_db: Union[float, observe.Base] = 0.0,
+        snr_db: Union[float, observe.Base] = None,
+        stddev: Union[float, observe.Base] = 0.3,
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -4549,10 +4552,10 @@ class WhiteNoiseGaussian(Base):
         self.stddev = stddev
 
     def _call(
-            self,
-            signal: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
         if self.snr_db is not None:
             snr_db = observe.observe(self.snr_db)
@@ -4566,7 +4569,7 @@ class WhiteNoiseGaussian(Base):
             # For short signals and low sampling rates,
             # rms_noise_db and hence the resulting SNR
             # can slightly deviate from the theoretical value.
-            noise_db = 10 * np.log10(self.stddev ** 2)
+            noise_db = 10 * np.log10(self.stddev**2)
             signal_db = rms_db(signal)
             gain_db = get_noise_gain_from_snr(signal_db, noise_db, snr_db)
         else:
@@ -4574,10 +4577,7 @@ class WhiteNoiseGaussian(Base):
         stddev = observe.observe(self.stddev)
         noise_generator = np.random.default_rng(seed=get_seed())
 
-        signal += (
-            from_db(gain_db)
-            * noise_generator.normal(0, stddev, signal.shape)
-        )
+        signal += from_db(gain_db) * noise_generator.normal(0, stddev, signal.shape)
 
         return signal
 
@@ -4639,12 +4639,12 @@ class WhiteNoiseUniform(Base):
             >>> import seaborn as sns
             >>> magnitude, f = plt.mlab.magnitude_spectrum(augmented_signal[0, :], Fs=16000)
             >>> # Smooth magnitude
-            >>> magnitude = np.convolve(magnitude, np.ones(14) / 14, mode='same')
-            >>> plt.semilogx(f, audmath.db(magnitude), color='#e13b41')
+            >>> magnitude = np.convolve(magnitude, np.ones(14) / 14, mode="same")
+            >>> plt.semilogx(f, audmath.db(magnitude), color="#e13b41")
             >>> plt.xlim([10, 10010])
             >>> plt.ylim([-75, -45])
-            >>> plt.ylabel('Magnitude / dB')
-            >>> plt.xlabel('Frequency / Hz')
+            >>> plt.ylabel("Magnitude / dB")
+            >>> plt.xlabel("Frequency / Hz")
             >>> plt.grid(alpha=0.4)
             >>> sns.despine()
             >>> plt.tight_layout()
@@ -4658,7 +4658,7 @@ class WhiteNoiseUniform(Base):
             >>> import audb
             >>> import audiofile
             >>> transform = auglib.transform.WhiteNoiseUniform(snr_db=10)
-            >>> files = audb.load_media('emodb', 'wav/03a01Fa.wav', version='1.4.1')
+            >>> files = audb.load_media("emodb", "wav/03a01Fa.wav", version="1.4.1")
             >>> signal, _ = audiofile.read(files[0])
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
@@ -4680,13 +4680,14 @@ class WhiteNoiseUniform(Base):
             </p>
 
     """  # noqa: E501
+
     def __init__(
-            self,
-            *,
-            gain_db: Union[float, observe.Base] = 0.0,
-            snr_db: Union[float, observe.Base] = None,
-            preserve_level: Union[bool, observe.Base] = False,
-            bypass_prob: Union[float, observe.Base] = None,
+        self,
+        *,
+        gain_db: Union[float, observe.Base] = 0.0,
+        snr_db: Union[float, observe.Base] = None,
+        preserve_level: Union[bool, observe.Base] = False,
+        bypass_prob: Union[float, observe.Base] = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -4696,10 +4697,10 @@ class WhiteNoiseUniform(Base):
         self.snr_db = snr_db
 
     def _call(
-            self,
-            signal: np.ndarray,
-            *,
-            sampling_rate: int = None,
+        self,
+        signal: np.ndarray,
+        *,
+        sampling_rate: int = None,
     ) -> np.ndarray:
         if self.snr_db is not None:
             snr_db = observe.observe(self.snr_db)
@@ -4720,9 +4721,6 @@ class WhiteNoiseUniform(Base):
 
         noise_generator = np.random.default_rng(seed=get_seed())
 
-        signal += (
-            from_db(gain_db)
-            * noise_generator.uniform(-1, 1, signal.shape)
-        )
+        signal += from_db(gain_db) * noise_generator.uniform(-1, 1, signal.shape)
 
         return signal

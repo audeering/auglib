@@ -73,18 +73,18 @@ def to_db(x: typing.Union[float, observe.Base]) -> float:
 
     """
     x = observe.observe(x)
-    assert x > 0, 'cannot convert gain {} to decibels'.format(x)
+    assert x > 0, "cannot convert gain {} to decibels".format(x)
     x_db = 20 * np.log10(x)
     return x_db
 
 
 def to_samples(
-        value: typing.Union[int, float, observe.Base, time.Time],
-        *,
-        sampling_rate: int = None,
-        length: int = None,
-        unit: str = 'seconds',
-        allow_negative: bool = False,
+    value: typing.Union[int, float, observe.Base, time.Time],
+    *,
+    sampling_rate: int = None,
+    length: int = None,
+    unit: str = "seconds",
+    allow_negative: bool = False,
 ) -> int:
     r"""Express timestamp or timespan in samples.
 
@@ -134,9 +134,9 @@ def to_samples(
     Examples:
         >>> to_samples(0.5, sampling_rate=10)
         5
-        >>> to_samples(0.5, length=20, unit='relative')
+        >>> to_samples(0.5, length=20, unit="relative")
         10
-        >>> to_samples(time.Time(1500, unit='ms'), sampling_rate=10)
+        >>> to_samples(time.Time(1500, unit="ms"), sampling_rate=10)
         15
 
     """
