@@ -4,8 +4,11 @@
 name = 'auglib'
 authors = [
     {name = 'Hagen Wierstorf', email = 'hwierstorf@audeering.com'},
-    {name = 'Johannes Wagner', email = 'jwagner@audeering.com'},
+    {name = 'Johannes Wagner'},
+    {name = 'Anna Derington', email = 'aderington@audeering.com'},
     {name = 'Andrea Crespi'},
+    {name = 'Andreas Triantafyllopoulos'},
+    {name = 'BahaEddine Abrougui'},
 ]
 description = 'Audio augmentations'
 readme = 'README.rst'
