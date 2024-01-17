@@ -120,18 +120,21 @@ class Augment(audinterface.Process, audobject.Object):
         ...     "emodb",
         ...     version="1.4.1",
         ...     media=["wav/03a01Fa.wav", "wav/03a01Nc.wav", "wav/03a01Wa.wav"],
+        ...     full_path=False,
         ...     verbose=False,
         ... )
         >>> transform = auglib.transform.WhiteNoiseUniform()
         >>> augment = auglib.Augment(transform)
         >>> # Augment a numpy array
-        >>> signal, sampling_rate = audiofile.read(db.files[0])
+        >>> file = os.path.join(db.root, db.files[0])
+        >>> signal, sampling_rate = audiofile.read(file)
         >>> signal_augmented = augment(signal, sampling_rate)
         >>> # Augment (parts of) a database
         >>> df = db.get("emotion")
         >>> df_augmented = augment.augment(
         ...     df,
         ...     cache_root="cache",
+        ...     data_root=db.root,
         ...     remove_root=db.root,
         ... )
         >>> label = df_augmented.iloc[0, 0]
