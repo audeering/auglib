@@ -461,7 +461,7 @@ def test_augment(
 
 
 def test_augment_cache(tmpdir):
-    root = audeer.mkdir(os.path.join(tmpdir, "input"))
+    root = audeer.mkdir(tmpdir, "input")
     cache_root = os.path.join(tmpdir, "cache")
     transform = auglib.transform.PinkNoise()
     augment = auglib.Augment(transform, seed=0)
@@ -601,7 +601,7 @@ def test_augment_cache_nat(
     expected_index_nat,
     expected_index_no_nat,
 ):
-    root = audeer.mkdir(os.path.join(tmpdir, "input"))
+    root = audeer.mkdir(tmpdir, "input")
     cache_root = os.path.join(tmpdir, "cache")
     augment_no_nat = auglib.Augment(
         transform,
