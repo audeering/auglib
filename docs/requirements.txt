@@ -6,6 +6,7 @@ ipykernel
 jupyter-sphinx
 pedalboard >=0.4.0
 praat-parselmouth
+pyarrow  # to avoid pandas deprecation warning
 pydub  # required by audiomentations
 sox
 sphinx==5.3.0
