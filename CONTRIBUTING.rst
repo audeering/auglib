@@ -67,8 +67,8 @@ and call it directly::
 
 It can be restricted to specific folders::
 
-    ruff check audfoo/ tests/
-    codespell audfoo/ tests/
+    ruff check auglib/ tests/
+    codespell auglib/ tests/
 
 
 .. _codespell: https://github.com/codespell-project/codespell/
@@ -88,14 +88,14 @@ You can install it and a few other necessary packages with::
 
 To create the HTML pages, use::
 
-    python -m sphinx docs/ build/sphinx/html -b html
+    python -m sphinx docs/ build/html -b html
 
 The generated files will be available
-in the directory :file:`build/sphinx/html/`.
+in the directory :file:`build/html/`.
 
 It is also possible to automatically check if all links are still valid::
 
-    python -m sphinx docs/ build/sphinx/html -b linkcheck
+    python -m sphinx docs/ build/html -b linkcheck
 
 .. _Sphinx: https://www.sphinx-doc.org
 
