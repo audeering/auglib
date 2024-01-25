@@ -23,7 +23,7 @@ Version 1.0.0 (2024-01-25)
 * Added: support for Python 3.9, 3.10 and 3.11
 * Changed: ``auglib.Augment.augment()``
   now stores augmented segments
-  as single WAV files in cache
+  as single files in cache
 * Changed: ``auglib.Augment.augment()``
   now uses ``allow_nat=True``
   when calculating the hash of an index,
