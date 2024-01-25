@@ -5,6 +5,7 @@ build/
 dist/
 .idea/
 venv/
-.coverage
+.coverage*
+coverage.xml
 cache/
 docs/api/

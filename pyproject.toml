@@ -78,6 +78,7 @@ addopts = '''
     --cov=auglib
     --cov-fail-under=100
     --cov-report term-missing
+    --cov-report xml
     --ignore=docs/
     --ignore=misc/
     --ignore=benchmarks/
