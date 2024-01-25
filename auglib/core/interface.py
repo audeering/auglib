@@ -16,20 +16,6 @@ from auglib.core import transform
 from auglib.core.seed import seed as seed_func
 
 
-def _remove(path: str):  # pragma: no cover
-    path = audeer.path(path)
-    if os.path.exists(path):
-        os.remove(path)
-
-
-def _make_tree(files: typing.Sequence[str]):  # pragma: no cover
-    dirs = set()
-    for f in files:
-        dirs.add(os.path.dirname(f))
-    for d in list(dirs):
-        audeer.mkdir(d)
-
-
 class Augment(audinterface.Process, audobject.Object):
     r"""Augmentation interface.
 
@@ -113,7 +99,6 @@ class Augment(audinterface.Process, audobject.Object):
 
     Examples:
         >>> import audb
-        >>> import audeer
         >>> import audiofile
         >>> import auglib
         >>> db = audb.load(
@@ -302,7 +287,7 @@ class Augment(audinterface.Process, audobject.Object):
 
             cache_root = default_cache_root()
         else:
-            cache_root = audeer.path(cache_root)
+            cache_root = audeer.path(cache_root, follow_symlink=True)
         cache_root = os.path.join(cache_root, self.short_id)
 
         transform_path = os.path.join(cache_root, "transform.yaml")
@@ -572,7 +557,6 @@ def _augmented_files(
     remove_root: str = None,
 ) -> typing.Sequence[str]:
     r"""Return cache file names by joining with the cache directory."""
-    cache_root = audeer.path(cache_root)
     if remove_root is None:
 
         def join(path1: str, path2: str) -> str:

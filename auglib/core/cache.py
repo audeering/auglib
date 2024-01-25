@@ -50,4 +50,4 @@ def default_cache_root(augment: Augment = None) -> str:
     root = os.environ.get("AUGLIB_CACHE_ROOT") or config.CACHE_ROOT
     if augment is not None:
         root = os.path.join(root, augment.short_id)
-    return audeer.path(root)
+    return audeer.path(root, follow_symlink=True)
