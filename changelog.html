@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                v1.0.0
+                v1.0.1
               </div>
             
           
@@ -110,6 +110,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#version-1-0-1-2024-01-26">Version 1.0.1 (2024-01-26)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#version-1-0-0-2024-01-26">Version 1.0.0 (2024-01-26)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#version-0-12-2-2023-07-31">Version 0.12.2 (2023-07-31)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#version-0-12-1-2023-07-27">Version 0.12.1 (2023-07-27)</a></li>
@@ -203,6 +204,13 @@
 <p>All notable changes to this project will be documented in this file.</p>
 <p>The format is based on <a class="reference external" href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>,
 and this project adheres to <a class="reference external" href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<div class="section" id="version-1-0-1-2024-01-26">
+<h2>Version 1.0.1 (2024-01-26)<a class="headerlink" href="#version-1-0-1-2024-01-26" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fixed: missing audio examples in documentation</p></li>
+<li><p>Fixed: add missing entries to the changelog of 1.0.0</p></li>
+</ul>
+</div>
 <div class="section" id="version-1-0-0-2024-01-26">
 <h2>Version 1.0.0 (2024-01-26)<a class="headerlink" href="#version-1-0-0-2024-01-26" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
@@ -217,6 +225,7 @@ of all transforms</p></li>
 to <code class="docutils literal notranslate"><span class="pre">__call__()</span></code> of transforms
 that require a sampling rate</p></li>
 <li><p>Added: support for Python 3.9, 3.10 and 3.11</p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">auglib.utils.rms_db()</span></code></p></li>
 <li><p>Changed: <code class="docutils literal notranslate"><span class="pre">auglib.Augment.augment()</span></code>
 now stores augmented segments
 as single files in cache</p></li>
@@ -235,6 +244,8 @@ and <code class="docutils literal notranslate"><span class="pre">auglib.transfor
 is first observed
 when calling the transform</p></li>
 <li><p>Removed: <code class="docutils literal notranslate"><span class="pre">sounddevice</span></code> dependency</p></li>
+<li><p>Removed: <code class="docutils literal notranslate"><span class="pre">auglib.AudioBuffer</span></code></p></li>
+<li><p>Removed: <code class="docutils literal notranslate"><span class="pre">auglib.set_exception_handling()</span></code></p></li>
 </ul>
 </div>
 <div class="section" id="version-0-12-2-2023-07-31">
