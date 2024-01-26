@@ -7,6 +7,13 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 1.0.1 (2024-01-26)
+--------------------------
+
+* Fixed: missing audio examples in documentation
+* Fixed: add missing entries to the changelog of 1.0.0
+
+
 Version 1.0.0 (2024-01-26)
 --------------------------
 
