@@ -21,6 +21,7 @@ Version 1.0.0 (2024-01-26)
   to ``__call__()`` of transforms
   that require a sampling rate
 * Added: support for Python 3.9, 3.10 and 3.11
+* Added: ``auglib.utils.rms_db()``
 * Changed: ``auglib.Augment.augment()``
   now stores augmented segments
   as single files in cache
@@ -39,6 +40,8 @@ Version 1.0.0 (2024-01-26)
   is first observed
   when calling the transform
 * Removed: ``sounddevice`` dependency
+* Removed: ``auglib.AudioBuffer``
+* Removed: ``auglib.set_exception_handling()``
 
 
 Version 0.12.2 (2023-07-31)
