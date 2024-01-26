@@ -7,6 +7,40 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 1.0.0 (2024-01-26)
+--------------------------
+
+* Added: public release
+* Added: support for MacOS
+* Added: support for Windows
+* Added: audio examples and figures
+  to the docstrings
+  of all transforms
+* Added: depend on ``scipy``
+* Added: ``sampling_rate`` as argument
+  to ``__call__()`` of transforms
+  that require a sampling rate
+* Added: support for Python 3.9, 3.10 and 3.11
+* Changed: ``auglib.Augment.augment()``
+  now stores augmented segments
+  as single files in cache
+* Changed: ``auglib.Augment.augment()``
+  now uses ``allow_nat=True``
+  when calculating the hash of an index,
+  which is used to store/find augmented files
+  in cache
+* Changed: depend on ``audeer>=2.0.0``
+* Changed: convert code base to pure Python
+* Changed: switch to MIT License
+* Fixed: support overlapping segments
+* Fixed: ensure the ``duration`` argument
+  of ``auglib.transform.AppendValue``
+  and ``auglib.transform.PrependValue``
+  is first observed
+  when calling the transform
+* Removed: ``sounddevice`` dependency
+
+
 Version 0.12.2 (2023-07-31)
 ---------------------------
 
