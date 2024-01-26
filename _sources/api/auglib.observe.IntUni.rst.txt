@@ -1,0 +1,64 @@
+﻿IntUni
+======
+
+.. currentmodule:: auglib.observe
+
+.. autoclass:: IntUni
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: IntUni.__call__
+    
+arguments
+---------
+.. autoattribute:: IntUni.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: IntUni.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: IntUni.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: IntUni.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: IntUni.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: IntUni.hidden_arguments
+    
+id
+--
+.. autoattribute:: IntUni.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: IntUni.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: IntUni.resolvers
+    
+short\_id
+---------
+.. autoattribute:: IntUni.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: IntUni.to_dict
+    
+to\_yaml\(\)
+------------
+.. automethod:: IntUni.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: IntUni.to_yaml_s
+    

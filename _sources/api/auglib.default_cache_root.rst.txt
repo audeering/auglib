@@ -1,0 +1,6 @@
+﻿default\_cache\_root\(\)
+========================
+
+.. currentmodule:: auglib
+
+.. autofunction:: auglib.default_cache_root

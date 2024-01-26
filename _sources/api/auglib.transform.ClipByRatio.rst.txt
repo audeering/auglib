@@ -1,0 +1,68 @@
+﻿ClipByRatio
+===========
+
+.. currentmodule:: auglib.transform
+
+.. autoclass:: ClipByRatio
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: ClipByRatio.__call__
+    
+arguments
+---------
+.. autoattribute:: ClipByRatio.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: ClipByRatio.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: ClipByRatio.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: ClipByRatio.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: ClipByRatio.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: ClipByRatio.hidden_arguments
+    
+id
+--
+.. autoattribute:: ClipByRatio.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: ClipByRatio.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: ClipByRatio.resolvers
+    
+short\_id
+---------
+.. autoattribute:: ClipByRatio.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: ClipByRatio.to_dict
+    
+to\_samples\(\)
+---------------
+.. automethod:: ClipByRatio.to_samples
+    
+to\_yaml\(\)
+------------
+.. automethod:: ClipByRatio.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: ClipByRatio.to_yaml_s
+    

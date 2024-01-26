@@ -1,0 +1,416 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>auglib.transform &mdash; Documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon.png"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/audeering.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/jupyter-sphinx.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/thebelab.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Base" href="auglib.transform.Base.html" />
+    <link rel="prev" title="observe()" href="auglib.observe.observe.html" />
+    
+  
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          <a href="../index.html">
+          
+            <img src="../_static/images/audeering.png" class="logo" alt="audEERING"/>
+          
+          
+            <span> auglib</span>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v1.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../external.html">External Solutions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="auglib.html">auglib</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auglib.observe.html">auglib.observe</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">auglib.transform</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.Base.html">Base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.AMRNB.html">AMRNB</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.Append.html">Append</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.AppendValue.html">AppendValue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.BabbleNoise.html">BabbleNoise</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.BandPass.html">BandPass</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.BandStop.html">BandStop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.Clip.html">Clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.ClipByRatio.html">ClipByRatio</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.Compose.html">Compose</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.CompressDynamicRange.html">CompressDynamicRange</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.Fade.html">Fade</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.FFTConvolve.html">FFTConvolve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.Function.html">Function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.GainStage.html">GainStage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.HighPass.html">HighPass</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.LowPass.html">LowPass</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.Mask.html">Mask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.Mix.html">Mix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.NormalizeByPeak.html">NormalizeByPeak</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.PinkNoise.html">PinkNoise</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.Prepend.html">Prepend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.PrependValue.html">PrependValue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.Resample.html">Resample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.Select.html">Select</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.Shift.html">Shift</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.Tone.html">Tone</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.Trim.html">Trim</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.WhiteNoiseGaussian.html">WhiteNoiseGaussian</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.transform.WhiteNoiseUniform.html">WhiteNoiseUniform</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="auglib.utils.html">auglib.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">auglib</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>auglib.transform</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/audeering/auglib/" class="fa fa-github"> GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-auglib.transform">
+<span id="auglib-transform"></span><h1>auglib.transform<a class="headerlink" href="#module-auglib.transform" title="Permalink to this heading">¶</a></h1>
+<p><a class="reference internal" href="#module-auglib.transform" title="auglib.transform"><code class="xref py py-mod docutils literal notranslate"><span class="pre">auglib.transform</span></code></a>
+comes with a number of transforms,
+that can augment an audio signal.</p>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">auglib</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">sampling_rate</span> <span class="o">=</span> <span class="mi">8000</span>
+<span class="n">signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">transform</span> <span class="o">=</span> <span class="n">auglib</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">GainStage</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">transform</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>array([[0.31622776, 0.31622776, 0.31622776, 0.31622776]], dtype=float32)
+</pre></div>
+</div>
+</div>
+</div>
+<p>Transforms can be combined
+using <a class="reference internal" href="auglib.transform.Compose.html#auglib.transform.Compose" title="auglib.transform.Compose"><code class="xref py py-class docutils literal notranslate"><span class="pre">auglib.transform.Compose</span></code></a>.</p>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">transform</span> <span class="o">=</span> <span class="n">auglib</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">Compose</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="n">auglib</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">HighPass</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="mi">3000</span><span class="p">),</span>
+        <span class="n">auglib</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">Clip</span><span class="p">(),</span>
+        <span class="n">auglib</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">NormalizeByPeak</span><span class="p">(</span><span class="n">peak_db</span><span class="o">=-</span><span class="mi">3</span><span class="p">),</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<p>You can add your own Python based transform
+using <a class="reference internal" href="auglib.transform.Function.html#auglib.transform.Function" title="auglib.transform.Function"><code class="xref py py-class docutils literal notranslate"><span class="pre">auglib.transform.Function</span></code></a>.</p>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">repeat</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">,</span> <span class="n">repeats</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">repeats</span><span class="p">)</span>
+
+<span class="n">transform</span> <span class="o">=</span> <span class="n">auglib</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">repeat</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;repeats&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="auglib.transform.Base.html#auglib.transform.Base" title="auglib.transform.Base"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Base</span></code></a></p></td>
+<td><p>Base class for transforms applied to a signal.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="auglib.transform.AMRNB.html#auglib.transform.AMRNB" title="auglib.transform.AMRNB"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AMRNB</span></code></a></p></td>
+<td><p>Encode-decode signal using AMRNB codec.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="auglib.transform.Append.html#auglib.transform.Append" title="auglib.transform.Append"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Append</span></code></a></p></td>
+<td><p>Append an auxiliary signal.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="auglib.transform.AppendValue.html#auglib.transform.AppendValue" title="auglib.transform.AppendValue"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AppendValue</span></code></a></p></td>
+<td><p>Expand signal with a constant value.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="auglib.transform.BabbleNoise.html#auglib.transform.BabbleNoise" title="auglib.transform.BabbleNoise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BabbleNoise</span></code></a></p></td>
+<td><p>Adds Babble Noise.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="auglib.transform.BandPass.html#auglib.transform.BandPass" title="auglib.transform.BandPass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BandPass</span></code></a></p></td>
+<td><p>Run signal through a band-pass filter.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="auglib.transform.BandStop.html#auglib.transform.BandStop" title="auglib.transform.BandStop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BandStop</span></code></a></p></td>
+<td><p>Run signal through a band-stop filter.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="auglib.transform.Clip.html#auglib.transform.Clip" title="auglib.transform.Clip"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Clip</span></code></a></p></td>
+<td><p>Hard/soft-clip the signal.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="auglib.transform.ClipByRatio.html#auglib.transform.ClipByRatio" title="auglib.transform.ClipByRatio"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ClipByRatio</span></code></a></p></td>
+<td><p>Hard/soft-clip a certain fraction of the signal.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="auglib.transform.Compose.html#auglib.transform.Compose" title="auglib.transform.Compose"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Compose</span></code></a></p></td>
+<td><p>Compose several transforms together.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="auglib.transform.CompressDynamicRange.html#auglib.transform.CompressDynamicRange" title="auglib.transform.CompressDynamicRange"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CompressDynamicRange</span></code></a></p></td>
+<td><p>Compress the dynamic range.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="auglib.transform.Fade.html#auglib.transform.Fade" title="auglib.transform.Fade"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Fade</span></code></a></p></td>
+<td><p>Fade-in and fade-out of signal.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="auglib.transform.FFTConvolve.html#auglib.transform.FFTConvolve" title="auglib.transform.FFTConvolve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FFTConvolve</span></code></a></p></td>
+<td><p>Convolve signal with another signal.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="auglib.transform.Function.html#auglib.transform.Function" title="auglib.transform.Function"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Function</span></code></a></p></td>
+<td><p>Apply a custom function to the signal.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="auglib.transform.GainStage.html#auglib.transform.GainStage" title="auglib.transform.GainStage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GainStage</span></code></a></p></td>
+<td><p>Scale signal by linear factor.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="auglib.transform.HighPass.html#auglib.transform.HighPass" title="auglib.transform.HighPass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HighPass</span></code></a></p></td>
+<td><p>Run audio signal through a high-pass filter.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="auglib.transform.LowPass.html#auglib.transform.LowPass" title="auglib.transform.LowPass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LowPass</span></code></a></p></td>
+<td><p>Run audio signal through a low-pass filter.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="auglib.transform.Mask.html#auglib.transform.Mask" title="auglib.transform.Mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Mask</span></code></a></p></td>
+<td><p>Masked transformation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="auglib.transform.Mix.html#auglib.transform.Mix" title="auglib.transform.Mix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Mix</span></code></a></p></td>
+<td><p>Mix two audio signals.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="auglib.transform.NormalizeByPeak.html#auglib.transform.NormalizeByPeak" title="auglib.transform.NormalizeByPeak"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NormalizeByPeak</span></code></a></p></td>
+<td><p>Peak-normalize the signal to a desired level.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="auglib.transform.PinkNoise.html#auglib.transform.PinkNoise" title="auglib.transform.PinkNoise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PinkNoise</span></code></a></p></td>
+<td><p>Adds pink noise.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="auglib.transform.Prepend.html#auglib.transform.Prepend" title="auglib.transform.Prepend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Prepend</span></code></a></p></td>
+<td><p>Prepend an auxiliary signal.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="auglib.transform.PrependValue.html#auglib.transform.PrependValue" title="auglib.transform.PrependValue"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PrependValue</span></code></a></p></td>
+<td><p>Prepend signal with a constant value.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="auglib.transform.Resample.html#auglib.transform.Resample" title="auglib.transform.Resample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Resample</span></code></a></p></td>
+<td><p>Resample signal to another sampling rate.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="auglib.transform.Select.html#auglib.transform.Select" title="auglib.transform.Select"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Select</span></code></a></p></td>
+<td><p>Randomly select from a pool of transforms.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="auglib.transform.Shift.html#auglib.transform.Shift" title="auglib.transform.Shift"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Shift</span></code></a></p></td>
+<td><p>Shift signal without changing its duration.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="auglib.transform.Tone.html#auglib.transform.Tone" title="auglib.transform.Tone"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tone</span></code></a></p></td>
+<td><p>Adds basic waveform.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="auglib.transform.Trim.html#auglib.transform.Trim" title="auglib.transform.Trim"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Trim</span></code></a></p></td>
+<td><p>Trim, zero pad, and/or repeat signal.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="auglib.transform.WhiteNoiseGaussian.html#auglib.transform.WhiteNoiseGaussian" title="auglib.transform.WhiteNoiseGaussian"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WhiteNoiseGaussian</span></code></a></p></td>
+<td><p>Adds Gaussian white noise.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="auglib.transform.WhiteNoiseUniform.html#auglib.transform.WhiteNoiseUniform" title="auglib.transform.WhiteNoiseUniform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WhiteNoiseUniform</span></code></a></p></td>
+<td><p>Adds uniform white noise.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="auglib.transform.Base.html" class="btn btn-neutral float-right" title="Base" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="auglib.observe.observe.html" class="btn btn-neutral float-left" title="observe()" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div>
+    <p>
+        
+        
+        
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/01/26 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+        
+    </p>
+  </div>
+
+  <div role="contentinfo">
+    <p>
+        
+      &copy; 2019-2024 audEERING GmbH
+    </p>
+  </div> 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/thebelab-helper.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,68 @@
+﻿WhiteNoiseGaussian
+==================
+
+.. currentmodule:: auglib.transform
+
+.. autoclass:: WhiteNoiseGaussian
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: WhiteNoiseGaussian.__call__
+    
+arguments
+---------
+.. autoattribute:: WhiteNoiseGaussian.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: WhiteNoiseGaussian.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: WhiteNoiseGaussian.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: WhiteNoiseGaussian.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: WhiteNoiseGaussian.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: WhiteNoiseGaussian.hidden_arguments
+    
+id
+--
+.. autoattribute:: WhiteNoiseGaussian.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: WhiteNoiseGaussian.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: WhiteNoiseGaussian.resolvers
+    
+short\_id
+---------
+.. autoattribute:: WhiteNoiseGaussian.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: WhiteNoiseGaussian.to_dict
+    
+to\_samples\(\)
+---------------
+.. automethod:: WhiteNoiseGaussian.to_samples
+    
+to\_yaml\(\)
+------------
+.. automethod:: WhiteNoiseGaussian.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: WhiteNoiseGaussian.to_yaml_s
+    

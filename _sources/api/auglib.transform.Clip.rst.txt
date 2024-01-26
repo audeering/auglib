@@ -1,0 +1,68 @@
+﻿Clip
+====
+
+.. currentmodule:: auglib.transform
+
+.. autoclass:: Clip
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: Clip.__call__
+    
+arguments
+---------
+.. autoattribute:: Clip.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: Clip.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: Clip.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: Clip.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: Clip.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: Clip.hidden_arguments
+    
+id
+--
+.. autoattribute:: Clip.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: Clip.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: Clip.resolvers
+    
+short\_id
+---------
+.. autoattribute:: Clip.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: Clip.to_dict
+    
+to\_samples\(\)
+---------------
+.. automethod:: Clip.to_samples
+    
+to\_yaml\(\)
+------------
+.. automethod:: Clip.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: Clip.to_yaml_s
+    

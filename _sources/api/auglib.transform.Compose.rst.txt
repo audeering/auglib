@@ -1,0 +1,68 @@
+﻿Compose
+=======
+
+.. currentmodule:: auglib.transform
+
+.. autoclass:: Compose
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: Compose.__call__
+    
+arguments
+---------
+.. autoattribute:: Compose.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: Compose.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: Compose.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: Compose.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: Compose.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: Compose.hidden_arguments
+    
+id
+--
+.. autoattribute:: Compose.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: Compose.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: Compose.resolvers
+    
+short\_id
+---------
+.. autoattribute:: Compose.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: Compose.to_dict
+    
+to\_samples\(\)
+---------------
+.. automethod:: Compose.to_samples
+    
+to\_yaml\(\)
+------------
+.. automethod:: Compose.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: Compose.to_yaml_s
+    

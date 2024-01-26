@@ -1,0 +1,164 @@
+﻿Augment
+=======
+
+.. currentmodule:: auglib
+
+.. autoclass:: Augment
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: Augment.__call__
+    
+arguments
+---------
+.. autoattribute:: Augment.arguments
+    
+augment\(\)
+-----------
+.. automethod:: Augment.augment
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: Augment.borrowed_arguments
+    
+channels
+--------
+.. autoattribute:: Augment.channels
+    
+from\_dict\(\)
+--------------
+.. automethod:: Augment.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: Augment.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: Augment.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: Augment.hidden_arguments
+    
+hop\_dur
+--------
+.. autoattribute:: Augment.hop_dur
+    
+id
+--
+.. autoattribute:: Augment.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: Augment.is_loaded_from_dict
+    
+keep\_nat
+---------
+.. autoattribute:: Augment.keep_nat
+    
+max\_signal\_dur
+----------------
+.. autoattribute:: Augment.max_signal_dur
+    
+min\_signal\_dur
+----------------
+.. autoattribute:: Augment.min_signal_dur
+    
+mixdown
+-------
+.. autoattribute:: Augment.mixdown
+    
+multiprocessing
+---------------
+.. autoattribute:: Augment.multiprocessing
+    
+num\_workers
+------------
+.. autoattribute:: Augment.num_workers
+    
+process\_file\(\)
+-----------------
+.. automethod:: Augment.process_file
+    
+process\_files\(\)
+------------------
+.. automethod:: Augment.process_files
+    
+process\_folder\(\)
+-------------------
+.. automethod:: Augment.process_folder
+    
+process\_func
+-------------
+.. autoattribute:: Augment.process_func
+    
+process\_func\_args
+-------------------
+.. autoattribute:: Augment.process_func_args
+    
+process\_func\_is\_mono
+-----------------------
+.. autoattribute:: Augment.process_func_is_mono
+    
+process\_index\(\)
+------------------
+.. automethod:: Augment.process_index
+    
+process\_signal\(\)
+-------------------
+.. automethod:: Augment.process_signal
+    
+process\_signal\_from\_index\(\)
+--------------------------------
+.. automethod:: Augment.process_signal_from_index
+    
+resample
+--------
+.. autoattribute:: Augment.resample
+    
+resolvers
+---------
+.. autoattribute:: Augment.resolvers
+    
+sampling\_rate
+--------------
+.. autoattribute:: Augment.sampling_rate
+    
+seed
+----
+.. autoattribute:: Augment.seed
+    
+segment
+-------
+.. autoattribute:: Augment.segment
+    
+short\_id
+---------
+.. autoattribute:: Augment.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: Augment.to_dict
+    
+to\_yaml\(\)
+------------
+.. automethod:: Augment.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: Augment.to_yaml_s
+    
+transform
+---------
+.. autoattribute:: Augment.transform
+    
+verbose
+-------
+.. autoattribute:: Augment.verbose
+    
+win\_dur
+--------
+.. autoattribute:: Augment.win_dur
+    

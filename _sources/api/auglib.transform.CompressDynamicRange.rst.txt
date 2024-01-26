@@ -1,0 +1,68 @@
+﻿CompressDynamicRange
+====================
+
+.. currentmodule:: auglib.transform
+
+.. autoclass:: CompressDynamicRange
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: CompressDynamicRange.__call__
+    
+arguments
+---------
+.. autoattribute:: CompressDynamicRange.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: CompressDynamicRange.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: CompressDynamicRange.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: CompressDynamicRange.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: CompressDynamicRange.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: CompressDynamicRange.hidden_arguments
+    
+id
+--
+.. autoattribute:: CompressDynamicRange.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: CompressDynamicRange.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: CompressDynamicRange.resolvers
+    
+short\_id
+---------
+.. autoattribute:: CompressDynamicRange.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: CompressDynamicRange.to_dict
+    
+to\_samples\(\)
+---------------
+.. automethod:: CompressDynamicRange.to_samples
+    
+to\_yaml\(\)
+------------
+.. automethod:: CompressDynamicRange.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: CompressDynamicRange.to_yaml_s
+    

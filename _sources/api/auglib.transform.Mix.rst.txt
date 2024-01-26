@@ -1,0 +1,68 @@
+﻿Mix
+===
+
+.. currentmodule:: auglib.transform
+
+.. autoclass:: Mix
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: Mix.__call__
+    
+arguments
+---------
+.. autoattribute:: Mix.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: Mix.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: Mix.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: Mix.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: Mix.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: Mix.hidden_arguments
+    
+id
+--
+.. autoattribute:: Mix.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: Mix.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: Mix.resolvers
+    
+short\_id
+---------
+.. autoattribute:: Mix.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: Mix.to_dict
+    
+to\_samples\(\)
+---------------
+.. automethod:: Mix.to_samples
+    
+to\_yaml\(\)
+------------
+.. automethod:: Mix.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: Mix.to_yaml_s
+    

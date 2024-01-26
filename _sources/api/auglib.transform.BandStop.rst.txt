@@ -1,0 +1,68 @@
+﻿BandStop
+========
+
+.. currentmodule:: auglib.transform
+
+.. autoclass:: BandStop
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: BandStop.__call__
+    
+arguments
+---------
+.. autoattribute:: BandStop.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: BandStop.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: BandStop.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: BandStop.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: BandStop.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: BandStop.hidden_arguments
+    
+id
+--
+.. autoattribute:: BandStop.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: BandStop.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: BandStop.resolvers
+    
+short\_id
+---------
+.. autoattribute:: BandStop.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: BandStop.to_dict
+    
+to\_samples\(\)
+---------------
+.. automethod:: BandStop.to_samples
+    
+to\_yaml\(\)
+------------
+.. automethod:: BandStop.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: BandStop.to_yaml_s
+    

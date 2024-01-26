@@ -1,0 +1,68 @@
+﻿WhiteNoiseUniform
+=================
+
+.. currentmodule:: auglib.transform
+
+.. autoclass:: WhiteNoiseUniform
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: WhiteNoiseUniform.__call__
+    
+arguments
+---------
+.. autoattribute:: WhiteNoiseUniform.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: WhiteNoiseUniform.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: WhiteNoiseUniform.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: WhiteNoiseUniform.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: WhiteNoiseUniform.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: WhiteNoiseUniform.hidden_arguments
+    
+id
+--
+.. autoattribute:: WhiteNoiseUniform.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: WhiteNoiseUniform.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: WhiteNoiseUniform.resolvers
+    
+short\_id
+---------
+.. autoattribute:: WhiteNoiseUniform.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: WhiteNoiseUniform.to_dict
+    
+to\_samples\(\)
+---------------
+.. automethod:: WhiteNoiseUniform.to_samples
+    
+to\_yaml\(\)
+------------
+.. automethod:: WhiteNoiseUniform.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: WhiteNoiseUniform.to_yaml_s
+    

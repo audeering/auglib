@@ -1,0 +1,68 @@
+﻿FFTConvolve
+===========
+
+.. currentmodule:: auglib.transform
+
+.. autoclass:: FFTConvolve
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: FFTConvolve.__call__
+    
+arguments
+---------
+.. autoattribute:: FFTConvolve.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: FFTConvolve.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: FFTConvolve.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: FFTConvolve.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: FFTConvolve.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: FFTConvolve.hidden_arguments
+    
+id
+--
+.. autoattribute:: FFTConvolve.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: FFTConvolve.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: FFTConvolve.resolvers
+    
+short\_id
+---------
+.. autoattribute:: FFTConvolve.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: FFTConvolve.to_dict
+    
+to\_samples\(\)
+---------------
+.. automethod:: FFTConvolve.to_samples
+    
+to\_yaml\(\)
+------------
+.. automethod:: FFTConvolve.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: FFTConvolve.to_yaml_s
+    

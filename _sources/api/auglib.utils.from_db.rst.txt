@@ -1,0 +1,6 @@
+﻿from\_db\(\)
+============
+
+.. currentmodule:: auglib.utils
+
+.. autofunction:: auglib.utils.from_db

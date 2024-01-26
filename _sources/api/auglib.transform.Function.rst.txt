@@ -1,0 +1,68 @@
+﻿Function
+========
+
+.. currentmodule:: auglib.transform
+
+.. autoclass:: Function
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: Function.__call__
+    
+arguments
+---------
+.. autoattribute:: Function.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: Function.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: Function.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: Function.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: Function.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: Function.hidden_arguments
+    
+id
+--
+.. autoattribute:: Function.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: Function.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: Function.resolvers
+    
+short\_id
+---------
+.. autoattribute:: Function.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: Function.to_dict
+    
+to\_samples\(\)
+---------------
+.. automethod:: Function.to_samples
+    
+to\_yaml\(\)
+------------
+.. automethod:: Function.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: Function.to_yaml_s
+    

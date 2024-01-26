@@ -1,0 +1,1138 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Augment &mdash; Documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon.png"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/audeering.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/jupyter-sphinx.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/thebelab.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="clear_default_cache_root()" href="auglib.clear_default_cache_root.html" />
+    <link rel="prev" title="auglib" href="auglib.html" />
+    
+  
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          <a href="../index.html">
+          
+            <img src="../_static/images/audeering.png" class="logo" alt="audEERING"/>
+          
+          
+            <span> auglib</span>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v1.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../external.html">External Solutions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="auglib.html">auglib</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Augment</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#call">__call__()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#arguments">arguments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">augment()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#borrowed-arguments">borrowed_arguments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#channels">channels</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#from-dict">from_dict()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#from-yaml">from_yaml()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#from-yaml-s">from_yaml_s()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">hidden_arguments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hop-dur">hop_dur</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id">id</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#is-loaded-from-dict">is_loaded_from_dict</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#keep-nat">keep_nat</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#max-signal-dur">max_signal_dur</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#min-signal-dur">min_signal_dur</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mixdown">mixdown</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multiprocessing">multiprocessing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#num-workers">num_workers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#process-file">process_file()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#process-files">process_files()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#process-folder">process_folder()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#process-func">process_func</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#process-func-args">process_func_args</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#process-func-is-mono">process_func_is_mono</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#process-index">process_index()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#process-signal">process_signal()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#process-signal-from-index">process_signal_from_index()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#resample">resample</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#resolvers">resolvers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sampling-rate">sampling_rate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#seed">seed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#segment">segment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#short-id">short_id</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#to-dict">to_dict()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#to-yaml">to_yaml()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#to-yaml-s">to_yaml_s()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#transform">transform</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#verbose">verbose</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#win-dur">win_dur</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.clear_default_cache_root.html">clear_default_cache_root()</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.config.html">config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.default_cache_root.html">default_cache_root()</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.seed.html">seed()</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.Time.html">Time</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="auglib.observe.html">auglib.observe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auglib.transform.html">auglib.transform</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auglib.utils.html">auglib.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">auglib</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="auglib.html">auglib</a> &raquo;</li>
+      <li>Augment</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/audeering/auglib/" class="fa fa-github"> GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="augment">
+<h1>Augment<a class="headerlink" href="#augment" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="auglib.Augment">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auglib.</span></span><span class="sig-name descname"><span class="pre">Augment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transform</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mixdown</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_nat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiprocessing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/auglib/core/interface.html#Augment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auglib.Augment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Augmentation interface.</p>
+<p>Provides an interface for <code class="xref py py-class docutils literal notranslate"><span class="pre">auglib.Transform</span></code>
+and turns it into an object
+that can be applied
+on a signal,
+file(s)
+and an <a class="reference external" href="https://audeering.github.io/audformat/data-format.html">audformat</a> database.
+If input has multiple channels,
+each channel is augmented individually.
+I.e. in case randomized arguments are used,
+the augmentation can be different for each channel.
+More details are discussed under <a class="reference internal" href="../usage.html#usage"><span class="std std-ref">Usage</span></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">augment</span> <span class="o">=</span> <span class="n">auglib</span><span class="o">.</span><span class="n">Augment</span><span class="p">(</span><span class="n">transform</span><span class="p">)</span>
+<span class="c1"># Apply on signal, returns np.ndarray</span>
+<span class="n">signal</span> <span class="o">=</span> <span class="n">augment</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">)</span>
+<span class="c1"># Apply on signal, file, files, database index.</span>
+<span class="c1"># Returns a column holding the augmented signals</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">augment</span><span class="o">.</span><span class="n">process_signal</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">augment</span><span class="o">.</span><span class="n">process_file</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">augment</span><span class="o">.</span><span class="n">process_files</span><span class="p">(</span><span class="n">files</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">augment</span><span class="o">.</span><span class="n">process_index</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+<span class="c1"># Apply on index, table, column.</span>
+<span class="c1"># Writes results to disk</span>
+<span class="c1"># and returns index, table, column</span>
+<span class="c1"># pointing to augmented files</span>
+<span class="n">index</span> <span class="o">=</span> <span class="n">augment</span><span class="o">.</span><span class="n">augment</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">augment</span><span class="o">.</span><span class="n">augment</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">augment</span><span class="o">.</span><span class="n">augment</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="#auglib.Augment" title="auglib.Augment"><code class="xref py py-class docutils literal notranslate"><span class="pre">auglib.Augment</span></code></a> inherits from <a class="reference external" href="https://audeering.github.io/audobject/api/audobject.Object.html#audobject.Object" title="(in audobject)"><code class="xref py py-class docutils literal notranslate"><span class="pre">audobject.Object</span></code></a>,
+which means you can serialize to
+and instantiate the class
+from a YAML file.
+By setting a <code class="docutils literal notranslate"><span class="pre">seed</span></code>,
+you can further ensure
+that re-running the augmentation loaded form a YAML file
+will create the same output.
+Have a look at <a class="reference external" href="https://audeering.github.io/audobject/api/audobject.Object.html#audobject.Object" title="(in audobject)"><code class="xref py py-class docutils literal notranslate"><span class="pre">audobject.Object</span></code></a>
+to see all available methods.
+The following arguments are not serialized:
+<code class="docutils literal notranslate"><span class="pre">keep_nat</span></code>,
+<code class="docutils literal notranslate"><span class="pre">multiprocessing</span></code>,
+<code class="docutils literal notranslate"><span class="pre">num_workers</span></code>,
+<code class="docutils literal notranslate"><span class="pre">verbose</span></code>.
+For more information see section on <a class="reference external" href="https://audeering.github.io/audobject/usage.html#hidden-arguments">hidden arguments</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>transform</strong> (<a class="reference internal" href="auglib.transform.Base.html#auglib.transform.Base" title="auglib.core.transform.Base"><code class="xref py py-class docutils literal notranslate"><span class="pre">auglib.core.transform.Base</span></code></a>) – transformation object</p></li>
+<li><p><strong>sampling_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]) – sampling rate in Hz.
+If <code class="docutils literal notranslate"><span class="pre">None</span></code> it will call <code class="docutils literal notranslate"><span class="pre">process_func</span></code> with the actual
+sampling rate of the signal.</p></li>
+<li><p><strong>resample</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – if <code class="docutils literal notranslate"><span class="pre">True</span></code> enforces given sampling rate by resampling</p></li>
+<li><p><strong>channels</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.Sequence</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]) – channel selection, see <a class="reference external" href="https://audeering.github.io/audresample/api/audresample.remix.html#audresample.remix" title="(in audresample vv1.3.3)"><code class="xref py py-func docutils literal notranslate"><span class="pre">audresample.remix()</span></code></a></p></li>
+<li><p><strong>mixdown</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – apply mono mix-down on selection</p></li>
+<li><p><strong>keep_nat</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – if the end of segment is set to <code class="docutils literal notranslate"><span class="pre">NaT</span></code> do not replace
+with file duration in the result</p></li>
+<li><p><strong>num_workers</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]) – number of parallel jobs or 1 for sequential
+processing. If <code class="docutils literal notranslate"><span class="pre">None</span></code> will be set to the number of
+processors on the machine multiplied by 5 in case of
+multithreading and number of processors in case of
+multiprocessing.
+If <code class="docutils literal notranslate"><span class="pre">seed</span></code> is not <code class="docutils literal notranslate"><span class="pre">None</span></code>,
+the value is always set to 1</p></li>
+<li><p><strong>multiprocessing</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – use multiprocessing instead of multithreading</p></li>
+<li><p><strong>seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]) – if not <code class="docutils literal notranslate"><span class="pre">None</span></code> calls <a class="reference internal" href="auglib.seed.html#auglib.seed" title="auglib.seed"><code class="xref py py-func docutils literal notranslate"><span class="pre">auglib.seed()</span></code></a> with the
+given value when object is constructed.
+This will automatically set <code class="docutils literal notranslate"><span class="pre">num_workers</span></code> to 1</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – show debug messages</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">resample</span> <span class="pre">=</span> <span class="pre">True</span></code>, but <code class="docutils literal notranslate"><span class="pre">sampling_rate</span> <span class="pre">=</span> <span class="pre">None</span></code></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">audb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">audiofile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">auglib</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span> <span class="o">=</span> <span class="n">audb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;emodb&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">version</span><span class="o">=</span><span class="s2">&quot;1.4.1&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">media</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;wav/03a01Fa.wav&quot;</span><span class="p">,</span> <span class="s2">&quot;wav/03a01Nc.wav&quot;</span><span class="p">,</span> <span class="s2">&quot;wav/03a01Wa.wav&quot;</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">transform</span> <span class="o">=</span> <span class="n">auglib</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">WhiteNoiseUniform</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">augment</span> <span class="o">=</span> <span class="n">auglib</span><span class="o">.</span><span class="n">Augment</span><span class="p">(</span><span class="n">transform</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Augment a numpy array</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal</span><span class="p">,</span> <span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">audiofile</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal_augmented</span> <span class="o">=</span> <span class="n">augment</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Augment (parts of) a database</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;emotion&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df_augmented</span> <span class="o">=</span> <span class="n">augment</span><span class="o">.</span><span class="n">augment</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">df</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">cache_root</span><span class="o">=</span><span class="s2">&quot;cache&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">remove_root</span><span class="o">=</span><span class="n">db</span><span class="o">.</span><span class="n">root</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">label</span> <span class="o">=</span> <span class="n">df_augmented</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">file</span> <span class="o">=</span> <span class="n">df_augmented</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">file</span><span class="p">,</span> <span class="n">label</span>
+<span class="go">(&#39;...03a01Fa.wav&#39;, &#39;happiness&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<div class="section" id="call">
+<h2>__call__()<a class="headerlink" href="#call" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="auglib.Augment.__call__">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_rate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auglib.Augment.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply processing to signal.</p>
+<p>This function processes the signal <strong>without</strong> transforming the output
+into a <code class="xref py py-class docutils literal notranslate"><span class="pre">pd.Series</span></code>. Instead, it will return the raw processed
+signal. However, if channel selection, mixdown and/or resampling
+is enabled, the signal will be first remixed and resampled if the
+input sampling rate does not fit the expected sampling rate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>signal</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a>) – signal values</p></li>
+<li><p><strong>sampling_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – sampling rate in Hz</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Any</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Processed signal</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if sampling rates do not match</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if channel selection is invalid</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="arguments">
+<h2>arguments<a class="headerlink" href="#arguments" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auglib.Augment.arguments">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">arguments</span></span><a class="headerlink" href="#auglib.Augment.arguments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns arguments that are serialized.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Dictionary of arguments and their values.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if arguments are found that are not assigned to
+    attributes of the same name</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">audobject.testing</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">o</span> <span class="o">=</span> <span class="n">audobject</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">TestObject</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="n">point</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">o</span><span class="o">.</span><span class="n">arguments</span>
+<span class="go">{&#39;name&#39;: &#39;test&#39;, &#39;point&#39;: (1, 1)}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="id1">
+<h2>augment()<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="auglib.Augment.augment">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">augment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modified_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_variants</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/auglib/core/interface.html#Augment.augment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auglib.Augment.augment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Augment an index, column, or table conform to audformat.</p>
+<p>Creates <code class="docutils literal notranslate"><span class="pre">num_variants</span></code> copies of the segments referenced in the index
+and augments them.
+Files of augmented segments are stored as
+<code class="docutils literal notranslate"><span class="pre">&lt;cache_root&gt;/&lt;short_id&gt;/&lt;index_id&gt;/&lt;variant&gt;/&lt;original_path&gt;</span></code>.
+The <code class="docutils literal notranslate"><span class="pre">&lt;index_id&gt;</span></code> is the identifier of the index of <code class="docutils literal notranslate"><span class="pre">data</span></code>.
+Note that the <code class="docutils literal notranslate"><span class="pre">&lt;index_id&gt;</span></code> of a filewise index
+is the same as its corresponding segmented index
+with <code class="docutils literal notranslate"><span class="pre">start=0</span></code> and <code class="docutils literal notranslate"><span class="pre">end=NaT</span></code>,
+but differs from its corresponding segmented index
+when <code class="docutils literal notranslate"><span class="pre">end</span></code> is set to the file durations.
+It is possible to shorten the path by setting <code class="docutils literal notranslate"><span class="pre">remove_root</span></code>
+to a directory that should be removed from <code class="docutils literal notranslate"><span class="pre">&lt;original_path&gt;</span></code>
+(e.g. the <code class="docutils literal notranslate"><span class="pre">audb</span></code> cache folder).
+If more than one segment of the same file is augmented,
+a counter is added at the end of the filename.
+The result is an index, column or table that references the
+augmented files.
+If the input is a column or table data, the original content is kept.
+If <code class="docutils literal notranslate"><span class="pre">num_variants</span> <span class="pre">&gt;</span> <span class="pre">1</span></code> the data is duplicated accordingly.
+If <code class="docutils literal notranslate"><span class="pre">modified_only</span></code> is set to <code class="docutils literal notranslate"><span class="pre">False</span></code> the original index is also
+included.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code></a>[<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Index.html#pandas.Index" title="(in pandas v2.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.core.indexes.base.Index</span></code></a>, <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.core.series.Series</span></code></a>, <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.core.frame.DataFrame</span></code></a>]) – index, column or table conform to audformat</p></li>
+<li><p><strong>cache_root</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – directory to cache augmented files,
+if <code class="docutils literal notranslate"><span class="pre">None</span></code> defaults to <code class="docutils literal notranslate"><span class="pre">auglib.config.CACHE_ROOT</span></code></p></li>
+<li><p><strong>data_root</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – if index contains relative files,
+set to root directory where files are stored</p></li>
+<li><p><strong>remove_root</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – directory that should be removed from
+the beginning of the original file path before joining with
+<code class="docutils literal notranslate"><span class="pre">cache_root</span></code></p></li>
+<li><p><strong>modified_only</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – return only modified segments, otherwise
+combine original and modified segments</p></li>
+<li><p><strong>num_variants</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – number of variations that are created for every
+segment</p></li>
+<li><p><strong>force</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – overwrite existing files</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code></a>[<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Index.html#pandas.Index" title="(in pandas v2.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.core.indexes.base.Index</span></code></a>, <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.core.series.Series</span></code></a>, <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.core.frame.DataFrame</span></code></a>]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>index, column or table including augmented files</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if sampling rates of file and transformation do not
+    match</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">modified_only=False</span></code> but resampling or
+    remixing is turned on</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="borrowed-arguments">
+<h2>borrowed_arguments<a class="headerlink" href="#borrowed-arguments" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auglib.Augment.borrowed_arguments">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">borrowed_arguments</span></span><a class="headerlink" href="#auglib.Augment.borrowed_arguments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns borrowed arguments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Dictionary with borrowed arguments.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="channels">
+<h2>channels<a class="headerlink" href="#channels" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auglib.Augment.channels">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">channels</span></span><a class="headerlink" href="#auglib.Augment.channels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Channel selection.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="from-dict">
+<h2>from_dict()<a class="headerlink" href="#from-dict" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="auglib.Augment.from_dict">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auglib.Augment.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://audeering.github.io/audobject/api/audobject.Object.html#audobject.Object" title="(in audobject)"><code class="xref py py-class docutils literal notranslate"><span class="pre">audobject.core.object.Object</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="from-yaml">
+<h2>from_yaml()<a class="headerlink" href="#from-yaml" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="auglib.Augment.from_yaml">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">from_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_or_stream</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auglib.Augment.from_yaml" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://audeering.github.io/audobject/api/audobject.Object.html#audobject.Object" title="(in audobject)"><code class="xref py py-class docutils literal notranslate"><span class="pre">audobject.core.object.Object</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="from-yaml-s">
+<h2>from_yaml_s()<a class="headerlink" href="#from-yaml-s" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="auglib.Augment.from_yaml_s">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">from_yaml_s</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">yaml_string</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auglib.Augment.from_yaml_s" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://audeering.github.io/audobject/api/audobject.Object.html#audobject.Object" title="(in audobject)"><code class="xref py py-class docutils literal notranslate"><span class="pre">audobject.core.object.Object</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="id2">
+<h2>hidden_arguments<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auglib.Augment.hidden_arguments">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">hidden_arguments</span></span><a class="headerlink" href="#auglib.Augment.hidden_arguments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns hidden arguments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>List with names of hidden arguments.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="hop-dur">
+<h2>hop_dur<a class="headerlink" href="#hop-dur" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auglib.Augment.hop_dur">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">hop_dur</span></span><a class="headerlink" href="#auglib.Augment.hop_dur" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hop duration.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="id">
+<h2>id<a class="headerlink" href="#id" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auglib.Augment.id">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#auglib.Augment.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Object identifier.</p>
+<p>The ID of an object ID is created from its non-hidden arguments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>object identifier</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Foo</span><span class="p">(</span><span class="n">Object</span><span class="p">):</span>
+<span class="gp">... </span>   <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bar</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="gp">... </span>       <span class="bp">self</span><span class="o">.</span><span class="n">bar</span> <span class="o">=</span> <span class="n">bar</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo1</span> <span class="o">=</span> <span class="n">Foo</span><span class="p">(</span><span class="s1">&#39;I am unique!&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo1</span><span class="o">.</span><span class="n">id</span>
+<span class="go">&#39;893df240-babe-d796-cdf1-c436171b7a96&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo2</span> <span class="o">=</span> <span class="n">Foo</span><span class="p">(</span><span class="s1">&#39;I am different!&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo2</span><span class="o">.</span><span class="n">id</span>
+<span class="go">&#39;9303f2a5-bfc9-e5ff-0ffa-a9846e2d2190&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo3</span> <span class="o">=</span> <span class="n">Foo</span><span class="p">(</span><span class="s1">&#39;I am unique!&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo1</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">foo3</span><span class="o">.</span><span class="n">id</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="is-loaded-from-dict">
+<h2>is_loaded_from_dict<a class="headerlink" href="#is-loaded-from-dict" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auglib.Augment.is_loaded_from_dict">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">is_loaded_from_dict</span></span><a class="headerlink" href="#auglib.Augment.is_loaded_from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if object was loaded from a dictionary.</p>
+<p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code>
+if object was initialized
+from a dictionary,
+e.g. after loading it from a YAML file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">True</span></code> if object was loaded from a dictionary,</dt><dd><p>otherwise <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="keep-nat">
+<h2>keep_nat<a class="headerlink" href="#keep-nat" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auglib.Augment.keep_nat">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">keep_nat</span></span><a class="headerlink" href="#auglib.Augment.keep_nat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Keep NaT in results.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="max-signal-dur">
+<h2>max_signal_dur<a class="headerlink" href="#max-signal-dur" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auglib.Augment.max_signal_dur">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">max_signal_dur</span></span><a class="headerlink" href="#auglib.Augment.max_signal_dur" title="Permalink to this definition">¶</a></dt>
+<dd><p>Maximum signal length.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="min-signal-dur">
+<h2>min_signal_dur<a class="headerlink" href="#min-signal-dur" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auglib.Augment.min_signal_dur">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">min_signal_dur</span></span><a class="headerlink" href="#auglib.Augment.min_signal_dur" title="Permalink to this definition">¶</a></dt>
+<dd><p>Minimum signal length.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="mixdown">
+<h2>mixdown<a class="headerlink" href="#mixdown" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auglib.Augment.mixdown">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">mixdown</span></span><a class="headerlink" href="#auglib.Augment.mixdown" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mono mixdown.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="multiprocessing">
+<h2>multiprocessing<a class="headerlink" href="#multiprocessing" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auglib.Augment.multiprocessing">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">multiprocessing</span></span><a class="headerlink" href="#auglib.Augment.multiprocessing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use multiprocessing.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="num-workers">
+<h2>num_workers<a class="headerlink" href="#num-workers" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auglib.Augment.num_workers">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">num_workers</span></span><a class="headerlink" href="#auglib.Augment.num_workers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of workers.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="process-file">
+<h2>process_file()<a class="headerlink" href="#process-file" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="auglib.Augment.process_file">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">process_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auglib.Augment.process_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process the content of an audio file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – file path</p></li>
+<li><p><strong>start</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timedelta.html#pandas.Timedelta" title="(in pandas v2.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas._libs.tslibs.timedeltas.Timedelta</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]) – start processing at this position.
+If value is a float or integer it is treated as seconds.
+See <code class="xref py py-func docutils literal notranslate"><span class="pre">audinterface.utils.to_timedelta()</span></code> for further options</p></li>
+<li><p><strong>end</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timedelta.html#pandas.Timedelta" title="(in pandas v2.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas._libs.tslibs.timedeltas.Timedelta</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]) – end processing at this position.
+If value is a float or integer it is treated as seconds.
+See <code class="xref py py-func docutils literal notranslate"><span class="pre">audinterface.utils.to_timedelta()</span></code> for further options</p></li>
+<li><p><strong>root</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – root folder to expand relative file path</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.core.series.Series</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Series with processed file conform to <a class="reference external" href="https://audeering.github.io/audformat/data-format.html">audformat</a></p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if sampling rates do not match</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if channel selection is invalid</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="process-files">
+<h2>process_files()<a class="headerlink" href="#process-files" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="auglib.Augment.process_files">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">process_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">files</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">starts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ends</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auglib.Augment.process_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process a list of files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>files</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.Sequence</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – list of file paths</p></li>
+<li><p><strong>starts</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timedelta.html#pandas.Timedelta" title="(in pandas v2.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas._libs.tslibs.timedeltas.Timedelta</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.Sequence</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timedelta.html#pandas.Timedelta" title="(in pandas v2.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas._libs.tslibs.timedeltas.Timedelta</span></code></a>]], <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]) – segment start positions.
+Time values given as float or integers are treated as seconds.
+See <code class="xref py py-func docutils literal notranslate"><span class="pre">audinterface.utils.to_timedelta()</span></code>
+for further options.
+If a scalar is given, it is applied to all files</p></li>
+<li><p><strong>ends</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timedelta.html#pandas.Timedelta" title="(in pandas v2.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas._libs.tslibs.timedeltas.Timedelta</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.Sequence</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timedelta.html#pandas.Timedelta" title="(in pandas v2.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas._libs.tslibs.timedeltas.Timedelta</span></code></a>]], <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]) – segment end positions.
+Time values given as float or integers are treated as seconds.
+See <code class="xref py py-func docutils literal notranslate"><span class="pre">audinterface.utils.to_timedelta()</span></code>
+for further options.
+If a scalar is given, it is applied to all files</p></li>
+<li><p><strong>root</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – root folder to expand relative file paths</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.core.series.Series</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Series with processed files conform to <a class="reference external" href="https://audeering.github.io/audformat/data-format.html">audformat</a></p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if sampling rates do not match</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if channel selection is invalid</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="process-folder">
+<h2>process_folder()<a class="headerlink" href="#process-folder" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="auglib.Augment.process_folder">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">process_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filetype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'wav'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auglib.Augment.process_folder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process files in a folder.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>At the moment does not scan in sub-folders!</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>root</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – root folder</p></li>
+<li><p><strong>filetype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – file extension</p></li>
+<li><p><strong>include_root</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – if <code class="docutils literal notranslate"><span class="pre">True</span></code>
+the file paths are absolute
+in the index
+of the returned result</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.core.series.Series</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Series with processed files conform to <a class="reference external" href="https://audeering.github.io/audformat/data-format.html">audformat</a></p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#FileNotFoundError" title="(in Python v3.12)"><strong>FileNotFoundError</strong></a> – if folder does not exist</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if sampling rates do not match</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if channel selection is invalid</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="process-func">
+<h2>process_func<a class="headerlink" href="#process-func" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auglib.Augment.process_func">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">process_func</span></span><a class="headerlink" href="#auglib.Augment.process_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Processing function.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="process-func-args">
+<h2>process_func_args<a class="headerlink" href="#process-func-args" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auglib.Augment.process_func_args">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">process_func_args</span></span><a class="headerlink" href="#auglib.Augment.process_func_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Additional keyword arguments to processing function.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="process-func-is-mono">
+<h2>process_func_is_mono<a class="headerlink" href="#process-func-is-mono" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auglib.Augment.process_func_is_mono">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">process_func_is_mono</span></span><a class="headerlink" href="#auglib.Augment.process_func_is_mono" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process channels individually.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="process-index">
+<h2>process_index()<a class="headerlink" href="#process-index" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="auglib.Augment.process_index">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">process_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preserve_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auglib.Augment.process_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process from an index conform to <a class="reference external" href="https://audeering.github.io/audformat/data-format.html">audformat</a>.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">cache_root</span></code> is not <code class="docutils literal notranslate"><span class="pre">None</span></code>,
+a hash value is created from the index
+using <a class="reference external" href="https://audeering.github.io/audformat/api/audformat.utils.hash.html#audformat.utils.hash" title="(in audformat vv1.1.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">audformat.utils.hash()</span></code></a> and
+the result is stored as
+<code class="docutils literal notranslate"><span class="pre">&lt;cache_root&gt;/&lt;hash&gt;.pkl</span></code>.
+When called again with the same index,
+results will be read from the cached file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>index</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Index.html#pandas.Index" title="(in pandas v2.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.core.indexes.base.Index</span></code></a>) – index with segment information</p></li>
+<li><p><strong>preserve_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – if <code class="docutils literal notranslate"><span class="pre">True</span></code>
+and <code class="xref py py-attr docutils literal notranslate"><span class="pre">audinterface.Process.segment</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code>
+the returned index
+will be of same type
+as the original one,
+otherwise always a segmented index is returned</p></li>
+<li><p><strong>root</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – root folder to expand relative file paths</p></li>
+<li><p><strong>cache_root</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – cache folder (see description)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.core.series.Series</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Series with processed segments conform to <a class="reference external" href="https://audeering.github.io/audformat/data-format.html">audformat</a></p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if sampling rates do not match</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if channel selection is invalid</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="process-signal">
+<h2>process_signal()<a class="headerlink" href="#process-signal" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="auglib.Augment.process_signal">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">process_signal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_rate</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auglib.Augment.process_signal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process audio signal and return result.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If a <code class="docutils literal notranslate"><span class="pre">file</span></code> is given, the index of the returned frame
+has levels <code class="docutils literal notranslate"><span class="pre">file</span></code>, <code class="docutils literal notranslate"><span class="pre">start</span></code> and <code class="docutils literal notranslate"><span class="pre">end</span></code>. Otherwise,
+it consists only of <code class="docutils literal notranslate"><span class="pre">start</span></code> and <code class="docutils literal notranslate"><span class="pre">end</span></code>.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>signal</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a>) – signal values</p></li>
+<li><p><strong>sampling_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – sampling rate in Hz</p></li>
+<li><p><strong>file</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – file path</p></li>
+<li><p><strong>start</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timedelta.html#pandas.Timedelta" title="(in pandas v2.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas._libs.tslibs.timedeltas.Timedelta</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]) – start processing at this position.
+If value is a float or integer it is treated as seconds.
+See <code class="xref py py-func docutils literal notranslate"><span class="pre">audinterface.utils.to_timedelta()</span></code> for further options</p></li>
+<li><p><strong>end</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timedelta.html#pandas.Timedelta" title="(in pandas v2.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas._libs.tslibs.timedeltas.Timedelta</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]) – end processing at this position.
+If value is a float or integer it is treated as seconds.
+See <code class="xref py py-func docutils literal notranslate"><span class="pre">audinterface.utils.to_timedelta()</span></code> for further options</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.core.series.Series</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Series with processed signal conform to <a class="reference external" href="https://audeering.github.io/audformat/data-format.html">audformat</a></p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if sampling rates do not match</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if channel selection is invalid</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="process-signal-from-index">
+<h2>process_signal_from_index()<a class="headerlink" href="#process-signal-from-index" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="auglib.Augment.process_signal_from_index">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">process_signal_from_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auglib.Augment.process_signal_from_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split a signal into segments and process each segment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>signal</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a>) – signal values</p></li>
+<li><p><strong>sampling_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – sampling rate in Hz</p></li>
+<li><p><strong>index</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Index.html#pandas.Index" title="(in pandas v2.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.core.indexes.base.Index</span></code></a>) – a segmented index conform to <a class="reference external" href="https://audeering.github.io/audformat/data-format.html">audformat</a>
+or a <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.MultiIndex.html#pandas.MultiIndex" title="(in pandas v2.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.MultiIndex</span></code></a> with two levels
+named <cite>start</cite> and <cite>end</cite> that hold start and end
+positions as <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timedelta.html#pandas.Timedelta" title="(in pandas v2.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timedelta</span></code></a> objects.
+See also <code class="xref py py-func docutils literal notranslate"><span class="pre">audinterface.utils.signal_index()</span></code></p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.core.series.Series</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Series with processed segments conform to <a class="reference external" href="https://audeering.github.io/audformat/data-format.html">audformat</a></p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if sampling rates do not match</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if channel selection is invalid</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – if index contains duplicates</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="resample">
+<h2>resample<a class="headerlink" href="#resample" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auglib.Augment.resample">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">resample</span></span><a class="headerlink" href="#auglib.Augment.resample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resample signal.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="resolvers">
+<h2>resolvers<a class="headerlink" href="#resolvers" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auglib.Augment.resolvers">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">resolvers</span></span><a class="headerlink" href="#auglib.Augment.resolvers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return resolvers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Dictionary with resolvers.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="sampling-rate">
+<h2>sampling_rate<a class="headerlink" href="#sampling-rate" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auglib.Augment.sampling_rate">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">sampling_rate</span></span><a class="headerlink" href="#auglib.Augment.sampling_rate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sampling rate in Hz.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="seed">
+<h2>seed<a class="headerlink" href="#seed" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auglib.Augment.seed">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">seed</span></span><a class="headerlink" href="#auglib.Augment.seed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Random seed to initialize the random number generator.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="segment">
+<h2>segment<a class="headerlink" href="#segment" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auglib.Augment.segment">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">segment</span></span><a class="headerlink" href="#auglib.Augment.segment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Segmentation object.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="short-id">
+<h2>short_id<a class="headerlink" href="#short-id" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auglib.Augment.short_id">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">short_id</span></span><a class="headerlink" href="#auglib.Augment.short_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Short flavor ID.</p>
+<p>This just truncates the ID
+to its last eight characters.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="to-dict">
+<h2>to_dict()<a class="headerlink" href="#to-dict" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="auglib.Augment.to_dict">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flatten</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auglib.Augment.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts object to a dictionary.</p>
+<p>Includes items from <a class="reference external" href="https://audeering.github.io/audobject/api/audobject.Object.html#audobject.Object.arguments" title="(in audobject)"><code class="xref py py-attr docutils literal notranslate"><span class="pre">audobject.Object.arguments</span></code></a>.
+If an argument has a resolver, its value is encoded.
+Usually, the object can be re-instantiated using
+<a class="reference external" href="https://audeering.github.io/audobject/api/audobject.Object.html#audobject.Object.from_dict" title="(in audobject)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">audobject.Object.from_dict()</span></code></a>.
+However, if <code class="docutils literal notranslate"><span class="pre">flatten=True</span></code>, this is not possible.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>include_version</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – add version to class name</p></li>
+<li><p><strong>flatten</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – flatten the dictionary</p></li>
+<li><p><strong>root</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – if file is written to disk, set to target directory</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">datetime.datetime</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dictionary that represent the object</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">audobject.testing</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">o</span> <span class="o">=</span> <span class="n">audobject</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">TestObject</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="n">point</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">o</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">include_version</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="go">{&#39;$audobject.core.testing.TestObject&#39;: {&#39;name&#39;: &#39;test&#39;, &#39;point&#39;: [1, 1]}}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">o</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">flatten</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">{&#39;name&#39;: &#39;test&#39;, &#39;point.0&#39;: 1, &#39;point.1&#39;: 1}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="to-yaml">
+<h2>to_yaml()<a class="headerlink" href="#to-yaml" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="auglib.Augment.to_yaml">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">to_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_or_stream</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auglib.Augment.to_yaml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save object to YAML file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path_or_stream</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">typing.Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.IO" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">typing.IO</span></code></a>]) – file path or stream</p></li>
+<li><p><strong>include_version</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – add version to class name</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="to-yaml-s">
+<h2>to_yaml_s()<a class="headerlink" href="#to-yaml-s" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="auglib.Augment.to_yaml_s">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">to_yaml_s</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auglib.Augment.to_yaml_s" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert object to YAML string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>include_version</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – add version to class name</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>YAML string</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">audobject.testing</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">o</span> <span class="o">=</span> <span class="n">audobject</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">TestObject</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="n">point</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">to_yaml_s</span><span class="p">(</span><span class="n">include_version</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+<span class="go">$audobject.core.testing.TestObject:</span>
+<span class="go">  name: test</span>
+<span class="go">  point:</span>
+<span class="go">  - 1</span>
+<span class="go">  - 1</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="transform">
+<h2>transform<a class="headerlink" href="#transform" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auglib.Augment.transform">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">transform</span></span><a class="headerlink" href="#auglib.Augment.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>The transformation object.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="verbose">
+<h2>verbose<a class="headerlink" href="#verbose" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auglib.Augment.verbose">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">verbose</span></span><a class="headerlink" href="#auglib.Augment.verbose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show debug messages.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="win-dur">
+<h2>win_dur<a class="headerlink" href="#win-dur" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auglib.Augment.win_dur">
+<span class="sig-prename descclassname"><span class="pre">Augment.</span></span><span class="sig-name descname"><span class="pre">win_dur</span></span><a class="headerlink" href="#auglib.Augment.win_dur" title="Permalink to this definition">¶</a></dt>
+<dd><p>Window duration.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="auglib.clear_default_cache_root.html" class="btn btn-neutral float-right" title="clear_default_cache_root()" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="auglib.html" class="btn btn-neutral float-left" title="auglib" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div>
+    <p>
+        
+        
+        
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/01/26 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+        
+    </p>
+  </div>
+
+  <div role="contentinfo">
+    <p>
+        
+      &copy; 2019-2024 audEERING GmbH
+    </p>
+  </div> 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/thebelab-helper.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

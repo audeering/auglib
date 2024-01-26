@@ -1,0 +1,68 @@
+﻿NormalizeByPeak
+===============
+
+.. currentmodule:: auglib.transform
+
+.. autoclass:: NormalizeByPeak
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: NormalizeByPeak.__call__
+    
+arguments
+---------
+.. autoattribute:: NormalizeByPeak.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: NormalizeByPeak.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: NormalizeByPeak.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: NormalizeByPeak.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: NormalizeByPeak.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: NormalizeByPeak.hidden_arguments
+    
+id
+--
+.. autoattribute:: NormalizeByPeak.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: NormalizeByPeak.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: NormalizeByPeak.resolvers
+    
+short\_id
+---------
+.. autoattribute:: NormalizeByPeak.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: NormalizeByPeak.to_dict
+    
+to\_samples\(\)
+---------------
+.. automethod:: NormalizeByPeak.to_samples
+    
+to\_yaml\(\)
+------------
+.. automethod:: NormalizeByPeak.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: NormalizeByPeak.to_yaml_s
+    

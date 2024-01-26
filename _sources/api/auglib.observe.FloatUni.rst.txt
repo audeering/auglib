@@ -1,0 +1,64 @@
+﻿FloatUni
+========
+
+.. currentmodule:: auglib.observe
+
+.. autoclass:: FloatUni
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: FloatUni.__call__
+    
+arguments
+---------
+.. autoattribute:: FloatUni.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: FloatUni.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: FloatUni.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: FloatUni.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: FloatUni.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: FloatUni.hidden_arguments
+    
+id
+--
+.. autoattribute:: FloatUni.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: FloatUni.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: FloatUni.resolvers
+    
+short\_id
+---------
+.. autoattribute:: FloatUni.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: FloatUni.to_dict
+    
+to\_yaml\(\)
+------------
+.. automethod:: FloatUni.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: FloatUni.to_yaml_s
+    

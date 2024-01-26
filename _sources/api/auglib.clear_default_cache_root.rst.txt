@@ -1,0 +1,6 @@
+﻿clear\_default\_cache\_root\(\)
+===============================
+
+.. currentmodule:: auglib
+
+.. autofunction:: auglib.clear_default_cache_root

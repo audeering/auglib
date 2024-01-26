@@ -1,0 +1,64 @@
+﻿Time
+====
+
+.. currentmodule:: auglib
+
+.. autoclass:: Time
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: Time.__call__
+    
+arguments
+---------
+.. autoattribute:: Time.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: Time.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: Time.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: Time.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: Time.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: Time.hidden_arguments
+    
+id
+--
+.. autoattribute:: Time.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: Time.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: Time.resolvers
+    
+short\_id
+---------
+.. autoattribute:: Time.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: Time.to_dict
+    
+to\_yaml\(\)
+------------
+.. automethod:: Time.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: Time.to_yaml_s
+    

@@ -1,0 +1,68 @@
+﻿Fade
+====
+
+.. currentmodule:: auglib.transform
+
+.. autoclass:: Fade
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: Fade.__call__
+    
+arguments
+---------
+.. autoattribute:: Fade.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: Fade.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: Fade.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: Fade.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: Fade.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: Fade.hidden_arguments
+    
+id
+--
+.. autoattribute:: Fade.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: Fade.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: Fade.resolvers
+    
+short\_id
+---------
+.. autoattribute:: Fade.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: Fade.to_dict
+    
+to\_samples\(\)
+---------------
+.. automethod:: Fade.to_samples
+    
+to\_yaml\(\)
+------------
+.. automethod:: Fade.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: Fade.to_yaml_s
+    

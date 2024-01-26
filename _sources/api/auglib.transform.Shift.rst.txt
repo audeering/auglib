@@ -1,0 +1,68 @@
+﻿Shift
+=====
+
+.. currentmodule:: auglib.transform
+
+.. autoclass:: Shift
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: Shift.__call__
+    
+arguments
+---------
+.. autoattribute:: Shift.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: Shift.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: Shift.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: Shift.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: Shift.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: Shift.hidden_arguments
+    
+id
+--
+.. autoattribute:: Shift.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: Shift.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: Shift.resolvers
+    
+short\_id
+---------
+.. autoattribute:: Shift.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: Shift.to_dict
+    
+to\_samples\(\)
+---------------
+.. automethod:: Shift.to_samples
+    
+to\_yaml\(\)
+------------
+.. automethod:: Shift.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: Shift.to_yaml_s
+    

@@ -1,0 +1,68 @@
+﻿BabbleNoise
+===========
+
+.. currentmodule:: auglib.transform
+
+.. autoclass:: BabbleNoise
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: BabbleNoise.__call__
+    
+arguments
+---------
+.. autoattribute:: BabbleNoise.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: BabbleNoise.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: BabbleNoise.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: BabbleNoise.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: BabbleNoise.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: BabbleNoise.hidden_arguments
+    
+id
+--
+.. autoattribute:: BabbleNoise.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: BabbleNoise.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: BabbleNoise.resolvers
+    
+short\_id
+---------
+.. autoattribute:: BabbleNoise.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: BabbleNoise.to_dict
+    
+to\_samples\(\)
+---------------
+.. automethod:: BabbleNoise.to_samples
+    
+to\_yaml\(\)
+------------
+.. automethod:: BabbleNoise.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: BabbleNoise.to_yaml_s
+    

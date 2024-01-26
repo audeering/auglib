@@ -1,0 +1,64 @@
+﻿Base
+====
+
+.. currentmodule:: auglib.observe
+
+.. autoclass:: Base
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: Base.__call__
+    
+arguments
+---------
+.. autoattribute:: Base.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: Base.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: Base.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: Base.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: Base.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: Base.hidden_arguments
+    
+id
+--
+.. autoattribute:: Base.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: Base.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: Base.resolvers
+    
+short\_id
+---------
+.. autoattribute:: Base.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: Base.to_dict
+    
+to\_yaml\(\)
+------------
+.. automethod:: Base.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: Base.to_yaml_s
+    

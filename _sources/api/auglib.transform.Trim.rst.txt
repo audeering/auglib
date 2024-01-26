@@ -1,0 +1,68 @@
+﻿Trim
+====
+
+.. currentmodule:: auglib.transform
+
+.. autoclass:: Trim
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: Trim.__call__
+    
+arguments
+---------
+.. autoattribute:: Trim.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: Trim.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: Trim.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: Trim.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: Trim.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: Trim.hidden_arguments
+    
+id
+--
+.. autoattribute:: Trim.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: Trim.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: Trim.resolvers
+    
+short\_id
+---------
+.. autoattribute:: Trim.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: Trim.to_dict
+    
+to\_samples\(\)
+---------------
+.. automethod:: Trim.to_samples
+    
+to\_yaml\(\)
+------------
+.. automethod:: Trim.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: Trim.to_yaml_s
+    

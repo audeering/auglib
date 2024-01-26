@@ -1,0 +1,68 @@
+﻿GainStage
+=========
+
+.. currentmodule:: auglib.transform
+
+.. autoclass:: GainStage
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: GainStage.__call__
+    
+arguments
+---------
+.. autoattribute:: GainStage.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: GainStage.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: GainStage.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: GainStage.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: GainStage.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: GainStage.hidden_arguments
+    
+id
+--
+.. autoattribute:: GainStage.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: GainStage.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: GainStage.resolvers
+    
+short\_id
+---------
+.. autoattribute:: GainStage.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: GainStage.to_dict
+    
+to\_samples\(\)
+---------------
+.. automethod:: GainStage.to_samples
+    
+to\_yaml\(\)
+------------
+.. automethod:: GainStage.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: GainStage.to_yaml_s
+    

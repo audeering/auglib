@@ -1,0 +1,68 @@
+﻿Select
+======
+
+.. currentmodule:: auglib.transform
+
+.. autoclass:: Select
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: Select.__call__
+    
+arguments
+---------
+.. autoattribute:: Select.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: Select.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: Select.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: Select.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: Select.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: Select.hidden_arguments
+    
+id
+--
+.. autoattribute:: Select.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: Select.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: Select.resolvers
+    
+short\_id
+---------
+.. autoattribute:: Select.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: Select.to_dict
+    
+to\_samples\(\)
+---------------
+.. automethod:: Select.to_samples
+    
+to\_yaml\(\)
+------------
+.. automethod:: Select.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: Select.to_yaml_s
+    

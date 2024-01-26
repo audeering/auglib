@@ -1,0 +1,68 @@
+﻿LowPass
+=======
+
+.. currentmodule:: auglib.transform
+
+.. autoclass:: LowPass
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: LowPass.__call__
+    
+arguments
+---------
+.. autoattribute:: LowPass.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: LowPass.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: LowPass.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: LowPass.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: LowPass.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: LowPass.hidden_arguments
+    
+id
+--
+.. autoattribute:: LowPass.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: LowPass.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: LowPass.resolvers
+    
+short\_id
+---------
+.. autoattribute:: LowPass.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: LowPass.to_dict
+    
+to\_samples\(\)
+---------------
+.. automethod:: LowPass.to_samples
+    
+to\_yaml\(\)
+------------
+.. automethod:: LowPass.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: LowPass.to_yaml_s
+    

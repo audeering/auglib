@@ -1,0 +1,68 @@
+﻿PinkNoise
+=========
+
+.. currentmodule:: auglib.transform
+
+.. autoclass:: PinkNoise
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: PinkNoise.__call__
+    
+arguments
+---------
+.. autoattribute:: PinkNoise.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: PinkNoise.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: PinkNoise.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: PinkNoise.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: PinkNoise.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: PinkNoise.hidden_arguments
+    
+id
+--
+.. autoattribute:: PinkNoise.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: PinkNoise.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: PinkNoise.resolvers
+    
+short\_id
+---------
+.. autoattribute:: PinkNoise.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: PinkNoise.to_dict
+    
+to\_samples\(\)
+---------------
+.. automethod:: PinkNoise.to_samples
+    
+to\_yaml\(\)
+------------
+.. automethod:: PinkNoise.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: PinkNoise.to_yaml_s
+    

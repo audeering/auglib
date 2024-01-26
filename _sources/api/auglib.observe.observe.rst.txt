@@ -1,0 +1,6 @@
+﻿observe\(\)
+===========
+
+.. currentmodule:: auglib.observe
+
+.. autofunction:: auglib.observe.observe

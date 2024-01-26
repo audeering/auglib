@@ -1,0 +1,64 @@
+﻿Bool
+====
+
+.. currentmodule:: auglib.observe
+
+.. autoclass:: Bool
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: Bool.__call__
+    
+arguments
+---------
+.. autoattribute:: Bool.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: Bool.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: Bool.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: Bool.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: Bool.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: Bool.hidden_arguments
+    
+id
+--
+.. autoattribute:: Bool.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: Bool.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: Bool.resolvers
+    
+short\_id
+---------
+.. autoattribute:: Bool.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: Bool.to_dict
+    
+to\_yaml\(\)
+------------
+.. automethod:: Bool.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: Bool.to_yaml_s
+    

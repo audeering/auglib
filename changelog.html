@@ -1,0 +1,796 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Changelog &mdash; Documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/favicon.png"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/audeering.css" type="text/css" />
+  <link rel="stylesheet" href="_static/jupyter-sphinx.css" type="text/css" />
+  <link rel="stylesheet" href="_static/thebelab.css" type="text/css" />
+  <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="_static/plot_directive.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Contributing" href="contributing.html" />
+    
+  
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          <a href="index.html">
+          
+            <img src="_static/images/audeering.png" class="logo" alt="audEERING"/>
+          
+          
+            <span> auglib</span>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v1.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external.html">External Solutions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/auglib.html">auglib</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/auglib.observe.html">auglib.observe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/auglib.transform.html">auglib.transform</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/auglib.utils.html">auglib.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#version-1-0-0-2024-01-26">Version 1.0.0 (2024-01-26)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-12-2-2023-07-31">Version 0.12.2 (2023-07-31)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-12-1-2023-07-27">Version 0.12.1 (2023-07-27)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-12-0-2023-04-12">Version 0.12.0 (2023-04-12)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-11-2-2022-12-08">Version 0.11.2 (2022-12-08)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-11-1-2022-10-17">Version 0.11.1 (2022-10-17)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-11-0-2022-10-13">Version 0.11.0 (2022-10-13)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-10-5-2022-06-15">Version 0.10.5 (2022-06-15)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-10-4-2022-01-26">Version 0.10.4 (2022-01-26)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-10-3-2022-01-21">Version 0.10.3 (2022-01-21)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-10-2-2022-01-21">Version 0.10.2 (2022-01-21)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-10-1-2021-12-30">Version 0.10.1 (2021-12-30)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-10-0-2021-11-17">Version 0.10.0 (2021-11-17)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-9-0-2021-10-25">Version 0.9.0 (2021-10-25)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-8-4-2021-08-04">Version 0.8.4 (2021-08-04)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-8-3-2021-07-20">Version 0.8.3 (2021-07-20)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-8-2-2020-12-04">Version 0.8.2 (2020-12-04)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-8-1-2020-11-17">Version 0.8.1 (2020-11-17)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-8-0-2020-10-29">Version 0.8.0 (2020-10-29)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-7-1-2020-10-23">Version 0.7.1 (2020-10-23)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-7-0-2020-10-09">Version 0.7.0 (2020-10-09)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-6-3-2020-10-09">Version 0.6.3 (2020-10-09)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-6-2-2020-10-08">Version 0.6.2 (2020-10-08)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-6-1-2020-10-08">Version 0.6.1 (2020-10-08)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-6-0-2020-09-29">Version 0.6.0 (2020-09-29)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-5-3-2020-09-29">Version 0.5.3 (2020-09-29)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-5-2-2020-08-31">Version 0.5.2 (2020-08-31)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-5-1-2020-07-16">Version 0.5.1 (2020-07-16)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-5-0-2020-04-24">Version 0.5.0 (2020-04-24)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-4-3-2020-04-14">Version 0.4.3 (2020-04-14)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-4-1-2020-04-09">Version 0.4.1 (2020-04-09)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-4-0-2020-03-04">Version 0.4.0 (2020-03-04)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-3-8-2020-02-27">Version 0.3.8 (2020-02-27)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-3-7-2020-02-26">Version 0.3.7 (2020-02-26)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-3-5-2020-02-04">Version 0.3.5 (2020-02-04)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-3-4-2020-01-16">Version 0.3.4 (2020-01-16)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-3-3-2020-01-15">Version 0.3.3 (2020-01-15)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-3-2-2019-12-09">Version 0.3.2 (2019-12-09)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-3-1-2019-12-09">Version 0.3.1 (2019-12-09)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-3-0-2019-12-09">Version 0.3.0 (2019-12-09)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-2-3-2019-11-22">Version 0.2.3 (2019-11-22)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-2-2-2019-11-14">Version 0.2.2 (2019-11-14)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-2-1-2019-11-12">Version 0.2.1 (2019-11-12)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-2-0-2019-11-04">Version 0.2.0 (2019-11-04)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-1-5-2019-10-11">Version 0.1.5 (2019-10-11)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-1-4-2019-09-30">Version 0.1.4 (2019-09-30)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-1-3-2019-09-26">Version 0.1.3 (2019-09-26)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-1-2-2019-09-23">Version 0.1.2 (2019-09-23)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-1-1-2019-09-23">Version 0.1.1 (2019-09-23)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-1-0-2019-09-08">Version 0.1.0 (2019-09-08)</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">auglib</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Changelog</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/audeering/auglib/" class="fa fa-github"> GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="changelog">
+<h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this heading">¶</a></h1>
+<p>All notable changes to this project will be documented in this file.</p>
+<p>The format is based on <a class="reference external" href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>,
+and this project adheres to <a class="reference external" href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<div class="section" id="version-1-0-0-2024-01-26">
+<h2>Version 1.0.0 (2024-01-26)<a class="headerlink" href="#version-1-0-0-2024-01-26" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: public release</p></li>
+<li><p>Added: support for MacOS</p></li>
+<li><p>Added: support for Windows</p></li>
+<li><p>Added: audio examples and figures
+to the docstrings
+of all transforms</p></li>
+<li><p>Added: depend on <code class="docutils literal notranslate"><span class="pre">scipy</span></code></p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">sampling_rate</span></code> as argument
+to <code class="docutils literal notranslate"><span class="pre">__call__()</span></code> of transforms
+that require a sampling rate</p></li>
+<li><p>Added: support for Python 3.9, 3.10 and 3.11</p></li>
+<li><p>Changed: <code class="docutils literal notranslate"><span class="pre">auglib.Augment.augment()</span></code>
+now stores augmented segments
+as single files in cache</p></li>
+<li><p>Changed: <code class="docutils literal notranslate"><span class="pre">auglib.Augment.augment()</span></code>
+now uses <code class="docutils literal notranslate"><span class="pre">allow_nat=True</span></code>
+when calculating the hash of an index,
+which is used to store/find augmented files
+in cache</p></li>
+<li><p>Changed: depend on <code class="docutils literal notranslate"><span class="pre">audeer&gt;=2.0.0</span></code></p></li>
+<li><p>Changed: convert code base to pure Python</p></li>
+<li><p>Changed: switch to MIT License</p></li>
+<li><p>Fixed: support overlapping segments</p></li>
+<li><p>Fixed: ensure the <code class="docutils literal notranslate"><span class="pre">duration</span></code> argument
+of <code class="docutils literal notranslate"><span class="pre">auglib.transform.AppendValue</span></code>
+and <code class="docutils literal notranslate"><span class="pre">auglib.transform.PrependValue</span></code>
+is first observed
+when calling the transform</p></li>
+<li><p>Removed: <code class="docutils literal notranslate"><span class="pre">sounddevice</span></code> dependency</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-12-2-2023-07-31">
+<h2>Version 0.12.2 (2023-07-31)<a class="headerlink" href="#version-0-12-2-2023-07-31" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fixed: changes to the correction
+of <code class="docutils literal notranslate"><span class="pre">start</span></code> and <code class="docutils literal notranslate"><span class="pre">end</span></code>
+in <code class="docutils literal notranslate"><span class="pre">auglib.Augment.augment()</span></code>
+as introduced in <code class="docutils literal notranslate"><span class="pre">auglib</span></code> v0.12.1</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-12-1-2023-07-27">
+<h2>Version 0.12.1 (2023-07-27)<a class="headerlink" href="#version-0-12-1-2023-07-27" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Changed: require <code class="docutils literal notranslate"><span class="pre">audmath</span> <span class="pre">&gt;=1.3.0</span></code></p></li>
+<li><p>Changed: require <code class="docutils literal notranslate"><span class="pre">audinterface</span> <span class="pre">&gt;=1.0.4</span></code></p></li>
+<li><p>Changed: use <code class="docutils literal notranslate"><span class="pre">audmath.samples()</span></code>
+to convert from duration to samples</p></li>
+<li><p>Fixed: add missing “Returns” section
+to documentation of <code class="docutils literal notranslate"><span class="pre">auglib.AudioBuffer.from_array()</span></code></p></li>
+</ul>
+</div>
+<div class="section" id="version-0-12-0-2023-04-12">
+<h2>Version 0.12.0 (2023-04-12)<a class="headerlink" href="#version-0-12-0-2023-04-12" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">auglib.transform.Fade</span></code></p></li>
+<li><p>Changed: use version 2.0.3 of the <code class="docutils literal notranslate"><span class="pre">auglib</span></code> C++ library</p></li>
+<li><p>Changed: split API documentation into sub-pages
+for each function/class</p></li>
+<li><p>Changed: if <code class="docutils literal notranslate"><span class="pre">loop_aux</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>
+in <code class="docutils literal notranslate"><span class="pre">auglib.transform.Mix</span></code>
+the <code class="docutils literal notranslate"><span class="pre">aux</span></code> buffer is now first looped
+before <code class="docutils literal notranslate"><span class="pre">read_pos_aux</span></code>
+and <code class="docutils literal notranslate"><span class="pre">read_dur_aux</span></code>
+are applied</p></li>
+<li><p>Fixed: <code class="docutils literal notranslate"><span class="pre">gain_base_db</span></code>
+in <code class="docutils literal notranslate"><span class="pre">auglib.transform.Mix</span></code>
+was not applied
+to all samples of the <code class="docutils literal notranslate"><span class="pre">base</span></code> buffer
+starting at the length of the <code class="docutils literal notranslate"><span class="pre">aux</span></code> buffer
+and ending at <code class="docutils literal notranslate"><span class="pre">read_dur_aux</span></code></p></li>
+</ul>
+</div>
+<div class="section" id="version-0-11-2-2022-12-08">
+<h2>Version 0.11.2 (2022-12-08)<a class="headerlink" href="#version-0-11-2-2022-12-08" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Changed: require <code class="docutils literal notranslate"><span class="pre">audobject</span> <span class="pre">&gt;=0.7.6</span></code></p></li>
+<li><p>Fixed: missing <code class="docutils literal notranslate"><span class="pre">unit</span></code> attribute
+in <code class="docutils literal notranslate"><span class="pre">auglib.transform.BabbleNoise</span></code></p></li>
+</ul>
+</div>
+<div class="section" id="version-0-11-1-2022-10-17">
+<h2>Version 0.11.1 (2022-10-17)<a class="headerlink" href="#version-0-11-1-2022-10-17" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fixed: <code class="docutils literal notranslate"><span class="pre">preserve_level</span></code> argument was missing for
+<code class="docutils literal notranslate"><span class="pre">auglib.transform.BabbleNoise</span></code>
+and <code class="docutils literal notranslate"><span class="pre">auglib.transform.PrependValue</span></code></p></li>
+</ul>
+</div>
+<div class="section" id="version-0-11-0-2022-10-13">
+<h2>Version 0.11.0 (2022-10-13)<a class="headerlink" href="#version-0-11-0-2022-10-13" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">auglib.transform.BabbleNoise</span></code></p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">auglib.transform.Prepend</span></code></p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">auglib.transform.PrependValue</span></code></p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">auglib.transform.Resample</span></code></p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">auglib.transform.Shift</span></code></p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">snr_db</span></code> argument to
+<code class="docutils literal notranslate"><span class="pre">auglib.transform.Mix</span></code>
+<code class="docutils literal notranslate"><span class="pre">auglib.transform.PinkNoise</span></code>,
+<code class="docutils literal notranslate"><span class="pre">auglib.transform.Tone</span></code>,
+<code class="docutils literal notranslate"><span class="pre">auglib.transform.WhiteNoiseGaussian</span></code>,
+<code class="docutils literal notranslate"><span class="pre">auglib.transform.WhiteNoiseUniform</span></code>
+to specify the signal-to-noise ratio
+between the incoming
+and added signal</p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">end_pos</span></code> and <code class="docutils literal notranslate"><span class="pre">fill_pos</span></code> to
+<code class="docutils literal notranslate"><span class="pre">auglib.transform.Trim</span></code>
+to allow any kind of cropping,
+zero padding,
+and signal repetition</p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">preserve_level</span></code> argument
+to all transforms.
+If <code class="docutils literal notranslate"><span class="pre">True</span></code> it ensures
+that the transformed signal
+has the same root-mean-square value
+as the incoming signal</p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">auglib.AudioBuffer.rms()</span></code>
+and <code class="docutils literal notranslate"><span class="pre">auglib.AudioBuffer.rms_db()</span></code></p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">sampling_rate</span></code> argument to
+<code class="docutils literal notranslate"><span class="pre">auglib.AudioBuffer.write()</span></code></p></li>
+<li><p>Added: <em>Noise with fixed SNR</em> example
+in the documentation</p></li>
+<li><p>Added: <em>Band-Pass Filtered Noise</em> example
+in the documentation</p></li>
+<li><p>Changed: allow a transform object as input
+for the <code class="docutils literal notranslate"><span class="pre">aux</span></code> argument
+in transforms that have this argument</p></li>
+<li><p>Changed: <code class="docutils literal notranslate"><span class="pre">auglib.transform.Trim</span></code>
+no longer supports providing a <code class="docutils literal notranslate"><span class="pre">start_pos</span></code>
+that is larger than the buffer length</p></li>
+<li><p>Changed: <code class="docutils literal notranslate"><span class="pre">auglib.transform.Trim</span></code>
+with argument <code class="docutils literal notranslate"><span class="pre">fill=&quot;loop&quot;</span></code>
+no longer loops the whole input signal,
+but only the trimmed version
+specified by <code class="docutils literal notranslate"><span class="pre">start_pos</span></code>
+and/or <code class="docutils literal notranslate"><span class="pre">end_pos</span></code>.
+For cycling through a signal
+use <code class="docutils literal notranslate"><span class="pre">auglib.transform.Shift</span></code> instead</p></li>
+<li><p>Changed: raise <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>
+if <code class="docutils literal notranslate"><span class="pre">sampling_rate</span></code> argument
+is not greater than zero or not an integer</p></li>
+<li><p>Changed: serializing a transform
+that contains a buffer as <code class="docutils literal notranslate"><span class="pre">aux</span></code> argument
+will raise a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code></p></li>
+<li><p>Changed: when applied to an input signal
+<code class="docutils literal notranslate"><span class="pre">auglib.transform.Function</span></code>
+raises a <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code>
+if it would result in an empty augmented signal</p></li>
+<li><p>Changed: depend on <code class="docutils literal notranslate"><span class="pre">audformat&gt;=0.15.2</span></code></p></li>
+<li><p>Fixed: <code class="docutils literal notranslate"><span class="pre">read_dur_aux</span></code>
+in <code class="docutils literal notranslate"><span class="pre">auglib.transform.Append</span></code>
+does now allow to be <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+</ul>
+</div>
+<div class="section" id="version-0-10-5-2022-06-15">
+<h2>Version 0.10.5 (2022-06-15)<a class="headerlink" href="#version-0-10-5-2022-06-15" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: pitch shift example</p></li>
+<li><p>Added: constant pitch examples</p></li>
+<li><p>Fixed: correct examples for <code class="docutils literal notranslate"><span class="pre">pedalboard&gt;=0.4.0</span></code></p></li>
+</ul>
+</div>
+<div class="section" id="version-0-10-4-2022-01-26">
+<h2>Version 0.10.4 (2022-01-26)<a class="headerlink" href="#version-0-10-4-2022-01-26" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Changed: depend on <code class="docutils literal notranslate"><span class="pre">audformat&gt;=0.13.0</span></code></p></li>
+<li><p>Fixed: do not sort augmented index</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-10-3-2022-01-21">
+<h2>Version 0.10.3 (2022-01-21)<a class="headerlink" href="#version-0-10-3-2022-01-21" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fixed: Ci job for Python package publication</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-10-2-2022-01-21">
+<h2>Version 0.10.2 (2022-01-21)<a class="headerlink" href="#version-0-10-2-2022-01-21" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Changed: use <code class="docutils literal notranslate"><span class="pre">audinterface&gt;=0.8.0</span></code></p></li>
+</ul>
+</div>
+<div class="section" id="version-0-10-1-2021-12-30">
+<h2>Version 0.10.1 (2021-12-30)<a class="headerlink" href="#version-0-10-1-2021-12-30" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Changed: use Python 3.8 as default Python version</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-10-0-2021-11-17">
+<h2>Version 0.10.0 (2021-11-17)<a class="headerlink" href="#version-0-10-0-2021-11-17" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Changed: <code class="docutils literal notranslate"><span class="pre">Augment.augment()</span></code> caches augmented index</p></li>
+<li><p>Fixed: <code class="docutils literal notranslate"><span class="pre">Augment.augment()</span></code> supports transforms that change the segment length</p></li>
+<li><p>Fixed: <code class="docutils literal notranslate"><span class="pre">Augment.augment()</span></code> supports index with relative file names</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-9-0-2021-10-25">
+<h2>Version 0.9.0 (2021-10-25)<a class="headerlink" href="#version-0-9-0-2021-10-25" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">auglib.transform.Function</span></code></p></li>
+<li><p>Added: Examples section to Getting Started part of the documentation</p></li>
+<li><p>Added: External Solutions section
+to Getting Started part of the documentation</p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">auglib.observe.Base</span></code></p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">auglib.observe.Bool</span></code></p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">auglib.observe.FloatNorm</span></code></p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">auglib.observe.FloatUni</span></code></p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">auglib.observe.IntUni</span></code></p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">auglib.observe.List</span></code></p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">auglib.observe.observe</span></code></p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">num_repeat</span></code> argument to <code class="docutils literal notranslate"><span class="pre">auglib.transform.Mix</span></code></p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">auglib.seed()</span></code></p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">auglib.transform.Base</span></code></p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">auglib.Time</span></code></p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">fill</span></code> argument to <code class="docutils literal notranslate"><span class="pre">auglib.transform.Trim</span></code></p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">auglib.transform.Mask</span></code></p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">seed</span></code> argument to <code class="docutils literal notranslate"><span class="pre">auglib.Augment</span></code></p></li>
+<li><p>Added: documentation on how to implement a transform
+under <code class="docutils literal notranslate"><span class="pre">auglib.transform</span></code></p></li>
+<li><p>Added: documentation on how to implement an observable
+under <code class="docutils literal notranslate"><span class="pre">auglib.observe</span></code></p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">auglib.AudioBuffer.duration</span></code></p></li>
+<li><p>Added: multi-channel support for <code class="docutils literal notranslate"><span class="pre">auglib.Augment</span></code></p></li>
+<li><p>Changed: <code class="docutils literal notranslate"><span class="pre">auglib.AudioBuffer.to_array()</span></code> returns 2d array</p></li>
+<li><p>Changed: hide <code class="docutils literal notranslate"><span class="pre">AudioBuffer.data</span></code> and <code class="docutils literal notranslate"><span class="pre">AudioBuffer.obj</span></code></p></li>
+<li><p>Changed: make <code class="docutils literal notranslate"><span class="pre">sampling_rate</span></code> a keyword argument
+in <code class="docutils literal notranslate"><span class="pre">auglib.utils.to_samples()</span></code></p></li>
+<li><p>Changed: increase code coverage to 100%</p></li>
+<li><p>Changed: use short ID for flavor folders in cache</p></li>
+<li><p>Deprecated: <code class="docutils literal notranslate"><span class="pre">auglib.Int</span></code></p></li>
+<li><p>Deprecated: <code class="docutils literal notranslate"><span class="pre">auglib.IntList</span></code></p></li>
+<li><p>Deprecated: <code class="docutils literal notranslate"><span class="pre">auglib.Float</span></code></p></li>
+<li><p>Deprecated: <code class="docutils literal notranslate"><span class="pre">auglib.FloatList</span></code></p></li>
+<li><p>Deprecated: <code class="docutils literal notranslate"><span class="pre">auglib.Number</span></code></p></li>
+<li><p>Deprecated: <code class="docutils literal notranslate"><span class="pre">auglib.Str</span></code></p></li>
+<li><p>Deprecated: <code class="docutils literal notranslate"><span class="pre">auglib.StrList</span></code></p></li>
+<li><p>Deprecated: <code class="docutils literal notranslate"><span class="pre">auglib.NumpyTransform</span></code></p></li>
+<li><p>Deprecated: <code class="docutils literal notranslate"><span class="pre">auglib.utils.random_seed()</span></code></p></li>
+<li><p>Deprecated: <code class="docutils literal notranslate"><span class="pre">auglib.Transform</span></code></p></li>
+<li><p>Deprecated: <code class="docutils literal notranslate"><span class="pre">auglib.Source</span></code></p></li>
+<li><p>Deprecated: <code class="docutils literal notranslate"><span class="pre">auglib.source.FromArray</span></code></p></li>
+<li><p>Deprecated: <code class="docutils literal notranslate"><span class="pre">auglib.source.Read</span></code></p></li>
+<li><p>Deprecated: <code class="docutils literal notranslate"><span class="pre">auglib.Sink</span></code></p></li>
+<li><p>Deprecated: <code class="docutils literal notranslate"><span class="pre">auglib.sink.Play</span></code></p></li>
+<li><p>Deprecated: <code class="docutils literal notranslate"><span class="pre">auglib.sink.Write</span></code></p></li>
+<li><p>Deprecated: <code class="docutils literal notranslate"><span class="pre">auglib.AudioBuffer.play()</span></code></p></li>
+<li><p>Removed: <code class="docutils literal notranslate"><span class="pre">scipy</span></code> dependency</p></li>
+<li><p>Removed: <code class="docutils literal notranslate"><span class="pre">humanfriendly</span></code> dependency</p></li>
+<li><p>Removed: <code class="docutils literal notranslate"><span class="pre">auglib.transform.FilterDesign</span></code></p></li>
+<li><p>Removed: <code class="docutils literal notranslate"><span class="pre">auglib.transform.ToneShape</span></code></p></li>
+<li><p>Removed: <code class="docutils literal notranslate"><span class="pre">auglib.ExceptionHandling</span></code></p></li>
+<li><p>Removed: <code class="docutils literal notranslate"><span class="pre">auglib.LibraryException</span></code></p></li>
+<li><p>Removed: <code class="docutils literal notranslate"><span class="pre">auglib.LibraryExceptionWarning</span></code></p></li>
+</ul>
+</div>
+<div class="section" id="version-0-8-4-2021-08-04">
+<h2>Version 0.8.4 (2021-08-04)<a class="headerlink" href="#version-0-8-4-2021-08-04" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Changed. Updated underlying binary with latest auglib updates. Main change:
+ClipByRatio transform does not raise exceptions anymore when the computed
+threshold is too low.</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-8-3-2021-07-20">
+<h2>Version 0.8.3 (2021-07-20)<a class="headerlink" href="#version-0-8-3-2021-07-20" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: set cache root with <code class="docutils literal notranslate"><span class="pre">$AUGLIB_CACHE_ROOT</span></code></p></li>
+<li><p>Changed: switched from <code class="docutils literal notranslate"><span class="pre">audata</span></code> to <code class="docutils literal notranslate"><span class="pre">audformat</span></code></p></li>
+</ul>
+</div>
+<div class="section" id="version-0-8-2-2020-12-04">
+<h2>Version 0.8.2 (2020-12-04)<a class="headerlink" href="#version-0-8-2-2020-12-04" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">channels</span></code> and <code class="docutils literal notranslate"><span class="pre">mixdown</span></code> argument to <a class="reference internal" href="api/auglib.Augment.html#auglib.Augment" title="auglib.Augment"><code class="xref py py-class docutils literal notranslate"><span class="pre">auglib.Augment</span></code></a></p></li>
+<li><p>Changed: <a class="reference internal" href="api/auglib.Augment.html#auglib.Augment" title="auglib.Augment"><code class="xref py py-class docutils literal notranslate"><span class="pre">auglib.Augment</span></code></a> derives from <a class="reference external" href="https://audeering.github.io/audobject/api/audobject.Object.html#audobject.Object" title="(in audobject)"><code class="xref py py-class docutils literal notranslate"><span class="pre">audobject.Object</span></code></a></p></li>
+<li><p>Fixed: <a class="reference internal" href="api/auglib.default_cache_root.html#auglib.default_cache_root" title="auglib.default_cache_root"><code class="xref py py-meth docutils literal notranslate"><span class="pre">auglib.default_cache_root()</span></code></a> uses <a class="reference internal" href="api/auglib.Augment.html#auglib.Augment.id" title="auglib.Augment.id"><code class="xref py py-meth docutils literal notranslate"><span class="pre">auglib.Augment.id()</span></code></a></p></li>
+<li><p>Fixed: restore progress bar in all <code class="docutils literal notranslate"><span class="pre">auglib.Augment.process_*</span></code> methods</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-8-1-2020-11-17">
+<h2>Version 0.8.1 (2020-11-17)<a class="headerlink" href="#version-0-8-1-2020-11-17" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Changed: avoid nested progress bar in <a class="reference internal" href="api/auglib.Augment.html#auglib.Augment.augment" title="auglib.Augment.augment"><code class="xref py py-meth docutils literal notranslate"><span class="pre">auglib.Augment.augment()</span></code></a></p></li>
+</ul>
+</div>
+<div class="section" id="version-0-8-0-2020-10-29">
+<h2>Version 0.8.0 (2020-10-29)<a class="headerlink" href="#version-0-8-0-2020-10-29" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: <a class="reference internal" href="api/auglib.config.html#auglib.config" title="auglib.config"><code class="xref py py-class docutils literal notranslate"><span class="pre">auglib.config</span></code></a>, <a class="reference internal" href="api/auglib.default_cache_root.html#auglib.default_cache_root" title="auglib.default_cache_root"><code class="xref py py-meth docutils literal notranslate"><span class="pre">auglib.default_cache_root()</span></code></a>, <a class="reference internal" href="api/auglib.clear_default_cache_root.html#auglib.clear_default_cache_root" title="auglib.clear_default_cache_root"><code class="xref py py-meth docutils literal notranslate"><span class="pre">auglib.clear_default_cache_root()</span></code></a></p></li>
+<li><p>Changed: <code class="docutils literal notranslate"><span class="pre">cache_root</span></code> argument of <a class="reference internal" href="api/auglib.Augment.html#auglib.Augment.augment" title="auglib.Augment.augment"><code class="xref py py-meth docutils literal notranslate"><span class="pre">auglib.Augment.augment()</span></code></a> defaults to <a class="reference internal" href="api/auglib.default_cache_root.html#auglib.default_cache_root" title="auglib.default_cache_root"><code class="xref py py-meth docutils literal notranslate"><span class="pre">auglib.default_cache_root()</span></code></a></p></li>
+</ul>
+</div>
+<div class="section" id="version-0-7-1-2020-10-23">
+<h2>Version 0.7.1 (2020-10-23)<a class="headerlink" href="#version-0-7-1-2020-10-23" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Changed: remove outdated example from README</p></li>
+<li><p>Fixed: remove unused <code class="docutils literal notranslate"><span class="pre">as_db</span></code> argument form <code class="xref py py-class docutils literal notranslate"><span class="pre">auglib.FloatUni</span></code></p></li>
+</ul>
+</div>
+<div class="section" id="version-0-7-0-2020-10-09">
+<h2>Version 0.7.0 (2020-10-09)<a class="headerlink" href="#version-0-7-0-2020-10-09" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Removed: previously deprecated <code class="xref py py-class docutils literal notranslate"><span class="pre">auglib.AudioModifier</span></code> is now removed.</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-6-3-2020-10-09">
+<h2>Version 0.6.3 (2020-10-09)<a class="headerlink" href="#version-0-6-3-2020-10-09" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Changed: Now using the <code class="docutils literal notranslate"><span class="pre">audobject</span></code> package to serialize
+<code class="xref py py-class docutils literal notranslate"><span class="pre">auglib.Transform</span></code> objects to YAML.</p></li>
+<li><p>Fixed: Safer guards against the usage of negative time values whenever
+<code class="docutils literal notranslate"><span class="pre">auglib.core.utils.to_samples</span></code> is called.</p></li>
+<li><p>Fixed: Potential bug when using <code class="xref py py-class docutils literal notranslate"><span class="pre">auglib.Transform.Trim</span></code> with a
+<code class="docutils literal notranslate"><span class="pre">duration</span></code> member greater than the actual input buffer size.</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-6-2-2020-10-08">
+<h2>Version 0.6.2 (2020-10-08)<a class="headerlink" href="#version-0-6-2-2020-10-08" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fixed: missing documentation for <code class="xref py py-class docutils literal notranslate"><span class="pre">auglib.Transform.Trim</span></code></p></li>
+</ul>
+</div>
+<div class="section" id="version-0-6-1-2020-10-08">
+<h2>Version 0.6.1 (2020-10-08)<a class="headerlink" href="#version-0-6-1-2020-10-08" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: <code class="xref py py-class docutils literal notranslate"><span class="pre">auglib.Transform.Trim</span></code>.</p></li>
+<li><p>Changed: <code class="xref py py-meth docutils literal notranslate"><span class="pre">auglib.Transform.call()</span></code> made private (changed into
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">auglib.Transform._call()</span></code>).</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-6-0-2020-09-29">
+<h2>Version 0.6.0 (2020-09-29)<a class="headerlink" href="#version-0-6-0-2020-09-29" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: <a class="reference internal" href="api/auglib.Augment.html#auglib.Augment" title="auglib.Augment"><code class="xref py py-class docutils literal notranslate"><span class="pre">auglib.Augment</span></code></a></p></li>
+<li><p>Changed: use <code class="docutils literal notranslate"><span class="pre">audeer</span></code> helper functions</p></li>
+<li><p>Changed: implement usage example with <code class="docutils literal notranslate"><span class="pre">jupyter-sphinx</span></code></p></li>
+<li><p>Changed: mark <code class="xref py py-class docutils literal notranslate"><span class="pre">auglib.AudioModifier</span></code> as deprecated</p></li>
+<li><p>Removed: tests for <code class="xref py py-class docutils literal notranslate"><span class="pre">auglib.AudioModifier</span></code></p></li>
+</ul>
+</div>
+<div class="section" id="version-0-5-3-2020-09-29">
+<h2>Version 0.5.3 (2020-09-29)<a class="headerlink" href="#version-0-5-3-2020-09-29" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: documentation on supported bit rates to <a class="reference internal" href="api/auglib.transform.AMRNB.html#auglib.transform.AMRNB" title="auglib.transform.AMRNB"><code class="xref py py-class docutils literal notranslate"><span class="pre">auglib.transform.AMRNB</span></code></a></p></li>
+<li><p>Added: link to documentation to Python package</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-5-2-2020-08-31">
+<h2>Version 0.5.2 (2020-08-31)<a class="headerlink" href="#version-0-5-2-2020-08-31" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: <a class="reference internal" href="api/auglib.transform.AMRNB.html#auglib.transform.AMRNB" title="auglib.transform.AMRNB"><code class="xref py py-class docutils literal notranslate"><span class="pre">auglib.transform.AMRNB</span></code></a></p></li>
+</ul>
+</div>
+<div class="section" id="version-0-5-1-2020-07-16">
+<h2>Version 0.5.1 (2020-07-16)<a class="headerlink" href="#version-0-5-1-2020-07-16" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Changed: Avoid automatically enabling the <code class="docutils literal notranslate"><span class="pre">force_overwrite</span></code> option in
+<code class="docutils literal notranslate"><span class="pre">AudioModifier.apply_on_index</span></code>. The user is now required to set this
+manually.</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-5-0-2020-04-24">
+<h2>Version 0.5.0 (2020-04-24)<a class="headerlink" href="#version-0-5-0-2020-04-24" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">compressDynamicRange</span></code>: option to restore original peak.</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-4-3-2020-04-14">
+<h2>Version 0.4.3 (2020-04-14)<a class="headerlink" href="#version-0-4-3-2020-04-14" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fixed: Replace <code class="docutils literal notranslate"><span class="pre">utils.mk_dirs</span></code> with <code class="docutils literal notranslate"><span class="pre">audeer.mkdir</span></code> (improve thread-safety)</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-4-1-2020-04-09">
+<h2>Version 0.4.1 (2020-04-09)<a class="headerlink" href="#version-0-4-1-2020-04-09" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">IntList</span></code> and <code class="docutils literal notranslate"><span class="pre">FloatList</span></code> as companions to <code class="docutils literal notranslate"><span class="pre">StrList</span></code>.</p></li>
+<li><p>Fixed: <code class="docutils literal notranslate"><span class="pre">FloatNorm</span></code> now provided with class members.</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-4-0-2020-03-04">
+<h2>Version 0.4.0 (2020-03-04)<a class="headerlink" href="#version-0-4-0-2020-03-04" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: transform <code class="docutils literal notranslate"><span class="pre">BandStop</span></code></p></li>
+</ul>
+</div>
+<div class="section" id="version-0-3-8-2020-02-27">
+<h2>Version 0.3.8 (2020-02-27)<a class="headerlink" href="#version-0-3-8-2020-02-27" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fixed: <code class="docutils literal notranslate"><span class="pre">FloatNorm</span></code> properly draws from truncated distribution</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-3-7-2020-02-26">
+<h2>Version 0.3.7 (2020-02-26)<a class="headerlink" href="#version-0-3-7-2020-02-26" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: transform <code class="docutils literal notranslate"><span class="pre">CompressDynamicRange</span></code></p></li>
+<li><p>Changed: remove support for Python 3.5</p></li>
+<li><p>Changed: publish package in ci-job</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-3-5-2020-02-04">
+<h2>Version 0.3.5 (2020-02-04)<a class="headerlink" href="#version-0-3-5-2020-02-04" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Changed: allow random filter order</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-3-4-2020-01-16">
+<h2>Version 0.3.4 (2020-01-16)<a class="headerlink" href="#version-0-3-4-2020-01-16" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Changed: allow random filter order</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-3-3-2020-01-15">
+<h2>Version 0.3.3 (2020-01-15)<a class="headerlink" href="#version-0-3-3-2020-01-15" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">Bool</span></code> and <code class="docutils literal notranslate"><span class="pre">BoolRand</span></code> class</p></li>
+<li><p>Changed: copyright years</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-3-2-2019-12-09">
+<h2>Version 0.3.2 (2019-12-09)<a class="headerlink" href="#version-0-3-2-2019-12-09" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fixed: update release instructions to avoid obsolete files in wheel package</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-3-1-2019-12-09">
+<h2>Version 0.3.1 (2019-12-09)<a class="headerlink" href="#version-0-3-1-2019-12-09" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Changed: api documentation with toc-tree</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-3-0-2019-12-09">
+<h2>Version 0.3.0 (2019-12-09)<a class="headerlink" href="#version-0-3-0-2019-12-09" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">AudioModifier</span></code> interface</p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">relative</span></code> position argument</p></li>
+<li><p>Changed: re-structured package</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-2-3-2019-11-22">
+<h2>Version 0.2.3 (2019-11-22)<a class="headerlink" href="#version-0-2-3-2019-11-22" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: unit <code class="docutils literal notranslate"><span class="pre">relative</span></code> to randomize position relative to buffer length</p></li>
+<li><p>Fixed: <code class="docutils literal notranslate"><span class="pre">read_pos_dur</span></code> bug in mix function</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-2-2-2019-11-14">
+<h2>Version 0.2.2 (2019-11-14)<a class="headerlink" href="#version-0-2-2-2019-11-14" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: handling of exceptions thrown by c library</p></li>
+<li><p>Fixed: <code class="docutils literal notranslate"><span class="pre">read_pos_aux</span></code> bug in mix function</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-2-1-2019-11-12">
+<h2>Version 0.2.1 (2019-11-12)<a class="headerlink" href="#version-0-2-1-2019-11-12" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fixed: dependency to <code class="docutils literal notranslate"><span class="pre">libSoundTouch.so.1</span></code> is properly resolved if
+called outside the root directory</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-2-0-2019-11-04">
+<h2>Version 0.2.0 (2019-11-04)<a class="headerlink" href="#version-0-2-0-2019-11-04" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Changed: implemented transforms as classes</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-1-5-2019-10-11">
+<h2>Version 0.1.5 (2019-10-11)<a class="headerlink" href="#version-0-1-5-2019-10-11" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">libSoundTouch</span></code> shared library</p></li>
+<li><p>Fixed: high pass filter</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-1-4-2019-09-30">
+<h2>Version 0.1.4 (2019-09-30)<a class="headerlink" href="#version-0-1-4-2019-09-30" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Changed: rely on typehints in docstring</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-1-3-2019-09-26">
+<h2>Version 0.1.3 (2019-09-26)<a class="headerlink" href="#version-0-1-3-2019-09-26" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">clip_by_ratio()</span></code></p></li>
+<li><p>Changed: <code class="docutils literal notranslate"><span class="pre">Tone</span></code> constructor</p></li>
+<li><p>Changed: <code class="docutils literal notranslate"><span class="pre">[low,high,band]_pass()</span></code> arguments</p></li>
+<li><p>Changed: <code class="docutils literal notranslate"><span class="pre">clip()</span></code> arguments</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-1-2-2019-09-23">
+<h2>Version 0.1.2 (2019-09-23)<a class="headerlink" href="#version-0-1-2-2019-09-23" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: add icon</p></li>
+</ul>
+</div>
+<div class="section" id="version-0-1-1-2019-09-23">
+<h2>Version 0.1.1 (2019-09-23)<a class="headerlink" href="#version-0-1-1-2019-09-23" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: advanced usage example</p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">AudioBuffer.from_file()</span></code> to read from an audio file</p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">AudioBuffer.to_file()</span></code> to save buffer to a an audio file</p></li>
+<li><p>Changed: <code class="docutils literal notranslate"><span class="pre">AudioBuffer.FromArray()</span></code> to <code class="docutils literal notranslate"><span class="pre">AudioBuffer.from_array()</span></code></p></li>
+</ul>
+</div>
+<div class="section" id="version-0-1-0-2019-09-08">
+<h2>Version 0.1.0 (2019-09-08)<a class="headerlink" href="#version-0-1-0-2019-09-08" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: initial release</p></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="contributing.html" class="btn btn-neutral float-left" title="Contributing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div>
+    <p>
+        
+        
+        
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/01/26 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+        
+    </p>
+  </div>
+
+  <div role="contentinfo">
+    <p>
+        
+      &copy; 2019-2024 audEERING GmbH
+    </p>
+  </div> 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/thebelab-helper.js"></script>
+        <script src="_static/clipboard.min.js"></script>
+        <script src="_static/copybutton.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

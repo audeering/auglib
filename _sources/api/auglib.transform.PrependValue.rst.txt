@@ -1,0 +1,68 @@
+﻿PrependValue
+============
+
+.. currentmodule:: auglib.transform
+
+.. autoclass:: PrependValue
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: PrependValue.__call__
+    
+arguments
+---------
+.. autoattribute:: PrependValue.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: PrependValue.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: PrependValue.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: PrependValue.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: PrependValue.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: PrependValue.hidden_arguments
+    
+id
+--
+.. autoattribute:: PrependValue.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: PrependValue.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: PrependValue.resolvers
+    
+short\_id
+---------
+.. autoattribute:: PrependValue.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: PrependValue.to_dict
+    
+to\_samples\(\)
+---------------
+.. automethod:: PrependValue.to_samples
+    
+to\_yaml\(\)
+------------
+.. automethod:: PrependValue.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: PrependValue.to_yaml_s
+    

@@ -1,0 +1,68 @@
+﻿BandPass
+========
+
+.. currentmodule:: auglib.transform
+
+.. autoclass:: BandPass
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: BandPass.__call__
+    
+arguments
+---------
+.. autoattribute:: BandPass.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: BandPass.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: BandPass.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: BandPass.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: BandPass.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: BandPass.hidden_arguments
+    
+id
+--
+.. autoattribute:: BandPass.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: BandPass.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: BandPass.resolvers
+    
+short\_id
+---------
+.. autoattribute:: BandPass.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: BandPass.to_dict
+    
+to\_samples\(\)
+---------------
+.. automethod:: BandPass.to_samples
+    
+to\_yaml\(\)
+------------
+.. automethod:: BandPass.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: BandPass.to_yaml_s
+    

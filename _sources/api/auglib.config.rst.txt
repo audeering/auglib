@@ -1,0 +1,12 @@
+﻿config
+======
+
+.. currentmodule:: auglib
+
+.. autoclass:: config
+
+
+CACHE\_ROOT
+-----------
+.. autoattribute:: config.CACHE_ROOT
+    

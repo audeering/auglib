@@ -1,0 +1,64 @@
+﻿List
+====
+
+.. currentmodule:: auglib.observe
+
+.. autoclass:: List
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: List.__call__
+    
+arguments
+---------
+.. autoattribute:: List.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: List.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: List.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: List.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: List.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: List.hidden_arguments
+    
+id
+--
+.. autoattribute:: List.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: List.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: List.resolvers
+    
+short\_id
+---------
+.. autoattribute:: List.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: List.to_dict
+    
+to\_yaml\(\)
+------------
+.. automethod:: List.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: List.to_yaml_s
+    

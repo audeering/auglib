@@ -1,0 +1,313 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>auglib.observe &mdash; Documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon.png"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/audeering.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/jupyter-sphinx.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/thebelab.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Base" href="auglib.observe.Base.html" />
+    <link rel="prev" title="Time" href="auglib.Time.html" />
+    
+  
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          <a href="../index.html">
+          
+            <img src="../_static/images/audeering.png" class="logo" alt="audEERING"/>
+          
+          
+            <span> auglib</span>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v1.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../external.html">External Solutions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="auglib.html">auglib</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">auglib.observe</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="auglib.observe.Base.html">Base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.observe.Bool.html">Bool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.observe.FloatNorm.html">FloatNorm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.observe.FloatUni.html">FloatUni</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.observe.IntUni.html">IntUni</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.observe.List.html">List</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auglib.observe.observe.html">observe()</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="auglib.transform.html">auglib.transform</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auglib.utils.html">auglib.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">auglib</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>auglib.observe</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/audeering/auglib/" class="fa fa-github"> GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-auglib.observe">
+<span id="auglib-observe"></span><h1>auglib.observe<a class="headerlink" href="#module-auglib.observe" title="Permalink to this heading">¶</a></h1>
+<p>Observable classes.</p>
+<p>Observable objects provide a mechanism to randomize augmentation.
+Instead of holding a fixed value,
+an observable object reveals its value only when its called.
+E.g. in the following
+<code class="docutils literal notranslate"><span class="pre">observed_value_1</span></code> and <code class="docutils literal notranslate"><span class="pre">observed_value_2</span></code>
+are randomly assigned an integer in range <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">5)</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">observable_value</span> <span class="o">=</span> <span class="n">auglib</span><span class="o">.</span><span class="n">observe</span><span class="o">.</span><span class="n">IntUni</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">observed_value_1</span> <span class="o">=</span> <span class="n">observable_value</span><span class="p">()</span>  <span class="c1"># value in [0, 5)</span>
+<span class="n">observed_value_2</span> <span class="o">=</span> <span class="n">observable_value</span><span class="p">()</span>  <span class="c1"># value in [0, 5)</span>
+</pre></div>
+</div>
+<p>By deriving from <a class="reference internal" href="auglib.observe.Base.html#auglib.observe.Base" title="auglib.observe.Base"><code class="xref py py-class docutils literal notranslate"><span class="pre">auglib.observe.Base</span></code></a>
+we can implement our own observable class.
+For instance,
+we can rewrite above example as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyRandom05</span><span class="p">(</span><span class="n">auglib</span><span class="o">.</span><span class="n">observe</span><span class="o">.</span><span class="n">Base</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+
+
+<span class="n">observable_value</span> <span class="o">=</span> <span class="n">MyRandom05</span><span class="p">()</span>
+<span class="n">observed_value_1</span> <span class="o">=</span> <span class="n">observable_value</span><span class="p">()</span>  <span class="c1"># value in [0, 5)</span>
+<span class="n">observed_value_2</span> <span class="o">=</span> <span class="n">observable_value</span><span class="p">()</span>  <span class="c1"># value in [0, 5)</span>
+</pre></div>
+</div>
+<p>Observable objects can be used in any place,
+where argument support the type <a class="reference internal" href="auglib.observe.Base.html#auglib.observe.Base" title="auglib.observe.Base"><code class="xref py py-class docutils literal notranslate"><span class="pre">auglib.observe.Base</span></code></a>.
+For instance,
+to augment files with
+<a class="reference internal" href="auglib.transform.PinkNoise.html#auglib.transform.PinkNoise" title="auglib.transform.PinkNoise"><code class="xref py py-class docutils literal notranslate"><span class="pre">auglib.transform.PinkNoise</span></code></a>
+at different intensities,
+we can do:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">noise_with_random_gain</span> <span class="o">=</span> <span class="n">auglib</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PinkNoise</span><span class="p">(</span>
+    <span class="n">gain_db</span><span class="o">=</span><span class="n">auglib</span><span class="o">.</span><span class="n">observe</span><span class="o">.</span><span class="n">FloatUni</span><span class="p">(</span><span class="o">-</span><span class="mi">30</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">augment</span> <span class="o">=</span> <span class="n">auglib</span><span class="o">.</span><span class="n">Augment</span><span class="p">(</span><span class="n">noise_with_random_gain</span><span class="p">)</span>
+
+<span class="c1"># augment each file with a different gain in (-30, -10) db</span>
+<span class="n">augment</span><span class="o">.</span><span class="n">process_files</span><span class="p">(</span><span class="n">files</span><span class="p">)</span>
+</pre></div>
+</div>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="auglib.observe.Base.html#auglib.observe.Base" title="auglib.observe.Base"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Base</span></code></a></p></td>
+<td><p>Interface for observable objects.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="auglib.observe.Bool.html#auglib.observe.Bool" title="auglib.observe.Bool"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Bool</span></code></a></p></td>
+<td><p>Draw booleans with a given probability for True.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="auglib.observe.FloatNorm.html#auglib.observe.FloatNorm" title="auglib.observe.FloatNorm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FloatNorm</span></code></a></p></td>
+<td><p>Draw floating point numbers from a normal (Gaussian) distribution.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="auglib.observe.FloatUni.html#auglib.observe.FloatUni" title="auglib.observe.FloatUni"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FloatUni</span></code></a></p></td>
+<td><p>Draw floating point numbers from a uniform distribution.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="auglib.observe.IntUni.html#auglib.observe.IntUni" title="auglib.observe.IntUni"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IntUni</span></code></a></p></td>
+<td><p>Draw integers from a uniform distribution.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="auglib.observe.List.html#auglib.observe.List" title="auglib.observe.List"><code class="xref py py-obj docutils literal notranslate"><span class="pre">List</span></code></a></p></td>
+<td><p>Iterate over a list of (observable) objects.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="auglib.observe.observe.html#auglib.observe.observe" title="auglib.observe.observe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">observe</span></code></a></p></td>
+<td><p>Convenient function to observe a value.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="auglib.observe.Base.html" class="btn btn-neutral float-right" title="Base" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="auglib.Time.html" class="btn btn-neutral float-left" title="Time" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div>
+    <p>
+        
+        
+        
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/01/26 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+        
+    </p>
+  </div>
+
+  <div role="contentinfo">
+    <p>
+        
+      &copy; 2019-2024 audEERING GmbH
+    </p>
+  </div> 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/thebelab-helper.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

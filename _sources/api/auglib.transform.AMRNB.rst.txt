@@ -1,0 +1,68 @@
+﻿AMRNB
+=====
+
+.. currentmodule:: auglib.transform
+
+.. autoclass:: AMRNB
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: AMRNB.__call__
+    
+arguments
+---------
+.. autoattribute:: AMRNB.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: AMRNB.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: AMRNB.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: AMRNB.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: AMRNB.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: AMRNB.hidden_arguments
+    
+id
+--
+.. autoattribute:: AMRNB.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: AMRNB.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: AMRNB.resolvers
+    
+short\_id
+---------
+.. autoattribute:: AMRNB.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: AMRNB.to_dict
+    
+to\_samples\(\)
+---------------
+.. automethod:: AMRNB.to_samples
+    
+to\_yaml\(\)
+------------
+.. automethod:: AMRNB.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: AMRNB.to_yaml_s
+    

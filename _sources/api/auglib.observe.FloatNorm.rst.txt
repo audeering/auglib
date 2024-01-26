@@ -1,0 +1,64 @@
+﻿FloatNorm
+=========
+
+.. currentmodule:: auglib.observe
+
+.. autoclass:: FloatNorm
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: FloatNorm.__call__
+    
+arguments
+---------
+.. autoattribute:: FloatNorm.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: FloatNorm.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: FloatNorm.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: FloatNorm.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: FloatNorm.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: FloatNorm.hidden_arguments
+    
+id
+--
+.. autoattribute:: FloatNorm.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: FloatNorm.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: FloatNorm.resolvers
+    
+short\_id
+---------
+.. autoattribute:: FloatNorm.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: FloatNorm.to_dict
+    
+to\_yaml\(\)
+------------
+.. automethod:: FloatNorm.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: FloatNorm.to_yaml_s
+    

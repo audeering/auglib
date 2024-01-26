@@ -1,0 +1,68 @@
+﻿HighPass
+========
+
+.. currentmodule:: auglib.transform
+
+.. autoclass:: HighPass
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: HighPass.__call__
+    
+arguments
+---------
+.. autoattribute:: HighPass.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: HighPass.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: HighPass.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: HighPass.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: HighPass.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: HighPass.hidden_arguments
+    
+id
+--
+.. autoattribute:: HighPass.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: HighPass.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: HighPass.resolvers
+    
+short\_id
+---------
+.. autoattribute:: HighPass.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: HighPass.to_dict
+    
+to\_samples\(\)
+---------------
+.. automethod:: HighPass.to_samples
+    
+to\_yaml\(\)
+------------
+.. automethod:: HighPass.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: HighPass.to_yaml_s
+    

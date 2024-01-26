@@ -1,0 +1,68 @@
+﻿Resample
+========
+
+.. currentmodule:: auglib.transform
+
+.. autoclass:: Resample
+
+
+\_\_call\_\_\(\)
+----------------
+.. automethod:: Resample.__call__
+    
+arguments
+---------
+.. autoattribute:: Resample.arguments
+    
+borrowed\_arguments
+-------------------
+.. autoattribute:: Resample.borrowed_arguments
+    
+from\_dict\(\)
+--------------
+.. automethod:: Resample.from_dict
+    
+from\_yaml\(\)
+--------------
+.. automethod:: Resample.from_yaml
+    
+from\_yaml\_s\(\)
+-----------------
+.. automethod:: Resample.from_yaml_s
+    
+hidden\_arguments
+-----------------
+.. autoattribute:: Resample.hidden_arguments
+    
+id
+--
+.. autoattribute:: Resample.id
+    
+is\_loaded\_from\_dict
+----------------------
+.. autoattribute:: Resample.is_loaded_from_dict
+    
+resolvers
+---------
+.. autoattribute:: Resample.resolvers
+    
+short\_id
+---------
+.. autoattribute:: Resample.short_id
+    
+to\_dict\(\)
+------------
+.. automethod:: Resample.to_dict
+    
+to\_samples\(\)
+---------------
+.. automethod:: Resample.to_samples
+    
+to\_yaml\(\)
+------------
+.. automethod:: Resample.to_yaml
+    
+to\_yaml\_s\(\)
+---------------
+.. automethod:: Resample.to_yaml_s
+    
