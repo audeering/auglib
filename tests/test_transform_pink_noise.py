@@ -82,7 +82,7 @@ def test_pink_noise(duration, sampling_rate, gain_db, snr_db):
         # Failing signal size,
         # https://github.com/audeering/auglib/issues/23
         np.ones((1, 30045)),
-    ]
+    ],
 )
 def test_pink_noise_issue23(signal):
     transform = auglib.transform.PinkNoise()
