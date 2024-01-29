@@ -79,11 +79,13 @@ def test_pink_noise(duration, sampling_rate, gain_db, snr_db):
 @pytest.mark.parametrize(
     "signal",
     [
-        # Failing signal size,
-        # https://github.com/audeering/auglib/issues/23
+        # Odd,
+        # compare https://github.com/audeering/auglib/issues/23
         np.ones((1, 30045)),
+        # Even
+        np.ones((1, 200)),
     ],
 )
-def test_pink_noise_issue23(signal):
+def test_pink_noise_odd_and_even_samples(signal):
     transform = auglib.transform.PinkNoise()
     transform(signal)
