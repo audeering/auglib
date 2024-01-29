@@ -3261,16 +3261,20 @@ class PinkNoise(Base):
         def psd(f):
             return 1 / np.where(f == 0, float("inf"), np.sqrt(f))
 
-        white_noise = np.fft.rfft(np.random.randn(samples))
+        # Add extra sample
+        # to ensure correct length for odd samples
+        length = samples + 1
+
+        white_noise = np.fft.rfft(np.random.randn(length))
 
         # Normalized pink noise shape
-        pink_shape = psd(np.fft.rfftfreq(samples))
+        pink_shape = psd(np.fft.rfftfreq(length))
         pink_shape = pink_shape / np.sqrt(np.mean(pink_shape**2))
 
         white_noise_shaped = white_noise * pink_shape
         pink_noise = np.fft.irfft(white_noise_shaped)
 
-        return np.atleast_2d(pink_noise)
+        return np.atleast_2d(pink_noise[:samples])
 
 
 class Prepend(Base):

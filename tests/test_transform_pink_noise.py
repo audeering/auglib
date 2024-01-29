@@ -74,3 +74,19 @@ def test_pink_noise(duration, sampling_rate, gain_db, snr_db):
     assert noise.shape == expected_noise.shape
     assert noise.dtype == expected_noise.dtype
     np.testing.assert_almost_equal(noise, expected_noise)
+
+
+@pytest.mark.parametrize(
+    "signal",
+    [
+        # Odd,
+        # compare https://github.com/audeering/auglib/issues/23
+        np.ones((1, 30045)),
+        # Even
+        np.ones((1, 200)),
+    ],
+)
+def test_pink_noise_odd_and_even_samples(signal):
+    transform = auglib.transform.PinkNoise()
+    augmented_signal = transform(signal)
+    assert signal.shape == augmented_signal.shape
