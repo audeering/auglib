@@ -88,4 +88,5 @@ def test_pink_noise(duration, sampling_rate, gain_db, snr_db):
 )
 def test_pink_noise_odd_and_even_samples(signal):
     transform = auglib.transform.PinkNoise()
-    transform(signal)
+    augmented_signal = transform(signal)
+    assert signal.shape == augmented_signal.shape
