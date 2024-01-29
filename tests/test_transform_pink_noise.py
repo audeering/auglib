@@ -74,3 +74,16 @@ def test_pink_noise(duration, sampling_rate, gain_db, snr_db):
     assert noise.shape == expected_noise.shape
     assert noise.dtype == expected_noise.dtype
     np.testing.assert_almost_equal(noise, expected_noise)
+
+
+@pytest.mark.parametrize(
+    "signal",
+    [
+        # Failing signal size,
+        # https://github.com/audeering/auglib/issues/23
+        np.ones((1, 30045)),
+    ]
+)
+def test_pink_noise_issue23(signal):
+    transform = auglib.transform.PinkNoise()
+    transform(signal)
