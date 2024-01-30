@@ -68,7 +68,7 @@
             
             
               <div class="version">
-                v1.0.1
+                v1.0.2
               </div>
             
           
@@ -632,23 +632,23 @@ to YAML.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>$auglib.core.interface.Augment==1.0.1:
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>$auglib.core.interface.Augment==1.0.2:
   transform:
-    $auglib.core.transform.Compose==1.0.1:
+    $auglib.core.transform.Compose==1.0.2:
       transforms:
-      - $auglib.core.transform.HighPass==1.0.1:
+      - $auglib.core.transform.HighPass==1.0.2:
           cutoff: 5000
           order: 1
           design: butter
           preserve_level: false
           bypass_prob: null
-      - $auglib.core.transform.Clip==1.0.1:
+      - $auglib.core.transform.Clip==1.0.2:
           threshold: 0.0
           soft: false
           normalize: false
           preserve_level: false
           bypass_prob: null
-      - $auglib.core.transform.NormalizeByPeak==1.0.1:
+      - $auglib.core.transform.NormalizeByPeak==1.0.2:
           peak_db: -3
           clip: false
           preserve_level: false
@@ -698,8 +698,8 @@ we have to set the <code class="docutils literal notranslate"><span class="pre">
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>array([[0.23217799, 0.17710404, 0.21450642, ..., 0.03724837, 0.12166926,
-        0.15943557]], dtype=float32)
+<div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>array([[0.25102925, 0.19091994, 0.23076645, ..., 0.12397234, 0.1524953 ,
+        0.16985644]], dtype=float32)
 </pre></div>
 </div>
 </div>
@@ -718,8 +718,8 @@ the object is loaded.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>array([[0.23217799, 0.17710404, 0.21450642, ..., 0.03724837, 0.12166926,
-        0.15943557]], dtype=float32)
+<div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>array([[0.25102925, 0.19091994, 0.23076645, ..., 0.12397234, 0.1524953 ,
+        0.16985644]], dtype=float32)
 </pre></div>
 </div>
 </div>
@@ -734,8 +734,8 @@ we can also overwrite the value.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>array([[ 0.01680795, -0.08565303, -0.10450366, ..., -0.20459086,
-        -0.18681845, -0.04076683]], dtype=float32)
+<div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>array([[-0.01383871, -0.10363713, -0.1208222 , ..., -0.21219611,
+        -0.08782648, -0.14412442]], dtype=float32)
 </pre></div>
 </div>
 </div>
@@ -770,7 +770,7 @@ we can also overwrite the value.</p>
         
         
         
-          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/01/26 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/01/30 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
