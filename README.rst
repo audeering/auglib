@@ -25,7 +25,7 @@ Have a look at the installation_ instructions
 and listen to examples_.
 
 
-.. _datasets: https://audeering.github.io/auglib/usage.html#augment-a-database-to-disk
+.. _datasets: https://audeering.github.io/auglib/usage.html#augment-a-dataset-to-disk
 .. _examples: https://audeering.github.io/auglib/examples.html
 .. _external: https://audeering.github.io/auglib/external.html
 .. _files: https://audeering.github.io/auglib/usage.html#augment-files-in-memory
