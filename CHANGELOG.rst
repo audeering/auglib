@@ -7,6 +7,14 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 1.0.3 (2024-05-14)
+--------------------------
+
+* Fixed: broken links
+  on the landing page
+  of the documentation
+
+
 Version 1.0.2 (2024-01-30)
 --------------------------
 
