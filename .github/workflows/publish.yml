@@ -21,37 +21,37 @@ jobs:
         fetch-depth: 2
 
     - name: Cache air
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/audb/air/1.4.2
         key: air-1.4.2
 
     - name: Cache cough-speech-sneeze
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/audb/cough-speech-sneeze/2.0.1
         key: cough-speech-sneeze-2.0.1
 
     - name: Cache emodb
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/audb/emodb/1.4.1
         key: emodb-1.4.1
 
     - name: Cache micirp
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/audb/micirp/1.0.0
         key: micirp-1.0.0
 
     - name: Cache musan
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/audb/musan/1.0.0
         key: musan-1.0.0
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.10'
 
@@ -85,7 +85,7 @@ jobs:
         python -m sphinx docs/ build/html -b html
 
     - name: Deploy documentation to Github pages
-      uses: peaceiris/actions-gh-pages@v3
+      uses: peaceiris/actions-gh-pages@v4
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./build/html
@@ -107,7 +107,7 @@ jobs:
 
     - name: Create release on Github
       id: create_release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
