@@ -25,15 +25,15 @@ Have a look at the installation_ instructions
 and listen to examples_.
 
 
-.. _datasets: https://audeering.github.io/usage.html#augment-a-database-to-disk
-.. _examples: https://audeering.github.io/examples.html
-.. _external: https://audeering.github.io/external.html
-.. _files: https://audeering.github.io/usage.html#augment-files-in-memory
-.. _installation: https://audeering.github.io/install.html
-.. _signals: https://audeering.github.io/usage.html#augment-a-signal
-.. _transforms: https://audeering.github.io/api/auglib.transform.html
-.. _usage: https://audeering.github.io/usage.html
-.. _user defined: https://audeering.github.io/api/auglib.transform.Function.html
+.. _datasets: https://audeering.github.io/auglib/usage.html#augment-a-dataset-to-disk
+.. _examples: https://audeering.github.io/auglib/examples.html
+.. _external: https://audeering.github.io/auglib/external.html
+.. _files: https://audeering.github.io/auglib/usage.html#augment-files-in-memory
+.. _installation: https://audeering.github.io/auglib/install.html
+.. _signals: https://audeering.github.io/auglib/usage.html#augment-a-signal
+.. _transforms: https://audeering.github.io/auglib/api/auglib.transform.html
+.. _usage: https://audeering.github.io/auglib/usage.html
+.. _user defined: https://audeering.github.io/auglib/api/auglib.transform.Function.html
 
 
 .. badges images and links:
