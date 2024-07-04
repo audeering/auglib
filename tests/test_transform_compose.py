@@ -7,19 +7,12 @@ import auglib
 auglib.seed(0)
 
 
-def sox_transform(
+def read_only(
     signal: np.array,
     sampling_rate: int,
 ):
-    import sox
-
-    tfm = sox.Transformer()
-    tfm.pitch(2)
-    signal_augmented = tfm.build_array(
-        input_array=signal.squeeze(),
-        sample_rate_in=sampling_rate,
-    )
-    return signal_augmented
+    signal.setflags(write=False)
+    return signal
 
 
 @pytest.mark.parametrize("signal", [[1, 1]])
@@ -45,7 +38,7 @@ def sox_transform(
             # Include transform that returns a read-only arrary
             # https://github.com/audeering/auglib/issues/31
             [
-                auglib.transform.Function(sox_transform),
+                auglib.transform.Function(read_only),
                 auglib.transform.WhiteNoiseGaussian(snr_db=20),
             ],
             [2, 1, 1, 0],
