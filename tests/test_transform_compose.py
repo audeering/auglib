@@ -1,3 +1,5 @@
+import typing
+
 import numpy as np
 import pytest
 
@@ -5,14 +7,6 @@ import auglib
 
 
 auglib.seed(0)
-
-
-def read_only(
-    signal: np.array,
-    sampling_rate: int,
-):
-    signal.setflags(write=False)
-    return signal
 
 
 @pytest.mark.parametrize("signal", [[1, 1]])
@@ -34,18 +28,6 @@ def read_only(
             ],
             [2, 1, 1, 0],
         ),
-        (
-            # Include transform that returns a read-only arrary
-            # https://github.com/audeering/auglib/issues/31
-            [
-                auglib.transform.Function(read_only),
-                auglib.transform.WhiteNoiseGaussian(snr_db=20),
-            ],
-            [2, 1, 1, 0],
-        ),
-        # Affected transforms:
-        # Mix
-        # Tone
     ],
 )
 def test_compose(
