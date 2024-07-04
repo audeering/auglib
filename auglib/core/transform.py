@@ -2056,6 +2056,10 @@ class Function(Base):
 
         signal = self.function(signal, sampling_rate, **args)
 
+        # Ensure signal is not read-only
+        if not signal.flags["WRITEABLE"]:
+            signal = signal.copy()
+
         return signal
 
 
