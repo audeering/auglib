@@ -1,5 +1,3 @@
-import typing
-
 import numpy as np
 import pytest
 
@@ -53,7 +51,7 @@ def read_only(
         auglib.transform.Trim(start_pos=0, end_pos=1, unit="samples"),
         auglib.transform.WhiteNoiseGaussian(),
         auglib.transform.WhiteNoiseUniform(),
-    ]
+    ],
 )
 def test_compose_read_only(
     signal: np.array,
