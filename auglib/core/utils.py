@@ -22,7 +22,7 @@ def from_db(x_db: typing.Union[float, observe.Base]) -> float:
     """
     x_db = observe.observe(x_db)
     x = pow(10.0, x_db / 20.0)
-    return x
+    return float(x)
 
 
 def get_peak(signal: np.ndarray) -> float:
@@ -34,6 +34,10 @@ def get_peak(signal: np.ndarray) -> float:
     Returns:
         peak as positive value
 
+    Examples:
+        >>> get_peak(np.array([1, 2, 3]))
+        3.0
+
     """
     minimum = np.min(signal)
     maximum = np.max(signal)
@@ -41,21 +45,31 @@ def get_peak(signal: np.ndarray) -> float:
         peak = abs(minimum)
     else:
         peak = maximum
-    return peak
+    return float(peak)
 
 
-def rms_db(signal: np.ndarray):
+def rms_db(signal: np.ndarray) -> float:
     r"""Root mean square in dB.
 
     Very soft signals are limited
     to a value of -120 dB.
+
+    Args:
+        signal: input signal
+
+    Returns:
+        root mean square in decibel
+
+    Examples:
+        >>> rms_db(np.zeros((1, 4)))
+        -120.0
 
     """
     # It is:
     # 20 * log10(rms) = 10 * log10(power)
     # which saves us from calculating sqrt()
     power = np.mean(np.square(signal))
-    return 10 * np.log10(max(1e-12, power))
+    return float(10 * np.log10(max(1e-12, power)))
 
 
 def to_db(x: typing.Union[float, observe.Base]) -> float:
@@ -75,7 +89,7 @@ def to_db(x: typing.Union[float, observe.Base]) -> float:
     x = observe.observe(x)
     assert x > 0, "cannot convert gain {} to decibels".format(x)
     x_db = 20 * np.log10(x)
-    return x_db
+    return float(x_db)
 
 
 def to_samples(
