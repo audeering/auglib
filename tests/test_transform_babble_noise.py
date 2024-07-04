@@ -45,10 +45,8 @@ def test_babble_noise_1(
     if snr_db is not None:
         gain_db = -120 - snr_db
     gain = audmath.inverse_db(gain_db)
-    expected_babble = gain * np.ones(
-        (1, int(duration * sampling_rate)),
-        dtype=auglib.core.transform.DTYPE,
-    )
+    expected_babble = gain * np.ones((1, int(duration * sampling_rate)))
+    expected_babble = expected_babble.astype(auglib.core.transform.DTYPE)
 
     babble = transform(signal)
     assert babble.dtype == expected_babble.dtype

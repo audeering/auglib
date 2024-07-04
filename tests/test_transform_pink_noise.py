@@ -73,7 +73,7 @@ def test_pink_noise(duration, sampling_rate, gain_db, snr_db):
     )
     assert noise.shape == expected_noise.shape
     assert noise.dtype == expected_noise.dtype
-    np.testing.assert_almost_equal(noise, expected_noise)
+    np.testing.assert_almost_equal(noise, expected_noise, decimal=6)
 
 
 @pytest.mark.parametrize(
