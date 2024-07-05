@@ -203,6 +203,11 @@ class Base(audobject.Object):
             if signal.dtype != DTYPE:
                 signal = signal.astype(DTYPE)
 
+            # Ensure signal is not read-only
+            # (https://github.com/audeering/auglib/issues/31)
+            if not signal.flags["WRITEABLE"]:
+                signal = signal.copy()
+
             if preserve_level:
                 signal_level = rms_db(signal)
 
@@ -2055,10 +2060,6 @@ class Function(Base):
                 args[key] = observe.observe(value)
 
         signal = self.function(signal, sampling_rate, **args)
-
-        # Ensure signal is not read-only
-        if not signal.flags["WRITEABLE"]:
-            signal = signal.copy()
 
         return signal
 
