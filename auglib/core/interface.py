@@ -378,7 +378,9 @@ class Augment(audinterface.Process, audobject.Object):
         description: str,
     ) -> pd.Index:
         r"""Augment segments and store augmented files to cache."""
-        files = index.get_level_values(0).unique()
+        files = index.get_level_values("file")
+        starts = index.get_level_values("start")
+        ends = index.get_level_values("end")
         augmented_files = _augmented_files(
             files,
             cache_root,
@@ -386,54 +388,34 @@ class Augment(audinterface.Process, audobject.Object):
         )
         params = [
             (
-                (
-                    file,
-                    out_file,
-                    index[index.get_level_values(0) == file].droplevel(
-                        0
-                    ),  # start, end values for given file
-                ),
+                (file, start, end, out_file),
                 {},
             )
-            for file, out_file in zip(files, augmented_files)
+            for file, start, end, out_file in zip(files, starts, ends, augmented_files)
         ]
-
-        verbose = self.verbose
-        self.verbose = False  # avoid nested progress bar
-        augmented_indices = audeer.run_tasks(
+        durations = audeer.run_tasks(
             self._augment_file_to_cache,
             params,
             num_workers=self.num_workers,
             multiprocessing=self.multiprocessing,
-            progress_bar=verbose,
+            progress_bar=self.verbose,
             task_description=description,
         )
-        self.verbose = verbose
-
-        augmented_index = audformat.utils.union(augmented_indices)
+        augmented_index = audformat.segmented_index(
+            augmented_files,
+            [0] * len(augmented_files),
+            durations,
+        )
 
         return augmented_index
-
-    def _augment_file(
-        self,
-        file: str,
-        index: pd.Index,
-    ) -> typing.Tuple[typing.List, typing.List, typing.List, int]:
-        r"""Augment file at every segment."""
-        signal, sampling_rate = audiofile.read(file, always_2d=True)
-        signals, starts, ends, augmented_rate = self._augment_signal(
-            signal,
-            sampling_rate,
-            index,
-        )
-        return signals, starts, ends, augmented_rate
 
     def _augment_file_to_cache(
         self,
         file: str,
+        start: pd.Timedelta,
+        end: pd.Timedelta,
         augmented_file: str,
-        index: pd.Index,  # containing (several) start, end values
-    ) -> pd.Index:
+    ) -> float:
         r"""Augment file and store to cache.
 
         Store augmented signals in separate files,
@@ -453,35 +435,9 @@ class Augment(audinterface.Process, audobject.Object):
         and so on.
 
         """
-        signals, starts, ends, sampling_rate = self._augment_file(file, index)
-
-        audeer.mkdir(os.path.dirname(augmented_file))
-        if len(signals) > 1:
-            # number of needed digits for file names
-            digits = len(str(len(signals) - 1))
-            root, ext = os.path.splitext(augmented_file)
-            files = [f"{root}-{str(n).zfill(digits)}{ext}" for n in range(len(signals))]
-        else:
-            files = [augmented_file]
-        for file, signal in zip(files, signals):
-            audiofile.write(file, signal, sampling_rate)
-
-        # insert augmented file name at first level
-        augmented_index_with_file = audformat.segmented_index(
-            files,
-            starts,
-            ends,
+        signal, sampling_rate = audinterface.utils.read_audio(
+            file, start=start, end=end
         )
-
-        return augmented_index_with_file
-
-    def _augment_signal(
-        self,
-        signal: np.ndarray,
-        sampling_rate: int,
-        index: pd.Index,
-    ) -> typing.Tuple[typing.List, typing.List, typing.List, int]:
-        r"""Augment signal at every segment in index."""
         signal, sampling_rate = preprocess_signal(
             signal,
             sampling_rate=sampling_rate,
@@ -490,17 +446,11 @@ class Augment(audinterface.Process, audobject.Object):
             channels=self.channels,
             mixdown=self.mixdown,
         )
-        y = self.process_signal_from_index(signal, sampling_rate, index)
-        # adjust index to always start at 0
-        # and end at NaT or duration
-        signals = list(y.values)
-        starts = [0] * len(signals)
-        ends = y.index.get_level_values("end")
-        ends = [
-            end if pd.isna(end) else signal.shape[1] / sampling_rate
-            for signal, end in zip(signals, ends)
-        ]
-        return signals, starts, ends, sampling_rate
+        augmented_signal = self(signal, sampling_rate)
+        audeer.mkdir(os.path.dirname(augmented_file))
+        audiofile.write(augmented_file, augmented_signal, sampling_rate)
+        duration = augmented_signal.shape[1] / sampling_rate
+        return duration
 
     @staticmethod
     def _process_func(
@@ -555,8 +505,44 @@ def _augmented_files(
     files: typing.Sequence[str],
     cache_root: str,
     remove_root: str = None,
-) -> typing.Sequence[str]:
-    r"""Return cache file names by joining with the cache directory."""
+) -> typing.List[str]:
+    r"""Return destination path for augmented files.
+
+    If files contains the same filename seral times,
+    e.g. when augmenting segments,
+    it will convert them into unique filenames:
+
+        <augmented_file>-0
+        <augmented_file>-1
+        ...
+
+    As segments are stored as single files.
+
+    If we have more than 10 files,
+    the counter will use two digits:
+
+        <augmented_file>-00
+        <augmented_file>-01
+        ...
+
+    and so on.
+    """
+    # Estimate number of samples for each file
+    unique_files, counts = np.unique(files, return_counts=True)
+    counts = {file: count for file, count in zip(unique_files, counts)}
+    current_count = {file: 0 for file in unique_files}
+
+    augmented_files = []
+    for file in files:
+        if counts[file] > 1:
+            digits = len(str(counts[file] - 1))
+            root, ext = os.path.splitext(file)
+            augmented_file = f"{root}-{str(current_count[file]).zfill(digits)}{ext}"
+        else:
+            augmented_file = file
+        current_count[file] += 1
+        augmented_files.append(augmented_file)
+
     if remove_root is None:
 
         def join(path1: str, path2: str) -> str:
@@ -566,14 +552,16 @@ def _augmented_files(
                 os.path.splitdrive(path2)[1].lstrip(seps),
             )
 
-        augmented_files = [join(cache_root, file) for file in files]
+        augmented_files = [join(cache_root, file) for file in augmented_files]
     else:
         remove_root = audeer.path(remove_root)
-        dirs = [os.path.dirname(file) for file in files]
+        dirs = [os.path.dirname(file) for file in unique_files]
         common_root = audeer.common_directory(dirs)
         if not audeer.common_directory([remove_root, common_root]) == remove_root:
             raise RuntimeError(
                 f"Cannot remove '{remove_root}' " f"from '{common_root}'."
             )
-        augmented_files = [file.replace(remove_root, cache_root, 1) for file in files]
+        augmented_files = [
+            file.replace(remove_root, cache_root, 1) for file in augmented_files
+        ]
     return augmented_files
