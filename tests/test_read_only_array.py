@@ -75,7 +75,7 @@ def test_compose_read_only(
         transform: transform
 
     """
-    signal = np.array(signal)
+    signal = np.array(signal, dtype=auglib.core.transform.DTYPE)
 
     # Apply transform to read-only signal
     signal.setflags(write=False)
