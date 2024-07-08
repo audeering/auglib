@@ -377,20 +377,26 @@ class Augment(audinterface.Process, audobject.Object):
         remove_root: str,
         description: str,
     ) -> pd.Index:
-        r"""Augment segments and store augmented files to cache."""
+        r"""Augment segments and store augmented files to cache.
+
+        Args:
+            index: segmented index
+            cache_root: cache root for augmented files
+            remove_root: directory that should be removed from
+                the beginning of the original file path before joining with
+                ``cache_root``
+            description: text to display in progress bar
+
+        Returns:
+            segmented index of augmented files
+
+        """
         files = index.get_level_values("file")
         starts = index.get_level_values("start")
         ends = index.get_level_values("end")
-        augmented_files = _augmented_files(
-            files,
-            cache_root,
-            remove_root,
-        )
+        augmented_files = _augmented_files(files, cache_root, remove_root)
         params = [
-            (
-                (file, start, end, out_file),
-                {},
-            )
+            ((file, start, end, out_file), {})
             for file, start, end, out_file in zip(files, starts, ends, augmented_files)
         ]
         durations = audeer.run_tasks(
@@ -403,10 +409,9 @@ class Augment(audinterface.Process, audobject.Object):
         )
         augmented_index = audformat.segmented_index(
             augmented_files,
-            [0] * len(augmented_files),
+            [0] * len(durations),
             durations,
         )
-
         return augmented_index
 
     def _augment_file_to_cache(
@@ -418,21 +423,19 @@ class Augment(audinterface.Process, audobject.Object):
     ) -> float:
         r"""Augment file and store to cache.
 
-        Store augmented signals in separate files,
-        adding a counter at the end of the filename:
+        Before augmented the file,
+        it is also resampled,
+        or remixed,
+        if required.
 
-            <augmented_file>-0
-            <augmented_file>-1
-            ...
+        Args:
+            file: path to incoming audio file
+            start: start time to read ``file``
+            end: end time to read ``file``
+            augmented_file: path of augmented file
 
-        If we have more than 10 files,
-        the counter will use two digits:
-
-            <augmented_file>-00
-            <augmented_file>-01
-            ...
-
-        and so on.
+        Returns:
+            duration of augmented file in seconds
 
         """
         signal, sampling_rate = audinterface.utils.read_audio(
@@ -526,8 +529,19 @@ def _augmented_files(
         ...
 
     and so on.
+
+    Args:
+        files: files to augment
+        cache_root: cache root of augmented files
+        remove_root: directory that should be removed from
+            the beginning of the original file path before joining with
+            ``cache_root``
+
+    Returns:
+        path of augmented files
+
     """
-    # Estimate number of samples for each file
+    # Estimate number of segments/samples for each file
     unique_files, counts = np.unique(files, return_counts=True)
     counts = {file: count for file, count in zip(unique_files, counts)}
     current_count = {file: 0 for file in unique_files}
