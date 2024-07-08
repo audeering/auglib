@@ -423,7 +423,7 @@ class Augment(audinterface.Process, audobject.Object):
     ) -> float:
         r"""Augment file and store to cache.
 
-        Before augmented the file,
+        Before augmenting the file,
         it is also resampled,
         or remixed,
         if required.
@@ -511,7 +511,7 @@ def _augmented_files(
 ) -> typing.List[str]:
     r"""Return destination path for augmented files.
 
-    If files contains the same filename seral times,
+    If files contain the same filename several times,
     e.g. when augmenting segments,
     it will convert them into unique filenames:
 
