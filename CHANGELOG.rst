@@ -7,6 +7,16 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 1.0.4 (2024-07-08)
+--------------------------
+
+* Fixed: preserve order of segments in index
+  after augmentation with ``auglib.Augment.augment()``
+* Fixed: ensure transforms work with signals
+  stored in a read-only ``numpy.array``
+* Fixed: return correct float types with ``numpy>=2.0``
+
+
 Version 1.0.3 (2024-05-14)
 --------------------------
 
