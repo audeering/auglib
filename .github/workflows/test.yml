@@ -61,7 +61,7 @@ jobs:
     - name: OSX - install audio packages
       run: |
         brew install ffmpeg
-        brew install --cask mediainfo
+        HOMEBREW_CASK_OPTS="--no-quarantine" brew install --cask mediainfo
       if: matrix.os == 'macOS-latest'
 
     - name: Windows - install audio packages
