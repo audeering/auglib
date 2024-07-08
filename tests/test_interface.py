@@ -374,6 +374,29 @@ import auglib
                 np.ones((1, 1)),
             ),
         ),
+        # Unsorted index
+        (
+            audformat.segmented_index(
+                ["f1.wav", "f2.wav", "f1.wav", "f2.wav"],
+                [0.2, 0.0, 0.0, 0.3],
+                [1.0, 0.3, 0.2, 1.0],
+            ),
+            np.array([[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]], dtype="float32"),
+            10,
+            auglib.transform.Function(lambda x, _: x + 1),
+            True,
+            audformat.segmented_index(
+                ["f1-0.wav", "f2-0.wav", "f1-1.wav", "f2-1.wav"],
+                [0, 0, 0, 0],
+                [0.8, 0.3, 0.2, 0.7],
+            ),
+            (
+                np.array([[3, 4, 5, 6, 7, 8, 9, 10]], dtype="float32"),
+                np.array([[1, 2, 3]], dtype="float32"),
+                np.array([[1, 2]], dtype="float32"),
+                np.array([[4, 5, 6, 7, 8, 9, 10]], dtype="float32"),
+            ),
+        ),
     ],
 )
 def test_augment(
