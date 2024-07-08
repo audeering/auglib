@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                v1.0.3
+                v1.0.4
               </div>
             
           
@@ -350,6 +350,11 @@
 
             <span class="k">if</span> <span class="n">signal</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="n">DTYPE</span><span class="p">:</span>
                 <span class="n">signal</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">DTYPE</span><span class="p">)</span>
+
+            <span class="c1"># Ensure signal is not read-only</span>
+            <span class="c1"># (https://github.com/audeering/auglib/issues/31)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">signal</span><span class="o">.</span><span class="n">flags</span><span class="p">[</span><span class="s2">&quot;WRITEABLE&quot;</span><span class="p">]:</span>
+                <span class="n">signal</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
             <span class="k">if</span> <span class="n">preserve_level</span><span class="p">:</span>
                 <span class="n">signal_level</span> <span class="o">=</span> <span class="n">rms_db</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
@@ -4891,7 +4896,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/05/14 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/07/08 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>

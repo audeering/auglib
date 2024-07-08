@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                v1.0.3
+                v1.0.4
               </div>
             
           
@@ -525,111 +525,70 @@
         <span class="n">remove_root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">description</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Augment segments and store augmented files to cache.&quot;&quot;&quot;</span>
-        <span class="n">files</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
-        <span class="n">augmented_files</span> <span class="o">=</span> <span class="n">_augmented_files</span><span class="p">(</span>
-            <span class="n">files</span><span class="p">,</span>
-            <span class="n">cache_root</span><span class="p">,</span>
-            <span class="n">remove_root</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">params</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="p">(</span>
-                <span class="p">(</span>
-                    <span class="n">file</span><span class="p">,</span>
-                    <span class="n">out_file</span><span class="p">,</span>
-                    <span class="n">index</span><span class="p">[</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="n">file</span><span class="p">]</span><span class="o">.</span><span class="n">droplevel</span><span class="p">(</span>
-                        <span class="mi">0</span>
-                    <span class="p">),</span>  <span class="c1"># start, end values for given file</span>
-                <span class="p">),</span>
-                <span class="p">{},</span>
-            <span class="p">)</span>
-            <span class="k">for</span> <span class="n">file</span><span class="p">,</span> <span class="n">out_file</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">augmented_files</span><span class="p">)</span>
-        <span class="p">]</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Augment segments and store augmented files to cache.</span>
 
-        <span class="n">verbose</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># avoid nested progress bar</span>
-        <span class="n">augmented_indices</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">run_tasks</span><span class="p">(</span>
+<span class="sd">        Args:</span>
+<span class="sd">            index: segmented index</span>
+<span class="sd">            cache_root: cache root for augmented files</span>
+<span class="sd">            remove_root: directory that should be removed from</span>
+<span class="sd">                the beginning of the original file path before joining with</span>
+<span class="sd">                ``cache_root``</span>
+<span class="sd">            description: text to display in progress bar</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            segmented index of augmented files</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">&quot;file&quot;</span><span class="p">)</span>
+        <span class="n">starts</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">&quot;start&quot;</span><span class="p">)</span>
+        <span class="n">ends</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">&quot;end&quot;</span><span class="p">)</span>
+        <span class="n">augmented_files</span> <span class="o">=</span> <span class="n">_augmented_files</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">cache_root</span><span class="p">,</span> <span class="n">remove_root</span><span class="p">)</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">((</span><span class="n">file</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">out_file</span><span class="p">),</span> <span class="p">{})</span>
+            <span class="k">for</span> <span class="n">file</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">out_file</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">starts</span><span class="p">,</span> <span class="n">ends</span><span class="p">,</span> <span class="n">augmented_files</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="n">durations</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">run_tasks</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_augment_file_to_cache</span><span class="p">,</span>
             <span class="n">params</span><span class="p">,</span>
             <span class="n">num_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span>
             <span class="n">multiprocessing</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">multiprocessing</span><span class="p">,</span>
-            <span class="n">progress_bar</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+            <span class="n">progress_bar</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">,</span>
             <span class="n">task_description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
-
-        <span class="n">augmented_index</span> <span class="o">=</span> <span class="n">audformat</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">augmented_indices</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">augmented_index</span>
-
-    <span class="k">def</span> <span class="nf">_augment_file</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">index</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Augment file at every segment.&quot;&quot;&quot;</span>
-        <span class="n">signal</span><span class="p">,</span> <span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">audiofile</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">always_2d</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">signals</span><span class="p">,</span> <span class="n">starts</span><span class="p">,</span> <span class="n">ends</span><span class="p">,</span> <span class="n">augmented_rate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_augment_signal</span><span class="p">(</span>
-            <span class="n">signal</span><span class="p">,</span>
-            <span class="n">sampling_rate</span><span class="p">,</span>
-            <span class="n">index</span><span class="p">,</span>
+        <span class="n">augmented_index</span> <span class="o">=</span> <span class="n">audformat</span><span class="o">.</span><span class="n">segmented_index</span><span class="p">(</span>
+            <span class="n">augmented_files</span><span class="p">,</span>
+            <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">durations</span><span class="p">),</span>
+            <span class="n">durations</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="n">signals</span><span class="p">,</span> <span class="n">starts</span><span class="p">,</span> <span class="n">ends</span><span class="p">,</span> <span class="n">augmented_rate</span>
+        <span class="k">return</span> <span class="n">augmented_index</span>
 
     <span class="k">def</span> <span class="nf">_augment_file_to_cache</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">,</span>
         <span class="n">augmented_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">index</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">,</span>  <span class="c1"># containing (several) start, end values</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Augment file and store to cache.</span>
 
-<span class="sd">        Store augmented signals in separate files,</span>
-<span class="sd">        adding a counter at the end of the filename:</span>
+<span class="sd">        Before augmenting the file,</span>
+<span class="sd">        it is also resampled,</span>
+<span class="sd">        or remixed,</span>
+<span class="sd">        if required.</span>
 
-<span class="sd">            &lt;augmented_file&gt;-0</span>
-<span class="sd">            &lt;augmented_file&gt;-1</span>
-<span class="sd">            ...</span>
+<span class="sd">        Args:</span>
+<span class="sd">            file: path to incoming audio file</span>
+<span class="sd">            start: start time to read ``file``</span>
+<span class="sd">            end: end time to read ``file``</span>
+<span class="sd">            augmented_file: path of augmented file</span>
 
-<span class="sd">        If we have more than 10 files,</span>
-<span class="sd">        the counter will use two digits:</span>
-
-<span class="sd">            &lt;augmented_file&gt;-00</span>
-<span class="sd">            &lt;augmented_file&gt;-01</span>
-<span class="sd">            ...</span>
-
-<span class="sd">        and so on.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            duration of augmented file in seconds</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">signals</span><span class="p">,</span> <span class="n">starts</span><span class="p">,</span> <span class="n">ends</span><span class="p">,</span> <span class="n">sampling_rate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_augment_file</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
-
-        <span class="n">audeer</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">augmented_file</span><span class="p">))</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">signals</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="c1"># number of needed digits for file names</span>
-            <span class="n">digits</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">signals</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
-            <span class="n">root</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">augmented_file</span><span class="p">)</span>
-            <span class="n">files</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">root</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="n">digits</span><span class="p">)</span><span class="si">}{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">signals</span><span class="p">))]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">files</span> <span class="o">=</span> <span class="p">[</span><span class="n">augmented_file</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">file</span><span class="p">,</span> <span class="n">signal</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">signals</span><span class="p">):</span>
-            <span class="n">audiofile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">)</span>
-
-        <span class="c1"># insert augmented file name at first level</span>
-        <span class="n">augmented_index_with_file</span> <span class="o">=</span> <span class="n">audformat</span><span class="o">.</span><span class="n">segmented_index</span><span class="p">(</span>
-            <span class="n">files</span><span class="p">,</span>
-            <span class="n">starts</span><span class="p">,</span>
-            <span class="n">ends</span><span class="p">,</span>
+        <span class="n">signal</span><span class="p">,</span> <span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">audinterface</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">read_audio</span><span class="p">(</span>
+            <span class="n">file</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span>
         <span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">augmented_index_with_file</span>
-
-    <span class="k">def</span> <span class="nf">_augment_signal</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">signal</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">sampling_rate</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">index</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Augment signal at every segment in index.&quot;&quot;&quot;</span>
         <span class="n">signal</span><span class="p">,</span> <span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">preprocess_signal</span><span class="p">(</span>
             <span class="n">signal</span><span class="p">,</span>
             <span class="n">sampling_rate</span><span class="o">=</span><span class="n">sampling_rate</span><span class="p">,</span>
@@ -638,17 +597,11 @@
             <span class="n">channels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">,</span>
             <span class="n">mixdown</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mixdown</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_signal_from_index</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
-        <span class="c1"># adjust index to always start at 0</span>
-        <span class="c1"># and end at NaT or duration</span>
-        <span class="n">signals</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
-        <span class="n">starts</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">signals</span><span class="p">)</span>
-        <span class="n">ends</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">&quot;end&quot;</span><span class="p">)</span>
-        <span class="n">ends</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">end</span> <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">end</span><span class="p">)</span> <span class="k">else</span> <span class="n">signal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">sampling_rate</span>
-            <span class="k">for</span> <span class="n">signal</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">signals</span><span class="p">,</span> <span class="n">ends</span><span class="p">)</span>
-        <span class="p">]</span>
-        <span class="k">return</span> <span class="n">signals</span><span class="p">,</span> <span class="n">starts</span><span class="p">,</span> <span class="n">ends</span><span class="p">,</span> <span class="n">sampling_rate</span>
+        <span class="n">augmented_signal</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">)</span>
+        <span class="n">audeer</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">augmented_file</span><span class="p">))</span>
+        <span class="n">audiofile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">augmented_file</span><span class="p">,</span> <span class="n">augmented_signal</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">)</span>
+        <span class="n">duration</span> <span class="o">=</span> <span class="n">augmented_signal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">sampling_rate</span>
+        <span class="k">return</span> <span class="n">duration</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_process_func</span><span class="p">(</span>
@@ -703,8 +656,55 @@
     <span class="n">files</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
     <span class="n">cache_root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">remove_root</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return cache file names by joining with the cache directory.&quot;&quot;&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return destination path for augmented files.</span>
+
+<span class="sd">    If files contain the same filename several times,</span>
+<span class="sd">    e.g. when augmenting segments,</span>
+<span class="sd">    it will convert them into unique filenames:</span>
+
+<span class="sd">        &lt;augmented_file&gt;-0</span>
+<span class="sd">        &lt;augmented_file&gt;-1</span>
+<span class="sd">        ...</span>
+
+<span class="sd">    As segments are stored as single files.</span>
+
+<span class="sd">    If we have more than 10 files,</span>
+<span class="sd">    the counter will use two digits:</span>
+
+<span class="sd">        &lt;augmented_file&gt;-00</span>
+<span class="sd">        &lt;augmented_file&gt;-01</span>
+<span class="sd">        ...</span>
+
+<span class="sd">    and so on.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        files: files to augment</span>
+<span class="sd">        cache_root: cache root of augmented files</span>
+<span class="sd">        remove_root: directory that should be removed from</span>
+<span class="sd">            the beginning of the original file path before joining with</span>
+<span class="sd">            ``cache_root``</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        path of augmented files</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Estimate number of segments/samples for each file</span>
+    <span class="n">unique_files</span><span class="p">,</span> <span class="n">counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">return_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="p">{</span><span class="n">file</span><span class="p">:</span> <span class="n">count</span> <span class="k">for</span> <span class="n">file</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">unique_files</span><span class="p">,</span> <span class="n">counts</span><span class="p">)}</span>
+    <span class="n">current_count</span> <span class="o">=</span> <span class="p">{</span><span class="n">file</span><span class="p">:</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">unique_files</span><span class="p">}</span>
+
+    <span class="n">augmented_files</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">counts</span><span class="p">[</span><span class="n">file</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">digits</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">counts</span><span class="p">[</span><span class="n">file</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">root</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+            <span class="n">augmented_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">root</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">current_count</span><span class="p">[</span><span class="n">file</span><span class="p">])</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="n">digits</span><span class="p">)</span><span class="si">}{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">augmented_file</span> <span class="o">=</span> <span class="n">file</span>
+        <span class="n">current_count</span><span class="p">[</span><span class="n">file</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">augmented_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">augmented_file</span><span class="p">)</span>
+
     <span class="k">if</span> <span class="n">remove_root</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 
         <span class="k">def</span> <span class="nf">join</span><span class="p">(</span><span class="n">path1</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path2</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -714,16 +714,18 @@
                 <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitdrive</span><span class="p">(</span><span class="n">path2</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="n">seps</span><span class="p">),</span>
             <span class="p">)</span>
 
-        <span class="n">augmented_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">join</span><span class="p">(</span><span class="n">cache_root</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">]</span>
+        <span class="n">augmented_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">join</span><span class="p">(</span><span class="n">cache_root</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">augmented_files</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">remove_root</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">remove_root</span><span class="p">)</span>
-        <span class="n">dirs</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">file</span><span class="p">)</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">]</span>
+        <span class="n">dirs</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">file</span><span class="p">)</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">unique_files</span><span class="p">]</span>
         <span class="n">common_root</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">common_directory</span><span class="p">(</span><span class="n">dirs</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">audeer</span><span class="o">.</span><span class="n">common_directory</span><span class="p">([</span><span class="n">remove_root</span><span class="p">,</span> <span class="n">common_root</span><span class="p">])</span> <span class="o">==</span> <span class="n">remove_root</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Cannot remove &#39;</span><span class="si">{</span><span class="n">remove_root</span><span class="si">}</span><span class="s2">&#39; &quot;</span> <span class="sa">f</span><span class="s2">&quot;from &#39;</span><span class="si">{</span><span class="n">common_root</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
             <span class="p">)</span>
-        <span class="n">augmented_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">file</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">remove_root</span><span class="p">,</span> <span class="n">cache_root</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">]</span>
+        <span class="n">augmented_files</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">remove_root</span><span class="p">,</span> <span class="n">cache_root</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">augmented_files</span>
+        <span class="p">]</span>
     <span class="k">return</span> <span class="n">augmented_files</span>
 </pre></div>
 
@@ -740,7 +742,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/05/14 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/07/08 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
