@@ -59,7 +59,9 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
 
     - name: OSX - install audio packages
-      run: brew install ffmpeg homebrew/cask/mediainfo
+      run: |
+        brew install ffmpeg
+        brew --cask mediainfo
       if: matrix.os == 'macOS-latest'
 
     - name: Windows - install audio packages
