@@ -1,4 +1,4 @@
-import typing
+from __future__ import annotations
 
 import pandas as pd
 
@@ -43,7 +43,7 @@ class Time(audobject.Object):
 
     def __init__(
         self,
-        value: typing.Union[int, float, observe.Base],
+        value: int | float | observe.Base,
         unit: str,
     ):
         self.value = value

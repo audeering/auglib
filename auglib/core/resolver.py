@@ -1,4 +1,4 @@
-import typing
+import collections
 
 import numpy as np
 
@@ -10,14 +10,14 @@ class ArrayResolver(audobject.resolver.Base):
 
     def decode(
         self,
-        value: typing.Any,
-    ) -> typing.Any:
+        value: object,
+    ) -> object:
         return value
 
     def encode(
         self,
-        value: typing.Any,
-    ) -> typing.Any:
+        value: object,
+    ) -> object:
         if isinstance(value, np.ndarray):
             raise ValueError(
                 f"Cannot serialize an instance of "
@@ -37,14 +37,14 @@ class ObservableListResolver(audobject.resolver.Base):
 
     def decode(
         self,
-        value: typing.Any,
-    ) -> typing.Any:
+        value: object,
+    ) -> object:
         return value
 
     def encode(
         self,
-        value: typing.MutableSequence[typing.Any],
-    ) -> typing.Any:
+        value: collections.abc.MutableSequence[object],
+    ) -> object:
         for v in value:
             if isinstance(v, np.ndarray):
                 raise ValueError(

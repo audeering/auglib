@@ -1,5 +1,7 @@
+from __future__ import annotations
+
+import collections
 import os
-import typing
 
 import numpy as np
 import pandas as pd
@@ -140,10 +142,10 @@ class Augment(audinterface.Process, audobject.Object):
         *,
         sampling_rate: int = None,
         resample: bool = False,
-        channels: typing.Union[int, typing.Sequence[int]] = None,
+        channels: int | collections.abc.Sequence[int] = None,
         mixdown: bool = False,
         keep_nat: bool = False,
-        num_workers: typing.Optional[int] = 1,
+        num_workers: int | None = 1,
         multiprocessing: bool = False,
         seed: int = None,
         verbose: bool = False,
@@ -184,7 +186,7 @@ class Augment(audinterface.Process, audobject.Object):
 
     def augment(
         self,
-        data: typing.Union[pd.Index, pd.Series, pd.DataFrame],
+        data: pd.Index | pd.Series | pd.DataFrame,
         cache_root: str = None,
         *,
         data_root: str = None,
@@ -192,7 +194,7 @@ class Augment(audinterface.Process, audobject.Object):
         modified_only: bool = True,
         num_variants: int = 1,
         force: bool = False,
-    ) -> typing.Union[pd.Index, pd.Series, pd.DataFrame]:
+    ) -> pd.Index | pd.Series | pd.DataFrame:
         r"""Augment an index, column, or table conform to audformat.
 
         Creates ``num_variants`` copies of the segments referenced in the index
@@ -505,10 +507,10 @@ def _apply_nat_mask(
 
 
 def _augmented_files(
-    files: typing.Sequence[str],
+    files: collections.abc.Sequence[str],
     cache_root: str,
     remove_root: str = None,
-) -> typing.List[str]:
+) -> list[str]:
     r"""Return destination path for augmented files.
 
     If files contain the same filename several times,
