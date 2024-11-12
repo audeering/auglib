@@ -1362,7 +1362,7 @@ class Compose(Base):
 
     def __init__(
         self,
-        transforms: collections.abc.Sequence[observe.Base],
+        transforms: collections.abc.Sequence[Base],
         *,
         preserve_level: bool | observe.Base = False,
         bypass_prob: float | observe.Base = None,
