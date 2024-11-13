@@ -5,8 +5,8 @@
 # and the file should never be renamed.
 from __future__ import annotations
 
-import collections
 from collections.abc import Callable
+from collections.abc import Sequence
 import math
 import tempfile
 import warnings
@@ -698,7 +698,7 @@ class BabbleNoise(Base):
     )
     def __init__(
         self,
-        speech: collections.abc.Sequence[str | np.ndarray],
+        speech: Sequence[str | np.ndarray],
         *,
         num_speakers: int | observe.Base = 5,
         gain_db: float | observe.Base = 0.0,
@@ -1362,7 +1362,7 @@ class Compose(Base):
 
     def __init__(
         self,
-        transforms: collections.abc.Sequence[Base],
+        transforms: Sequence[Base],
         *,
         preserve_level: bool | observe.Base = False,
         bypass_prob: float | observe.Base = None,
@@ -3729,7 +3729,7 @@ class Select(Base):
 
     def __init__(
         self,
-        transforms: collections.abc.Sequence[Base],
+        transforms: Sequence[Base],
         *,
         preserve_level: bool | observe.Base = False,
         bypass_prob: float | observe.Base = None,

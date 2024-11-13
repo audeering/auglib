@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import collections
+from collections.abc import Sequence
 import os
 
 import numpy as np
@@ -142,7 +142,7 @@ class Augment(audinterface.Process, audobject.Object):
         *,
         sampling_rate: int = None,
         resample: bool = False,
-        channels: int | collections.abc.Sequence[int] = None,
+        channels: int | Sequence[int] = None,
         mixdown: bool = False,
         keep_nat: bool = False,
         num_workers: int | None = 1,
@@ -507,7 +507,7 @@ def _apply_nat_mask(
 
 
 def _augmented_files(
-    files: collections.abc.Sequence[str],
+    files: Sequence[str],
     cache_root: str,
     remove_root: str = None,
 ) -> list[str]:

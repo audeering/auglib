@@ -1,4 +1,4 @@
-import collections
+from collections.abc import MutableSequence
 
 import numpy as np
 
@@ -43,7 +43,7 @@ class ObservableListResolver(audobject.resolver.Base):
 
     def encode(
         self,
-        value: collections.abc.MutableSequence[object],
+        value: MutableSequence[object],
     ) -> object:
         for v in value:
             if isinstance(v, np.ndarray):

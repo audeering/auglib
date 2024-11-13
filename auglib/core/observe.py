@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import collections
+from collections.abc import MutableSequence
 import random
 
 import numpy as np
@@ -229,7 +229,7 @@ class List(Base):
     )
     def __init__(
         self,
-        elements: collections.abc.MutableSequence[object],
+        elements: MutableSequence[object],
         *,
         shuffle: bool = False,
         draw: bool = False,
