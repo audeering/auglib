@@ -3,13 +3,12 @@
 # during serialization,
 # they should never be moved to a different file,
 # and the file should never be renamed.
+from __future__ import annotations
 
+from collections.abc import Callable
+from collections.abc import Sequence
 import math
 import tempfile
-import typing
-from typing import Callable
-from typing import Sequence
-from typing import Union
 import warnings
 
 import numpy as np
@@ -134,12 +133,12 @@ class Base(audobject.Object):
     )
     def __init__(
         self,
-        bypass_prob: Union[float, observe.Base] = None,
+        bypass_prob: float | observe.Base = None,
         *,
         unit: str = "seconds",
-        preserve_level: Union[bool, observe.Base] = False,
-        aux: Union[str, observe.Base, np.ndarray, "Base"] = None,
-        transform: "Base" = None,
+        preserve_level: bool | observe.Base = False,
+        aux: str | observe.Base | np.ndarray | Base = None,
+        transform: Base = None,
         num_repeat: int = None,
     ):
         self.unit = unit
@@ -260,7 +259,7 @@ class Base(audobject.Object):
 
     def to_samples(
         self,
-        value: typing.Union[int, float, observe.Base, Time],
+        value: int | float | observe.Base | Time,
         sampling_rate: int = None,
         *,
         length: int = None,
@@ -340,11 +339,11 @@ class AMRNB(Base):
 
     def __init__(
         self,
-        bit_rate: Union[int, observe.Base],
+        bit_rate: int | observe.Base,
         *,
-        dtx: Union[bool, observe.Base] = False,
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: Union[float, observe.Base] = None,
+        dtx: bool | observe.Base = False,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             bypass_prob=bypass_prob,
@@ -462,14 +461,14 @@ class Append(Base):
 
     def __init__(
         self,
-        aux: Union[str, observe.Base, np.ndarray, Base],
+        aux: str | observe.Base | np.ndarray | Base,
         *,
-        read_pos_aux: Union[int, float, observe.Base, Time] = 0.0,
-        read_dur_aux: Union[int, float, observe.Base, Time] = None,
+        read_pos_aux: int | float | observe.Base | Time = 0.0,
+        read_dur_aux: int | float | observe.Base | Time = None,
         unit: str = "seconds",
         transform: Base = None,
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: Union[float, observe.Base] = None,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             aux=aux,
@@ -565,12 +564,12 @@ class AppendValue(Base):
 
     def __init__(
         self,
-        duration: Union[int, float, observe.Base, Time],
-        value: Union[float, observe.Base] = 0,
+        duration: int | float | observe.Base | Time,
+        value: float | observe.Base = 0,
         *,
         unit: str = "seconds",
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: Union[float, observe.Base] = None,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             unit=unit,
@@ -699,13 +698,13 @@ class BabbleNoise(Base):
     )
     def __init__(
         self,
-        speech: Sequence[Union[str, np.ndarray]],
+        speech: Sequence[str | np.ndarray],
         *,
-        num_speakers: Union[int, observe.Base] = 5,
-        gain_db: Union[float, observe.Base] = 0.0,
-        snr_db: Union[float, observe.Base] = None,
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: Union[float, observe.Base] = None,
+        num_speakers: int | observe.Base = 5,
+        gain_db: float | observe.Base = 0.0,
+        snr_db: float | observe.Base = None,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -834,13 +833,13 @@ class BandPass(Base):
 
     def __init__(
         self,
-        center: Union[float, observe.Base],
-        bandwidth: Union[float, observe.Base],
+        center: float | observe.Base,
+        bandwidth: float | observe.Base,
         *,
-        order: Union[int, observe.Base] = 1,
+        order: int | observe.Base = 1,
         design: str = "butter",
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: Union[float, observe.Base] = None,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -964,13 +963,13 @@ class BandStop(Base):
 
     def __init__(
         self,
-        center: Union[float, observe.Base],
-        bandwidth: Union[float, observe.Base],
+        center: float | observe.Base,
+        bandwidth: float | observe.Base,
         *,
-        order: Union[int, observe.Base] = 1,
+        order: int | observe.Base = 1,
         design: str = "butter",
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: Union[float, observe.Base] = None,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -1075,11 +1074,11 @@ class Clip(Base):
     def __init__(
         self,
         *,
-        threshold: Union[float, observe.Base] = 0.0,
-        soft: Union[bool, observe.Base] = False,
-        normalize: Union[bool, observe.Base] = False,
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: Union[float, observe.Base] = None,
+        threshold: float | observe.Base = 0.0,
+        soft: bool | observe.Base = False,
+        normalize: bool | observe.Base = False,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -1184,12 +1183,12 @@ class ClipByRatio(Base):
 
     def __init__(
         self,
-        ratio: Union[float, observe.Base],
+        ratio: float | observe.Base,
         *,
-        soft: Union[bool, observe.Base] = False,
-        normalize: Union[bool, observe.Base] = False,
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: Union[float, observe.Base] = None,
+        soft: bool | observe.Base = False,
+        normalize: bool | observe.Base = False,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -1365,8 +1364,8 @@ class Compose(Base):
         self,
         transforms: Sequence[Base],
         *,
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: Union[float, observe.Base] = None,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -1484,16 +1483,16 @@ class CompressDynamicRange(Base):
 
     def __init__(
         self,
-        threshold_db: Union[float, observe.Base],
-        ratio: Union[float, observe.Base],
+        threshold_db: float | observe.Base,
+        ratio: float | observe.Base,
         *,
-        attack_time: Union[float, observe.Base] = 0.01,
-        release_time: Union[float, observe.Base] = 0.02,
-        knee_radius_db: Union[float, observe.Base] = 4.0,
-        makeup_db: Union[None, float, observe.Base] = 0.0,
-        clip: Union[bool, observe.Base] = False,
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: Union[float, observe.Base] = None,
+        attack_time: float | observe.Base = 0.01,
+        release_time: float | observe.Base = 0.02,
+        knee_radius_db: float | observe.Base = 4.0,
+        makeup_db: None | float | observe.Base = 0.0,
+        clip: bool | observe.Base = False,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -1697,15 +1696,15 @@ class Fade(Base):
     def __init__(
         self,
         *,
-        in_dur: Union[int, float, observe.Base, Time] = 0.1,
-        out_dur: Union[int, float, observe.Base, Time] = 0.1,
+        in_dur: int | float | observe.Base | Time = 0.1,
+        out_dur: int | float | observe.Base | Time = 0.1,
         in_shape: str = "tukey",
         out_shape: str = "tukey",
         in_db: float = -120,
         out_db: float = -120,
         unit: str = "seconds",
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: Union[float, observe.Base] = None,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             unit=unit,
@@ -1883,12 +1882,12 @@ class FFTConvolve(Base):
 
     def __init__(
         self,
-        aux: Union[str, observe.Base, np.ndarray, Base],
+        aux: str | observe.Base | np.ndarray | Base,
         *,
-        keep_tail: Union[bool, observe.Base] = True,
+        keep_tail: bool | observe.Base = True,
         transform: Base = None,
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: Union[float, observe.Base] = None,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             aux=aux,
@@ -2035,10 +2034,10 @@ class Function(Base):
     def __init__(
         self,
         function: Callable[..., np.ndarray],
-        function_args: typing.Dict = None,
+        function_args: dict = None,
         *,
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: Union[float, observe.Base] = None,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -2125,12 +2124,12 @@ class GainStage(Base):
 
     def __init__(
         self,
-        gain_db: Union[float, observe.Base],
+        gain_db: float | observe.Base,
         *,
-        max_peak_db: Union[float, observe.Base] = None,
-        clip: Union[bool, observe.Base] = False,
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: Union[float, observe.Base] = None,
+        max_peak_db: float | observe.Base = None,
+        clip: bool | observe.Base = False,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -2281,12 +2280,12 @@ class HighPass(Base):
 
     def __init__(
         self,
-        cutoff: Union[float, observe.Base],
+        cutoff: float | observe.Base,
         *,
-        order: Union[int, observe.Base] = 1,
+        order: int | observe.Base = 1,
         design: str = "butter",
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: Union[float, observe.Base] = None,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -2438,12 +2437,12 @@ class LowPass(Base):
 
     def __init__(
         self,
-        cutoff: Union[float, observe.Base],
+        cutoff: float | observe.Base,
         *,
-        order: Union[int, observe.Base] = 1,
+        order: int | observe.Base = 1,
         design: str = "butter",
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: Union[float, observe.Base] = None,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -2626,22 +2625,22 @@ class Mask(Base):
         self,
         transform: Base,
         *,
-        start_pos: typing.Union[int, float, observe.Base, Time] = 0,
-        duration: typing.Union[int, float, observe.Base, Time] = None,
-        step: typing.Union[
-            int,
-            float,
-            observe.Base,
-            Time,
-            typing.Tuple[
-                Union[int, float, observe.Base, Time],
-                Union[int, float, observe.Base, Time],
-            ],
-        ] = None,
-        invert: typing.Union[bool, observe.Base] = False,
+        start_pos: int | float | observe.Base | Time = 0,
+        duration: int | float | observe.Base | Time = None,
+        step: (
+            int
+            | float
+            | observe.Base
+            | Time
+            | tuple[
+                int | float | observe.Base | Time,
+                int | float | observe.Base | Time,
+            ]
+        ) = None,
+        invert: bool | observe.Base = False,
         unit: str = "seconds",
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: typing.Union[float, observe.Base] = None,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         if step is not None:
             step = audeer.to_list(step)
@@ -2890,22 +2889,22 @@ class Mix(Base):
 
     def __init__(
         self,
-        aux: Union[str, observe.Base, np.ndarray, Base],
+        aux: str | observe.Base | np.ndarray | Base,
         *,
-        gain_base_db: Union[float, observe.Base] = 0.0,
-        gain_aux_db: Union[float, observe.Base] = 0.0,
-        snr_db: Union[float, observe.Base] = None,
-        write_pos_base: Union[int, float, observe.Base, Time] = 0.0,
-        read_pos_aux: Union[int, float, observe.Base, Time] = 0.0,
-        read_dur_aux: Union[int, float, observe.Base, Time] = None,
-        clip_mix: Union[bool, observe.Base] = False,
-        loop_aux: Union[bool, observe.Base] = False,
-        extend_base: Union[bool, observe.Base] = False,
-        num_repeat: Union[int, observe.Base] = 1,
+        gain_base_db: float | observe.Base = 0.0,
+        gain_aux_db: float | observe.Base = 0.0,
+        snr_db: float | observe.Base = None,
+        write_pos_base: int | float | observe.Base | Time = 0.0,
+        read_pos_aux: int | float | observe.Base | Time = 0.0,
+        read_dur_aux: int | float | observe.Base | Time = None,
+        clip_mix: bool | observe.Base = False,
+        loop_aux: bool | observe.Base = False,
+        extend_base: bool | observe.Base = False,
+        num_repeat: int | observe.Base = 1,
         unit: str = "seconds",
         transform: Base = None,
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: Union[float, observe.Base] = None,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             aux=aux,
@@ -3079,10 +3078,10 @@ class NormalizeByPeak(Base):
     def __init__(
         self,
         *,
-        peak_db: Union[float, observe.Base] = 0.0,
-        clip: Union[bool, observe.Base] = False,
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: Union[float, observe.Base] = None,
+        peak_db: float | observe.Base = 0.0,
+        clip: bool | observe.Base = False,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -3218,10 +3217,10 @@ class PinkNoise(Base):
     def __init__(
         self,
         *,
-        gain_db: Union[float, observe.Base] = 0.0,
-        snr_db: Union[float, observe.Base] = None,
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: Union[float, observe.Base] = None,
+        gain_db: float | observe.Base = 0.0,
+        snr_db: float | observe.Base = None,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -3354,14 +3353,14 @@ class Prepend(Base):
 
     def __init__(
         self,
-        aux: Union[str, observe.Base, np.ndarray, Base],
+        aux: str | observe.Base | np.ndarray | Base,
         *,
-        read_pos_aux: Union[int, float, observe.Base, Time] = 0.0,
-        read_dur_aux: Union[int, float, observe.Base, Time] = None,
+        read_pos_aux: int | float | observe.Base | Time = 0.0,
+        read_dur_aux: int | float | observe.Base | Time = None,
         unit: str = "seconds",
         transform: Base = None,
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: Union[float, observe.Base] = None,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             aux=aux,
@@ -3457,12 +3456,12 @@ class PrependValue(Base):
 
     def __init__(
         self,
-        duration: Union[int, float, observe.Base, Time],
-        value: Union[float, observe.Base] = 0,
+        duration: int | float | observe.Base | Time,
+        value: float | observe.Base = 0,
         *,
         unit: str = "seconds",
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: Union[float, observe.Base] = None,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             unit=unit,
@@ -3635,10 +3634,10 @@ class Resample(Base):
 
     def __init__(
         self,
-        target_rate: typing.Union[int, observe.List],
+        target_rate: int | observe.List,
         *,
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: typing.Union[float, observe.Base] = None,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
         **kwargs,
     ):
         super().__init__(
@@ -3732,8 +3731,8 @@ class Select(Base):
         self,
         transforms: Sequence[Base],
         *,
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: Union[float, observe.Base] = None,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -3809,11 +3808,11 @@ class Shift(Base):
 
     def __init__(
         self,
-        duration: typing.Union[int, float, observe.Base, Time] = None,
+        duration: int | float | observe.Base | Time = None,
         *,
         unit: str = "seconds",
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: typing.Union[float, observe.Base] = None,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             unit=unit,
@@ -3946,15 +3945,15 @@ class Tone(Base):
 
     def __init__(
         self,
-        freq: Union[float, observe.Base],
+        freq: float | observe.Base,
         *,
-        gain_db: Union[float, observe.Base] = 0.0,
-        snr_db: Union[float, observe.Base] = None,
-        shape: Union[str, observe.Base] = "sine",
-        lfo_rate: Union[float, observe.Base] = 0.0,
-        lfo_range: Union[float, observe.Base] = 0.0,
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: Union[float, observe.Base] = None,
+        gain_db: float | observe.Base = 0.0,
+        snr_db: float | observe.Base = None,
+        shape: str | observe.Base = "sine",
+        lfo_rate: float | observe.Base = 0.0,
+        lfo_range: float | observe.Base = 0.0,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -4222,14 +4221,14 @@ class Trim(Base):
     def __init__(
         self,
         *,
-        start_pos: Union[int, float, observe.Base, Time] = 0,
-        end_pos: Union[int, float, observe.Base, Time] = None,
-        duration: Union[int, float, observe.Base, Time] = None,
+        start_pos: int | float | observe.Base | Time = 0,
+        end_pos: int | float | observe.Base | Time = None,
+        duration: int | float | observe.Base | Time = None,
         fill: str = "none",
         fill_pos: str = "right",
         unit: str = "seconds",
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: Union[float, observe.Base] = None,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             unit=unit,
@@ -4546,11 +4545,11 @@ class WhiteNoiseGaussian(Base):
     def __init__(
         self,
         *,
-        gain_db: Union[float, observe.Base] = 0.0,
-        snr_db: Union[float, observe.Base] = None,
-        stddev: Union[float, observe.Base] = 0.3,
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: Union[float, observe.Base] = None,
+        gain_db: float | observe.Base = 0.0,
+        snr_db: float | observe.Base = None,
+        stddev: float | observe.Base = 0.3,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             preserve_level=preserve_level,
@@ -4693,10 +4692,10 @@ class WhiteNoiseUniform(Base):
     def __init__(
         self,
         *,
-        gain_db: Union[float, observe.Base] = 0.0,
-        snr_db: Union[float, observe.Base] = None,
-        preserve_level: Union[bool, observe.Base] = False,
-        bypass_prob: Union[float, observe.Base] = None,
+        gain_db: float | observe.Base = 0.0,
+        snr_db: float | observe.Base = None,
+        preserve_level: bool | observe.Base = False,
+        bypass_prob: float | observe.Base = None,
     ):
         super().__init__(
             preserve_level=preserve_level,

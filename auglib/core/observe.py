@@ -1,5 +1,7 @@
+from __future__ import annotations
+
+from collections.abc import MutableSequence
 import random
-import typing
 
 import numpy as np
 
@@ -13,7 +15,7 @@ class Base(audobject.Object):
 
     """
 
-    def __call__(self) -> typing.Any:  # pragma: no cover
+    def __call__(self) -> object:  # pragma: no cover
         r"""Observe next value.
 
         Returns:
@@ -227,7 +229,7 @@ class List(Base):
     )
     def __init__(
         self,
-        elements: typing.MutableSequence[typing.Any],
+        elements: MutableSequence[object],
         *,
         shuffle: bool = False,
         draw: bool = False,
@@ -241,10 +243,10 @@ class List(Base):
         self._counter = 0
         self._iter = False
 
-    def _draw(self) -> typing.Any:
+    def _draw(self) -> object:
         return self.elements[random.randint(0, len(self) - 1)]
 
-    def _next(self) -> typing.Any:
+    def _next(self) -> object:
         if self.shuffle and self._counter == 0:
             random.shuffle(self.elements)
         element = self.elements[self._counter]
@@ -254,7 +256,7 @@ class List(Base):
             self._iter = False
         return element
 
-    def __call__(self) -> typing.Any:
+    def __call__(self) -> object:
         r"""Observe next value from list.
 
         Returns:
@@ -281,8 +283,8 @@ class List(Base):
 
 
 def observe(
-    x: typing.Union[typing.Any, Base],
-) -> typing.Any:
+    x: object | Base,
+) -> object:
     r"""Convenient function to observe a value.
 
     Returns ``x()`` if ``x`` is of type :class:`auglib.observe.Base`,

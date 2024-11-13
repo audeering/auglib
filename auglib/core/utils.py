@@ -1,4 +1,4 @@
-import typing
+from __future__ import annotations
 
 import numpy as np
 
@@ -6,7 +6,7 @@ from auglib.core import observe
 from auglib.core import time
 
 
-def from_db(x_db: typing.Union[float, observe.Base]) -> float:
+def from_db(x_db: float | observe.Base) -> float:
     r"""Convert decibels (dB) to gain.
 
     Args:
@@ -72,7 +72,7 @@ def rms_db(signal: np.ndarray) -> float:
     return float(10 * np.log10(max(1e-12, power)))
 
 
-def to_db(x: typing.Union[float, observe.Base]) -> float:
+def to_db(x: float | observe.Base) -> float:
     r"""Convert gain to decibels (dB).
 
     Args:
@@ -87,13 +87,13 @@ def to_db(x: typing.Union[float, observe.Base]) -> float:
 
     """
     x = observe.observe(x)
-    assert x > 0, "cannot convert gain {} to decibels".format(x)
+    assert x > 0, f"cannot convert gain {x} to decibels"
     x_db = 20 * np.log10(x)
     return float(x_db)
 
 
 def to_samples(
-    value: typing.Union[int, float, observe.Base, time.Time],
+    value: int | float | observe.Base | time.Time,
     *,
     sampling_rate: int = None,
     length: int = None,
