@@ -52,6 +52,7 @@ we can do:
 
 
 """
+
 from auglib.core.observe import Base
 from auglib.core.observe import Bool
 from auglib.core.observe import FloatNorm
