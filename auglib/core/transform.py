@@ -187,7 +187,7 @@ class Base(audobject.Object):
                 is not support
                 by chosen transform parameters
             ValueError: if ``sampling_rate`` is ``None``,
-                but the transform requires a samling rate
+                but the transform requires a sampling rate
             RuntimeError: if the given sampling rate is incompatible
                 with the transform
 
