@@ -1,9 +1,0 @@
-audb
-audformat >=1.1.0
-audmath >=1.1.0
-# Allow the usage of `strict` in `np.testing.assert_array_equal()`
-numpy >=1.24.0
-pytest
-pytest-cov
-pytest-doctestplus
-scipy

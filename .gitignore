@@ -9,3 +9,4 @@ venv/
 coverage.xml
 cache/
 docs/api/
+uv.lock
