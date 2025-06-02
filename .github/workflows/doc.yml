@@ -20,7 +20,7 @@ jobs:
       with:
         # Ensure a dynamic version is assigned
         fetch-tags: true
-        fetch-depth: 2
+        fetch-depth: 20
 
     - name: Cache air
       uses: actions/cache@v4
