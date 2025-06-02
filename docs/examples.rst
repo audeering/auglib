@@ -667,7 +667,7 @@ which preserves the natural pitch fluctuations per speaker.
         # Estimate average pitch of signal
         pitch = sound.to_pitch()
         pitch = pitch.selected_array["frequency"]
-        pitch[pitch == 0] = np.NaN
+        pitch[pitch == 0] = np.nan
         pitch = np.nanmean(pitch)
         # Adjust signal to desired pitch
         manipulation = praat(sound, "To Manipulation", 0.01, 75, 600)
