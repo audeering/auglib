@@ -74,7 +74,7 @@ dev = [
     'sox',
     'sphinx',
     'sphinx-apipages',
-    'sphinx-audeering-theme>=1.4.1',
+    'sphinx-audeering-theme >=1.4.1',
     'sphinx-autodoc-typehints',
     'sphinx-copybutton',
     'toml',
