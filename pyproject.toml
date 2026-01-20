@@ -30,10 +30,9 @@ classifiers = [
     'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.10',
-    'Programming Language :: Python :: 3.9',
     'Topic :: Scientific/Engineering',
 ]
-requires-python = '>=3.9'
+requires-python = '>=3.10'
 dependencies = [
     'audeer >=2.0.0',
     'audformat >=1.1.0',
@@ -62,6 +61,7 @@ dev = [
     'audplot >=1.4.5',
     'ipykernel',
     'jupyter-sphinx',
+    'numba >=0.63.1',
     'numpy >=1.24.0',
     'pedalboard >=0.4.0',
     'praat-parselmouth',
