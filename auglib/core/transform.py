@@ -638,7 +638,7 @@ class BabbleNoise(Base):
             >>> import auglib
             >>> import numpy as np
             >>> auglib.seed(1)
-            >>> db = audb.load("musan", media=".*speech-librivox-000\d", version="1.0.0")
+            >>> db = audb.load("musan", media=r".*speech-librivox-000\d", version="1.0.0")
             >>> transform = auglib.transform.BabbleNoise(db.files[:5])
             >>> signal = np.zeros((1, 30372))
             >>> augmented_signal = transform(signal)
@@ -2819,7 +2819,7 @@ class Mix(Base):
             >>> import audplot
             >>> import auglib
             >>> auglib.seed(0)
-            >>> db = audb.load("musan", media=".*noise-free-sound-000\d", version="1.0.0")
+            >>> db = audb.load("musan", media=r".*noise-free-sound-000\d", version="1.0.0")
             >>> transform = auglib.transform.Mix(
             ...     auglib.observe.List(db.files, draw=True),
             ...     loop_aux=True,

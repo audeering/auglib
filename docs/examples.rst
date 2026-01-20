@@ -385,7 +385,7 @@ when using the augmentation in a real application.
     db = audb.load(
         "musan",
         tables="speech",
-        media=".*speech-librivox-000\d",
+        media=r".*speech-librivox-000\d",
         version="1.0.0",
         verbose=False,
     )
