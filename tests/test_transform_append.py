@@ -75,10 +75,7 @@ def test_append(
             np.zeros((1, 2000)),
             False,
             ValueError,
-            (
-                "Unit is set to 'seconds', "
-                "but no value is provided for 'sampling_rate'."
-            ),
+            ("Unit is set to 'seconds', but no value is provided for 'sampling_rate'."),
         ),
         (
             np.ones((1, 4)),

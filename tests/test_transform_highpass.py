@@ -52,10 +52,7 @@ def test_highpass(sampling_rate, duration, order, cutoff):
             "non-supported",
             16000,
             ValueError,
-            (
-                "Unknown filter design 'non-supported'. "
-                "Supported designs are: butter."
-            ),
+            ("Unknown filter design 'non-supported'. Supported designs are: butter."),
         ),
         (
             "butter",

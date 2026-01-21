@@ -57,10 +57,7 @@ def test_bandpass(duration, sampling_rate):
             "non-supported",
             16000,
             ValueError,
-            (
-                "Unknown filter design 'non-supported'. "
-                "Supported designs are: butter."
-            ),
+            ("Unknown filter design 'non-supported'. Supported designs are: butter."),
         ),
         (
             "butter",

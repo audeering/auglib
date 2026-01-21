@@ -65,7 +65,7 @@ def test_resample_errors(
 
 def test_resample_warning():
     expected_warning = (
-        "'override' argument is ignored " "and will be removed with version 1.2.0."
+        "'override' argument is ignored and will be removed with version 1.2.0."
     )
     with pytest.warns(UserWarning, match=expected_warning):
         auglib.transform.Resample(8000, override=True)

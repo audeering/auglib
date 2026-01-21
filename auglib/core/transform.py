@@ -638,7 +638,9 @@ class BabbleNoise(Base):
             >>> import auglib
             >>> import numpy as np
             >>> auglib.seed(1)
-            >>> db = audb.load("musan", media=r".*speech-librivox-000\d", version="1.0.0")
+            >>> db = audb.load(
+            ...     "musan", media=r".*speech-librivox-000\d", version="1.0.0"
+            ... )
             >>> transform = auglib.transform.BabbleNoise(db.files[:5])
             >>> signal = np.zeros((1, 30372))
             >>> augmented_signal = transform(signal)
@@ -1721,7 +1723,7 @@ class Fade(Base):
         for level in [in_db, out_db]:
             if level >= 0:
                 raise ValueError(
-                    "Fading level needs to be below 0 dB, " f"not {level} dB."
+                    f"Fading level needs to be below 0 dB, not {level} dB."
                 )
         self.in_dur = in_dur
         self.out_dur = out_dur
@@ -2004,7 +2006,9 @@ class Function(Base):
             :context: close-figs
             :include-source: True
 
-            >>> transform = auglib.transform.Function(shutter, {"block": 400, "non_block": 800})
+            >>> transform = auglib.transform.Function(
+            ...     shutter, {"block": 400, "non_block": 800}
+            ... )
             >>> augmented_signal = transform(signal)
             >>> audplot.waveform(augmented_signal)
 
@@ -2819,7 +2823,9 @@ class Mix(Base):
             >>> import audplot
             >>> import auglib
             >>> auglib.seed(0)
-            >>> db = audb.load("musan", media=r".*noise-free-sound-000\d", version="1.0.0")
+            >>> db = audb.load(
+            ...     "musan", media=r".*noise-free-sound-000\d", version="1.0.0"
+            ... )
             >>> transform = auglib.transform.Mix(
             ...     auglib.observe.List(db.files, draw=True),
             ...     loop_aux=True,
@@ -3170,7 +3176,9 @@ class PinkNoise(Base):
             >>> import audmath
             >>> import matplotlib.pyplot as plt
             >>> import seaborn as sns
-            >>> magnitude, f = plt.mlab.magnitude_spectrum(augmented_signal[0, :], Fs=16000)
+            >>> magnitude, f = plt.mlab.magnitude_spectrum(
+            ...     augmented_signal[0, :], Fs=16000
+            ... )
             >>> # Smooth magnitude
             >>> magnitude = np.convolve(magnitude, np.ones(14) / 14, mode="same")
             >>> plt.semilogx(f, audmath.db(magnitude), color="#e13b41")
@@ -4498,7 +4506,9 @@ class WhiteNoiseGaussian(Base):
             >>> import audmath
             >>> import matplotlib.pyplot as plt
             >>> import seaborn as sns
-            >>> magnitude, f = plt.mlab.magnitude_spectrum(augmented_signal[0, :], Fs=16000)
+            >>> magnitude, f = plt.mlab.magnitude_spectrum(
+            ...     augmented_signal[0, :], Fs=16000
+            ... )
             >>> # Smooth magnitude
             >>> magnitude = np.convolve(magnitude, np.ones(14) / 14, mode="same")
             >>> plt.semilogx(f, audmath.db(magnitude), color="#e13b41")
@@ -4645,7 +4655,9 @@ class WhiteNoiseUniform(Base):
             >>> import audmath
             >>> import matplotlib.pyplot as plt
             >>> import seaborn as sns
-            >>> magnitude, f = plt.mlab.magnitude_spectrum(augmented_signal[0, :], Fs=16000)
+            >>> magnitude, f = plt.mlab.magnitude_spectrum(
+            ...     augmented_signal[0, :], Fs=16000
+            ... )
             >>> # Smooth magnitude
             >>> magnitude = np.convolve(magnitude, np.ones(14) / 14, mode="same")
             >>> plt.semilogx(f, audmath.db(magnitude), color="#e13b41")

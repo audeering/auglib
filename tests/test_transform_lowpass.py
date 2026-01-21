@@ -52,10 +52,7 @@ def test_lowpass(duration, sampling_rate, order, cutoff):
             "non-supported",
             16000,
             ValueError,
-            (
-                "Unknown filter design 'non-supported'. "
-                "Supported designs are: butter."
-            ),
+            ("Unknown filter design 'non-supported'. Supported designs are: butter."),
         ),
         (
             "butter",

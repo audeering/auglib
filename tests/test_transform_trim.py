@@ -442,11 +442,7 @@ def test_Trim_error_call(
             "none",
             "unknown",
             ValueError,
-            (
-                "Unknown fill_pos 'unknown'. "
-                "Supported positions are: "
-                "right, left, both."
-            ),
+            ("Unknown fill_pos 'unknown'. Supported positions are: right, left, both."),
         ),
     ],
 )
