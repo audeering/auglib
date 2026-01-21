@@ -30,10 +30,9 @@ classifiers = [
     'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.10',
-    'Programming Language :: Python :: 3.9',
     'Topic :: Scientific/Engineering',
 ]
-requires-python = '>=3.9'
+requires-python = '>=3.10'
 dependencies = [
     'audeer >=2.0.0',
     'audformat >=1.1.0',
@@ -49,6 +48,37 @@ dynamic = ['version']
 [project.urls]
 repository = 'https://github.com/audeering/auglib/'
 documentation = 'https://audeering.github.io/auglib/'
+
+
+# ===== DEPENDENCY GROUPS =================================================
+[dependency-groups]
+dev = [
+    'audb',
+    'audeer >=1.21.0',
+    'audformat >=1.1.0',
+    'audmath >=1.1.0',
+    'audiomentations',
+    'audplot >=1.4.5',
+    'ipykernel',
+    'jupyter-sphinx',
+    'numba >=0.63.1',
+    'numpy >=1.24.0',
+    'pedalboard >=0.4.0',
+    'praat-parselmouth',
+    'pyarrow',
+    'pydub',
+    'pytest',
+    'pytest-cov',
+    'pytest-doctestplus',
+    'scipy',
+    'sox',
+    'sphinx',
+    'sphinx-apipages',
+    'sphinx-audeering-theme >=1.4.1',
+    'sphinx-autodoc-typehints',
+    'sphinx-copybutton',
+    'toml',
+]
 
 
 # ===== BUILD-SYSTEM ======================================================

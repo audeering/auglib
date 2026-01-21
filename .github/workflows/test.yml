@@ -24,9 +24,6 @@ jobs:
           - os: ubuntu-latest
             python-version: '3.11'
             tasks: tests
-          - os: ubuntu-latest
-            python-version: '3.9'
-            tasks: tests
 
     steps:
     - uses: actions/checkout@v4
@@ -38,16 +35,16 @@ jobs:
         key: emodb-1.4.1
 
     - name: Set up Python ${{ matrix.python-version }} with Micromamba
-      uses: mamba-org/setup-micromamba@v1
+      uses: mamba-org/setup-micromamba@v2
       with:
         cache-environment: true
-        environment-name: venv
+        environment-name: .venv
         create-args: >-
-          pip
+          uv
           python=${{ matrix.python-version }}
 
     - name: Activate Python virtual environment
-      run: micromamba activate venv
+      run: micromamba activate .venv
 
     - name: Install sox with Micromamba
       run: micromamba install sox
@@ -66,17 +63,11 @@ jobs:
       run: choco install ffmpeg mediainfo-cli
       if: matrix.os == 'windows-latest'
 
-    - name: Install package
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-
-    # TESTS
-    - name: Install tests requirements
-      run: pip install -r tests/requirements.txt
+    - name: Sync Python environment
+      run: uv sync --active
 
     - name: Test with pytest
-      run: python -m pytest
+      run: uv run --active pytest
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
