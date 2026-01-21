@@ -347,7 +347,7 @@ class Augment(audinterface.Process, audobject.Object):
                     non_nat_index,
                     cache_root_idx,
                     remove_root,
-                    f"Augment ({idx+1} of {num_variants})",
+                    f"Augment ({idx + 1} of {num_variants})",
                 )
                 pd.to_pickle(
                     augmented_index,
@@ -574,9 +574,7 @@ def _augmented_files(
         dirs = [os.path.dirname(file) for file in unique_files]
         common_root = audeer.common_directory(dirs)
         if not audeer.common_directory([remove_root, common_root]) == remove_root:
-            raise RuntimeError(
-                f"Cannot remove '{remove_root}' " f"from '{common_root}'."
-            )
+            raise RuntimeError(f"Cannot remove '{remove_root}' from '{common_root}'.")
         augmented_files = [
             file.replace(remove_root, cache_root, 1) for file in augmented_files
         ]

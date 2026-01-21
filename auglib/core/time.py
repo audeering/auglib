@@ -103,8 +103,7 @@ class Time(audobject.Object):
         elif self.unit == "relative":
             if length is None:
                 raise ValueError(
-                    "Unit is set to 'relative', "
-                    "but no value is provided for 'length'."
+                    "Unit is set to 'relative', but no value is provided for 'length'."
                 )
             num_samples = int(length * value)
         else:
