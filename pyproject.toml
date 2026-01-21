@@ -61,8 +61,6 @@ dev = [
     'audmath >=1.1.0',
     'audiomentations',
     'audplot >=1.4.5',
-    'ipykernel',
-    'jupyter-sphinx',
     'numba >=0.63.1',
     'numpy >=1.24.0',
     'pedalboard >=0.4.0',
@@ -71,7 +69,7 @@ dev = [
     'pydub',
     'pytest',
     'pytest-cov',
-    'pytest-doctestplus',
+    'sybil',
     'scipy',
     'sox',
     'sphinx',
@@ -107,12 +105,10 @@ ignore-words-list = 'master'
 cache_dir = '.cache/pytest'
 xfail_strict = true
 addopts = '''
-    --doctest-plus
     --cov=auglib
     --cov-fail-under=100
     --cov-report term-missing
     --cov-report xml
-    --ignore=docs/
     --ignore=misc/
     --ignore=benchmarks/
 '''

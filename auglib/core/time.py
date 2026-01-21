@@ -32,7 +32,8 @@ class Time(audobject.Object):
         >>> Time(0.5, "relative")(length=64)
         32
         >>> # generate randomized values
-        >>> seed(0)
+        >>> import auglib
+        >>> auglib.seed(0)
         >>> t = Time(observe.FloatUni(0.25, 0.75), "relative")
         >>> t(length=64)
         33

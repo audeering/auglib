@@ -1,6 +1,4 @@
-.. jupyter-execute::
-    :hide-code:
-    :hide-output:
+.. invisible-code-block: python
 
     from IPython.display import Audio as play
     import numpy as np
@@ -12,18 +10,6 @@
 
     grey = "#5d6370"
     red = "#e13b41"
-
-    
-    def series_to_html(self):
-        df = self.to_frame()
-        df.columns = [""]
-        return df._repr_html_()
-    setattr(pd.Series, "_repr_html_", series_to_html)
-
-
-    def index_to_html(self):
-        return self.to_frame(index=False)._repr_html_()
-    setattr(pd.Index, "_repr_html_", index_to_html)
 
 
 .. === Document starts here ===
@@ -50,7 +36,7 @@ to see how to apply the augmentations
 to different inputs.
 
 
-.. jupyter-execute::
+.. code-block:: python
 
     import auglib
 
@@ -70,7 +56,7 @@ Augment a signal
 We now load a signal from emodb_,
 and apply our augmentation to it.
 
-.. jupyter-execute::
+.. code-block:: python
 
     import audb
     import audiofile
@@ -84,13 +70,11 @@ and apply our augmentation to it.
     signal, sampling_rate = audiofile.read(files[0])
     signal_augmented = augment(signal, sampling_rate)
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     audplot.waveform(signal, color=grey, text="Original\nAudio")
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     play(signal, rate=sampling_rate)
 
@@ -98,13 +82,11 @@ and apply our augmentation to it.
 
 |
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     audplot.waveform(signal_augmented, color=red, text="Augmented\nAudio")
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     play(signal_augmented, rate=sampling_rate)
 
@@ -112,7 +94,7 @@ and apply our augmentation to it.
 
 |
 
-  
+
 Augment files in memory
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -121,7 +103,7 @@ to a list of files.
 We load three files from emodb_,
 and augment them using :meth:`auglib.Augment.process_files`.
 
-.. jupyter-execute::
+.. code-block:: python
 
     files = audb.load_media(
         "emodb",
@@ -130,7 +112,6 @@ and augment them using :meth:`auglib.Augment.process_files`.
         verbose=False,
     )
     y_augmented = augment.process_files(files)
-    y_augmented
 
 All :meth:`process_*` methods
 return a series
@@ -173,7 +154,7 @@ It then uses :class:`audformat.Database.files`
 to get a `filewise index`_
 pointing to the files of the dataset.
 
-.. jupyter-execute::
+.. code-block:: python
 
     db = audb.load(
         "emodb",
@@ -183,7 +164,6 @@ pointing to the files of the dataset.
     )
     index = db.files
     index_augmented = augment.augment(index, cache_root="cache")
-    index_augmented
 
 The augmented files are stored inside the ``cache_root`` folder.
 If :meth:`auglib.Augment.augment`
@@ -198,18 +178,17 @@ will be used.
 If we pass a series instead of an index
 a series will be returned:
 
-.. jupyter-execute::
+.. code-block:: python
 
     y = db["files"]["speaker"].get()
     y_augmented = augment.augment(y, cache_root="cache")
-    y_augmented
 
 Finally,
 we augment a dataframe,
 this time keeping the original files in the result
 and augmenting every file twice.
 
-.. jupyter-execute::
+.. code-block:: python
 
     df = db["files"].get()
     df_augmented = augment.augment(
@@ -218,7 +197,6 @@ and augmenting every file twice.
         modified_only=False,
         num_variants=2,
     )
-    df_augmented
 
 
 Serialize
@@ -228,14 +206,14 @@ It's possible to serialize a
 :class:`auglib.Augment` object
 to YAML.
 
-.. jupyter-execute::
+.. code-block:: python
 
     print(augment.to_yaml_s())
 
 We can save it to a file
 and re-instantiate it from there.
 
-.. jupyter-execute::
+.. code-block:: python
 
     import audobject
 
@@ -249,7 +227,7 @@ To make an augmentation reproducible
 that includes random behavior
 we have to set the ``seed`` argument.
 
-.. jupyter-execute::
+.. code-block:: python
 
     transform = auglib.transform.PinkNoise(gain_db=-5)
     augment = auglib.Augment(transform, seed=0)
@@ -261,7 +239,7 @@ and used to re-initialize the
 random number generator when
 the object is loaded.
 
-.. jupyter-execute::
+.. code-block:: python
 
     augment.to_yaml(file)
     augment_from_yaml = audobject.from_yaml(file)
@@ -270,16 +248,13 @@ the object is loaded.
 If we wanted a different random seed
 we can also overwrite the value.
 
-.. jupyter-execute::
+.. code-block:: python
 
     augment_other_seed = audobject.from_yaml(file, override_args={"seed": 1})
     augment_other_seed(signal, sampling_rate)
 
 
-.. Remove stored YAML file
-.. jupyter-execute::
-    :hide-code:
-    :hide-output:
+.. invisible-code-block: python
 
     import os
     os.remove(file)

@@ -1,6 +1,4 @@
-.. jupyter-execute::
-    :hide-code:
-    :hide-output:
+.. invisible-code-block: python
 
     import os
 
@@ -32,7 +30,7 @@ with external augmentation solutions.
 
 Let's start with loading an example file to augment.
 
-.. jupyter-execute::
+.. code-block:: python
 
     import audb
     import audiofile
@@ -45,13 +43,11 @@ Let's start with loading an example file to augment.
     )
     signal, sampling_rate = audiofile.read(files[0])
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     audplot.waveform(signal, color=grey, text="Original\nAudio")
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     Audio(signal, rate=sampling_rate)
 
@@ -95,7 +91,7 @@ as part of our :mod:`auglib`
 augmentation chain
 with the help of the :class:`auglib.transform.Function` class.
 
-.. jupyter-execute::
+.. code-block:: python
 
     def pedalboard_transform(signal, sampling_rate):
         r"""Custom augmentation using pedalboard."""
@@ -118,14 +114,12 @@ with the help of the :class:`auglib.transform.Function` class.
     )
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
-    
-.. jupyter-execute::
-    :hide-code:
+
+.. code-block:: python
 
     audplot.waveform(signal_augmented, color=red, text="Augmented\nAudio")
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     Audio(signal_augmented, rate=sampling_rate)
 
@@ -167,7 +161,7 @@ we use :class:`auglib.transform.Function`
 to include transforms from audiomentations_
 into our :mod:`auglib` augmentation chain.
 
-.. jupyter-execute::
+.. code-block:: python
 
     def audiomentations_transform(signal, sampling_rate, p):
         r"""Custom augmentation using audiomentations."""
@@ -188,13 +182,11 @@ into our :mod:`auglib` augmentation chain.
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     audplot.waveform(signal_augmented, color=red, text="Augmented\nAudio")
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     Audio(signal_augmented, rate=sampling_rate)
 
@@ -220,7 +212,7 @@ Here,
 we shift the pitch by two semitones,
 and apply a `Flanger effect`_.
 
-.. jupyter-execute::
+.. code-block:: python
 
     def sox_transform(signal, sampling_rate):
         r"""Custom augmentation using sox."""
@@ -242,13 +234,11 @@ and apply a `Flanger effect`_.
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     audplot.waveform(signal_augmented, color=red, text="Augmented\nAudio")
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     Audio(signal_augmented, rate=sampling_rate)
 

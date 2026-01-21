@@ -1,6 +1,4 @@
-.. jupyter-execute::
-    :hide-code:
-    :hide-output:
+.. invisible-code-block: python
 
     import os
 
@@ -29,7 +27,7 @@ how to solve certain augmentation tasks.
 
 Let's start with loading an example file to augment.
 
-.. jupyter-execute::
+.. code-block:: python
 
     import audb
     import audiofile
@@ -42,14 +40,12 @@ Let's start with loading an example file to augment.
     )
     signal, sampling_rate = audiofile.read(files[0])
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     audplot.waveform(signal, color=grey, text="Original\nAudio")
 
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     Audio(signal, rate=sampling_rate)
 
@@ -74,7 +70,7 @@ Its ``rir`` table holds recordings
 for four different rooms
 at different distances.
 
-.. jupyter-execute::
+.. code-block:: python
 
     df = audb.load_table("air", "rir", version="1.4.2", verbose=False)
     set(df.room)
@@ -88,7 +84,7 @@ an impulse response
 during augmentation
 with :class:`auglib.observe.List`.
 
-.. jupyter-execute::
+.. code-block:: python
 
     auglib.seed(0)
 
@@ -112,13 +108,11 @@ with :class:`auglib.observe.List`.
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     audplot.waveform(signal_augmented, color=red, text="Recorded\nReverb")
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     Audio(signal_augmented, rate=sampling_rate)
 
@@ -144,7 +138,7 @@ In the following,
 we simply pick all parameters
 randomly from a normal distribution.
 
-.. jupyter-execute::
+.. code-block:: python
 
     auglib.seed(1)
 
@@ -196,13 +190,11 @@ randomly from a normal distribution.
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     audplot.waveform(signal_augmented, color=red, text="Artificial\nReverb")
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     Audio(signal_augmented, rate=sampling_rate)
 
@@ -229,7 +221,7 @@ with repetition,
 attenuate it by -15 dB to -10 dB,
 and add it to the original input signal.
 
-.. jupyter-execute::
+.. code-block:: python
 
     auglib.seed(0)
 
@@ -251,13 +243,11 @@ and add it to the original input signal.
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     audplot.waveform(signal_augmented, color=red, text="Music")
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     Audio(signal_augmented, rate=sampling_rate)
 
@@ -285,7 +275,7 @@ adds pink noise
 with a SNR of 10 dB
 to the input signal.
 
-.. jupyter-execute::
+.. code-block:: python
 
     auglib.seed(0)
 
@@ -293,13 +283,11 @@ to the input signal.
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     audplot.waveform(signal_augmented, color=red, text="Pink\nNoise")
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     Audio(signal_augmented, rate=sampling_rate)
 
@@ -327,7 +315,7 @@ The following example
 adds band-pass filtered white noise
 to the input signal.
 
-.. jupyter-execute::
+.. code-block:: python
 
     auglib.seed(0)
 
@@ -342,13 +330,11 @@ to the input signal.
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     audplot.waveform(signal_augmented, color=red, text="Band-Pass\nNoise")
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     Audio(signal_augmented, rate=sampling_rate)
 
@@ -378,7 +364,7 @@ to speed the example up.
 We recommend to use all media files,
 when using the augmentation in a real application.
 
-.. jupyter-execute::
+.. code-block:: python
 
     auglib.seed(1)
 
@@ -398,13 +384,11 @@ when using the augmentation in a real application.
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     audplot.waveform(signal_augmented, color=red, text="Babble\nNoise")
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     Audio(signal_augmented, rate=sampling_rate)
 
@@ -431,7 +415,7 @@ at the end of the processing.
 The AMR-NB codec requires a sampling rate of 8000 Hz,
 which :class:`auglib.Augment` can take care of.
 
-.. jupyter-execute::
+.. code-block:: python
 
     auglib.seed(0)
 
@@ -457,13 +441,11 @@ which :class:`auglib.Augment` can take care of.
     )
     signal_augmented = augment(signal, sampling_rate)
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     audplot.waveform(signal_augmented, color=red, text="Telephone")
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     Audio(signal_augmented, rate=8000)
 
@@ -490,7 +472,7 @@ during every epoch
 you might consider
 :class:`audtorch.transforms.RandomCrop` instead.
 
-.. jupyter-execute::
+.. code-block:: python
 
     auglib.seed(0)
 
@@ -503,15 +485,13 @@ you might consider
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     audplot.waveform(signal_augmented, color=red, text="Random\nCrop")
     ax = plt.gca()
     _ = ax.set_xlim(0, signal.shape[0])
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     Audio(signal_augmented, rate=sampling_rate)
 
@@ -544,7 +524,7 @@ starting from a random position,
 and adds it every 0.5 s
 to the target signal.
 
-.. jupyter-execute::
+.. code-block:: python
 
     auglib.seed(0)
 
@@ -569,13 +549,11 @@ to the target signal.
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     audplot.waveform(signal_augmented, color=red, text="Gated\nNoise")
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     Audio(signal_augmented, rate=sampling_rate)
 
@@ -601,7 +579,7 @@ it extracts the pitch contour,
 changes the pitch,
 and re-synthesises the audio signal.
 
-.. jupyter-execute::
+.. code-block:: python
 
     import parselmouth
     from parselmouth.praat import call as praat
@@ -625,13 +603,11 @@ and re-synthesises the audio signal.
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     audplot.waveform(signal_augmented, color=red, text="Pitch\nShift")
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     Audio(signal_augmented, rate=sampling_rate)
 
@@ -656,7 +632,7 @@ and adjusts it to the desired pitch given as f0 in Hz
 by re-synthesizing the signal with a shifted pitch contour,
 which preserves the natural pitch fluctuations per speaker.
 
-.. jupyter-execute::
+.. code-block:: python
 
     import numpy as np
     import parselmouth
@@ -685,13 +661,11 @@ which preserves the natural pitch fluctuations per speaker.
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     audplot.waveform(signal_augmented, color=red, text="Constant\nPitch")
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     Audio(signal_augmented, rate=sampling_rate)
 
@@ -704,7 +678,7 @@ representing the desired pitch,
 which removes any pitch fluctuations from the signal
 after re-synthesis.
 
-.. jupyter-execute::
+.. code-block:: python
 
     import parselmouth
     from parselmouth.praat import call as praat
@@ -725,13 +699,11 @@ after re-synthesis.
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     audplot.waveform(signal_augmented, color=red, text="Constant\nPitch")
 
-.. jupyter-execute::
-    :hide-code:
+.. code-block:: python
 
     Audio(signal_augmented, rate=sampling_rate)
 

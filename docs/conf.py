@@ -32,7 +32,6 @@ exclude_patterns = [
 ]
 pygments_style = None
 extensions = [
-    "jupyter_sphinx",  # executing code blocks
     "sphinx.ext.doctest",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
