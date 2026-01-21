@@ -1,11 +1,10 @@
-.. invisible-code-block: python
+.. plot::
+    :context: close-figs
 
     import os
 
-    from IPython.display import Audio
     import matplotlib.pyplot as plt
     import numpy as np
-    import seaborn as sns
 
     import audb
     import audplot
@@ -30,7 +29,9 @@ with external augmentation solutions.
 
 Let's start with loading an example file to augment.
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
+    :include-source:
 
     import audb
     import audiofile
@@ -43,17 +44,25 @@ Let's start with loading an example file to augment.
     )
     signal, sampling_rate = audiofile.read(files[0])
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
     audplot.waveform(signal, color=grey, text="Original\nAudio")
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
-    Audio(signal, rate=sampling_rate)
+    audiofile.write(
+        audeer.path(static_dir, "external-original0.wav"),
+        signal,
+        sampling_rate,
+    )
 
-.. empty line for some extra space
+.. raw:: html
 
-|
+    <p style="margin-left: 24px;">
+        <audio controls src="media/external-original0.wav"></audio>
+    </p>
 
 
 .. _external-pedalboard:
@@ -91,7 +100,9 @@ as part of our :mod:`auglib`
 augmentation chain
 with the help of the :class:`auglib.transform.Function` class.
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
+    :include-source:
 
     def pedalboard_transform(signal, sampling_rate):
         r"""Custom augmentation using pedalboard."""
@@ -115,17 +126,25 @@ with the help of the :class:`auglib.transform.Function` class.
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
     audplot.waveform(signal_augmented, color=red, text="Augmented\nAudio")
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
-    Audio(signal_augmented, rate=sampling_rate)
+    audiofile.write(
+        audeer.path(static_dir, "external-pedalboard0.wav"),
+        signal_augmented,
+        sampling_rate,
+    )
 
-.. empty line for some extra space
+.. raw:: html
 
-|
+    <p style="margin-left: 24px;">
+        <audio controls src="media/external-pedalboard0.wav"></audio>
+    </p>
 
 .. _Pedalboard: https://github.com/spotify/pedalboard
 .. _pedalboard: https://github.com/spotify/pedalboard
@@ -161,7 +180,9 @@ we use :class:`auglib.transform.Function`
 to include transforms from audiomentations_
 into our :mod:`auglib` augmentation chain.
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
+    :include-source:
 
     def audiomentations_transform(signal, sampling_rate, p):
         r"""Custom augmentation using audiomentations."""
@@ -182,17 +203,25 @@ into our :mod:`auglib` augmentation chain.
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
     audplot.waveform(signal_augmented, color=red, text="Augmented\nAudio")
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
-    Audio(signal_augmented, rate=sampling_rate)
+    audiofile.write(
+        audeer.path(static_dir, "external-audiomentations0.wav"),
+        signal_augmented,
+        sampling_rate,
+    )
 
-.. empty line for some extra space
+.. raw:: html
 
-|
+    <p style="margin-left: 24px;">
+        <audio controls src="media/external-audiomentations0.wav"></audio>
+    </p>
 
 .. _Audiomentations: https://github.com/iver56/audiomentations
 .. _audiomentations: https://github.com/iver56/audiomentations
@@ -212,7 +241,9 @@ Here,
 we shift the pitch by two semitones,
 and apply a `Flanger effect`_.
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
+    :include-source:
 
     def sox_transform(signal, sampling_rate):
         r"""Custom augmentation using sox."""
@@ -234,17 +265,25 @@ and apply a `Flanger effect`_.
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
     audplot.waveform(signal_augmented, color=red, text="Augmented\nAudio")
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
-    Audio(signal_augmented, rate=sampling_rate)
+    audiofile.write(
+        audeer.path(static_dir, "external-sox0.wav"),
+        signal_augmented,
+        sampling_rate,
+    )
 
-.. empty line for some extra space
+.. raw:: html
 
-|
+    <p style="margin-left: 24px;">
+        <audio controls src="media/external-sox0.wav"></audio>
+    </p>
 
 .. _Sox: https://pysox.readthedocs.io/en/latest/
 .. _Transformers: https://pysox.readthedocs.io/en/latest/api.html#module-sox.transform

@@ -1,8 +1,8 @@
-.. invisible-code-block: python
+.. plot::
+    :context: close-figs
 
     import os
 
-    from IPython.display import Audio
     import matplotlib.pyplot as plt
     import numpy as np
 
@@ -27,7 +27,9 @@ how to solve certain augmentation tasks.
 
 Let's start with loading an example file to augment.
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
+    :include-source:
 
     import audb
     import audiofile
@@ -40,18 +42,25 @@ Let's start with loading an example file to augment.
     )
     signal, sampling_rate = audiofile.read(files[0])
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
     audplot.waveform(signal, color=grey, text="Original\nAudio")
 
+.. plot::
+    :context: close-figs
 
-.. code-block:: python
+    audiofile.write(
+        audeer.path(static_dir, "examples-original0.wav"),
+        signal,
+        sampling_rate,
+    )
 
-    Audio(signal, rate=sampling_rate)
+.. raw:: html
 
-.. empty line for some extra space
-
-|
+    <p style="margin-left: 24px;">
+        <audio controls src="media/examples-original0.wav"></audio>
+    </p>
 
 
 .. _examples-recorded-reverb:
@@ -70,7 +79,9 @@ Its ``rir`` table holds recordings
 for four different rooms
 at different distances.
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
+    :include-source:
 
     df = audb.load_table("air", "rir", version="1.4.2", verbose=False)
     set(df.room)
@@ -84,7 +95,9 @@ an impulse response
 during augmentation
 with :class:`auglib.observe.List`.
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
+    :include-source:
 
     auglib.seed(0)
 
@@ -108,17 +121,25 @@ with :class:`auglib.observe.List`.
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
     audplot.waveform(signal_augmented, color=red, text="Recorded\nReverb")
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
-    Audio(signal_augmented, rate=sampling_rate)
+    audiofile.write(
+        audeer.path(static_dir, "examples-recorded-reverb0.wav"),
+        signal_augmented,
+        sampling_rate,
+    )
 
-.. empty line for some extra space
+.. raw:: html
 
-|
+    <p style="margin-left: 24px;">
+        <audio controls src="media/examples-recorded-reverb0.wav"></audio>
+    </p>
 
 
 .. _examples-artificial-reverb:
@@ -138,7 +159,9 @@ In the following,
 we simply pick all parameters
 randomly from a normal distribution.
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
+    :include-source:
 
     auglib.seed(1)
 
@@ -190,17 +213,25 @@ randomly from a normal distribution.
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
     audplot.waveform(signal_augmented, color=red, text="Artificial\nReverb")
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
-    Audio(signal_augmented, rate=sampling_rate)
+    audiofile.write(
+        audeer.path(static_dir, "examples-artificial-reverb0.wav"),
+        signal_augmented,
+        sampling_rate,
+    )
 
-.. empty line for some extra space
+.. raw:: html
 
-|
+    <p style="margin-left: 24px;">
+        <audio controls src="media/examples-artificial-reverb0.wav"></audio>
+    </p>
 
 
 .. _examples-music:
@@ -221,7 +252,9 @@ with repetition,
 attenuate it by -15 dB to -10 dB,
 and add it to the original input signal.
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
+    :include-source:
 
     auglib.seed(0)
 
@@ -243,17 +276,25 @@ and add it to the original input signal.
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
     audplot.waveform(signal_augmented, color=red, text="Music")
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
-    Audio(signal_augmented, rate=sampling_rate)
+    audiofile.write(
+        audeer.path(static_dir, "examples-music0.wav"),
+        signal_augmented,
+        sampling_rate,
+    )
 
-.. empty line for some extra space
+.. raw:: html
 
-|
+    <p style="margin-left: 24px;">
+        <audio controls src="media/examples-music0.wav"></audio>
+    </p>
 
 
 .. _examples-noise-snr:
@@ -275,7 +316,9 @@ adds pink noise
 with a SNR of 10 dB
 to the input signal.
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
+    :include-source:
 
     auglib.seed(0)
 
@@ -283,17 +326,25 @@ to the input signal.
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
     audplot.waveform(signal_augmented, color=red, text="Pink\nNoise")
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
-    Audio(signal_augmented, rate=sampling_rate)
+    audiofile.write(
+        audeer.path(static_dir, "examples-pink-noise0.wav"),
+        signal_augmented,
+        sampling_rate,
+    )
 
-.. empty line for some extra space
+.. raw:: html
 
-|
+    <p style="margin-left: 24px;">
+        <audio controls src="media/examples-pink-noise0.wav"></audio>
+    </p>
 
 
 .. _examples-band-pass-filtered-noise:
@@ -315,7 +366,9 @@ The following example
 adds band-pass filtered white noise
 to the input signal.
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
+    :include-source:
 
     auglib.seed(0)
 
@@ -330,17 +383,25 @@ to the input signal.
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
     audplot.waveform(signal_augmented, color=red, text="Band-Pass\nNoise")
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
-    Audio(signal_augmented, rate=sampling_rate)
+    audiofile.write(
+        audeer.path(static_dir, "examples-band-pass-noise0.wav"),
+        signal_augmented,
+        sampling_rate,
+    )
 
-.. empty line for some extra space
+.. raw:: html
 
-|
+    <p style="margin-left: 24px;">
+        <audio controls src="media/examples-band-pass-noise0.wav"></audio>
+    </p>
 
 
 .. _examples-babble-noise:
@@ -364,7 +425,9 @@ to speed the example up.
 We recommend to use all media files,
 when using the augmentation in a real application.
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
+    :include-source:
 
     auglib.seed(1)
 
@@ -384,17 +447,25 @@ when using the augmentation in a real application.
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
     audplot.waveform(signal_augmented, color=red, text="Babble\nNoise")
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
-    Audio(signal_augmented, rate=sampling_rate)
+    audiofile.write(
+        audeer.path(static_dir, "examples-babble-noise0.wav"),
+        signal_augmented,
+        sampling_rate,
+    )
 
-.. empty line for some extra space
+.. raw:: html
 
-|
+    <p style="margin-left: 24px;">
+        <audio controls src="media/examples-babble-noise0.wav"></audio>
+    </p>
 
 
 Telephone
@@ -415,7 +486,9 @@ at the end of the processing.
 The AMR-NB codec requires a sampling rate of 8000 Hz,
 which :class:`auglib.Augment` can take care of.
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
+    :include-source:
 
     auglib.seed(0)
 
@@ -441,17 +514,25 @@ which :class:`auglib.Augment` can take care of.
     )
     signal_augmented = augment(signal, sampling_rate)
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
     audplot.waveform(signal_augmented, color=red, text="Telephone")
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
-    Audio(signal_augmented, rate=8000)
+    audiofile.write(
+        audeer.path(static_dir, "examples-telephone0.wav"),
+        signal_augmented,
+        8000,
+    )
 
-.. empty line for some extra space
+.. raw:: html
 
-|
+    <p style="margin-left: 24px;">
+        <audio controls src="media/examples-telephone0.wav"></audio>
+    </p>
 
 
 .. _examples-random-crop:
@@ -472,7 +553,9 @@ during every epoch
 you might consider
 :class:`audtorch.transforms.RandomCrop` instead.
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
+    :include-source:
 
     auglib.seed(0)
 
@@ -485,19 +568,27 @@ you might consider
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
     audplot.waveform(signal_augmented, color=red, text="Random\nCrop")
     ax = plt.gca()
     _ = ax.set_xlim(0, signal.shape[0])
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
-    Audio(signal_augmented, rate=sampling_rate)
+    audiofile.write(
+        audeer.path(static_dir, "examples-random-crop0.wav"),
+        signal_augmented,
+        sampling_rate,
+    )
 
-.. empty line for some extra space
+.. raw:: html
 
-|
+    <p style="margin-left: 24px;">
+        <audio controls src="media/examples-random-crop0.wav"></audio>
+    </p>
 
 
 .. _examples-gated-noise:
@@ -524,7 +615,9 @@ starting from a random position,
 and adds it every 0.5 s
 to the target signal.
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
+    :include-source:
 
     auglib.seed(0)
 
@@ -549,17 +642,25 @@ to the target signal.
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
     audplot.waveform(signal_augmented, color=red, text="Gated\nNoise")
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
-    Audio(signal_augmented, rate=sampling_rate)
+    audiofile.write(
+        audeer.path(static_dir, "examples-gated-noise0.wav"),
+        signal_augmented,
+        sampling_rate,
+    )
 
-.. empty line for some extra space
+.. raw:: html
 
-|
+    <p style="margin-left: 24px;">
+        <audio controls src="media/examples-gated-noise0.wav"></audio>
+    </p>
 
 
 .. _examples-pitch-shift:
@@ -579,7 +680,9 @@ it extracts the pitch contour,
 changes the pitch,
 and re-synthesises the audio signal.
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
+    :include-source:
 
     import parselmouth
     from parselmouth.praat import call as praat
@@ -603,17 +706,25 @@ and re-synthesises the audio signal.
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
     audplot.waveform(signal_augmented, color=red, text="Pitch\nShift")
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
-    Audio(signal_augmented, rate=sampling_rate)
+    audiofile.write(
+        audeer.path(static_dir, "examples-pitch-shift0.wav"),
+        signal_augmented,
+        sampling_rate,
+    )
 
-.. empty line for some extra space
+.. raw:: html
 
-|
+    <p style="margin-left: 24px;">
+        <audio controls src="media/examples-pitch-shift0.wav"></audio>
+    </p>
 
 
 .. _examples-constant-pitch:
@@ -632,7 +743,9 @@ and adjusts it to the desired pitch given as f0 in Hz
 by re-synthesizing the signal with a shifted pitch contour,
 which preserves the natural pitch fluctuations per speaker.
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
+    :include-source:
 
     import numpy as np
     import parselmouth
@@ -661,24 +774,34 @@ which preserves the natural pitch fluctuations per speaker.
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
     audplot.waveform(signal_augmented, color=red, text="Constant\nPitch")
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
-    Audio(signal_augmented, rate=sampling_rate)
+    audiofile.write(
+        audeer.path(static_dir, "examples-constant-pitch0.wav"),
+        signal_augmented,
+        sampling_rate,
+    )
 
-.. empty line for some extra space
+.. raw:: html
 
-|
+    <p style="margin-left: 24px;">
+        <audio controls src="media/examples-constant-pitch0.wav"></audio>
+    </p>
 
 The second approach specifies a constant pitch contour
 representing the desired pitch,
 which removes any pitch fluctuations from the signal
 after re-synthesis.
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
+    :include-source:
 
     import parselmouth
     from parselmouth.praat import call as praat
@@ -699,17 +822,25 @@ after re-synthesis.
     augment = auglib.Augment(transform)
     signal_augmented = augment(signal, sampling_rate)
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
     audplot.waveform(signal_augmented, color=red, text="Constant\nPitch")
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
-    Audio(signal_augmented, rate=sampling_rate)
+    audiofile.write(
+        audeer.path(static_dir, "examples-constant-pitch1.wav"),
+        signal_augmented,
+        sampling_rate,
+    )
 
-.. empty line for some extra space
+.. raw:: html
 
-|
+    <p style="margin-left: 24px;">
+        <audio controls src="media/examples-constant-pitch1.wav"></audio>
+    </p>
 
 
 .. === Links ===
