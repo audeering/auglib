@@ -27,6 +27,9 @@ jobs:
           - os: ubuntu-latest
             python-version: '3.11'
             tasks: tests
+          - os: ubuntu-latest
+            python-version: '3.13'
+            tasks: tests
 
     steps:
     - uses: actions/checkout@v4
