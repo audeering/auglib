@@ -332,12 +332,6 @@ array([[-0.01383871, -0.10363714, -0.12082221, ..., -0.21219613,
         -0.08782648, -0.14412443]], shape=(1, 30372), dtype=float32)
 
 
-.. invisible-code-block: python
-
-    import os
-    os.remove(file)
-
-
 .. _emodb: https://audeering.github.io/datasets/datasets/emodb.html
 .. _filewise index: https://audeering.github.io/audformat/data-tables.html#filewise
 .. _segmented index: https://audeering.github.io/audformat/data-tables.html#segmented
