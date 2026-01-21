@@ -1,6 +1,6 @@
-.. invisible-code-block: python
+.. plot::
+    :context: close-figs
 
-    from IPython.display import Audio as play
     import numpy as np
     import matplotlib.pyplot as plt
     import pandas as pd
@@ -10,7 +10,6 @@
 
     grey = "#5d6370"
     red = "#e13b41"
-
 
 .. === Document starts here ===
 
@@ -36,7 +35,8 @@ to see how to apply the augmentations
 to different inputs.
 
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
     import auglib
 
@@ -56,7 +56,9 @@ Augment a signal
 We now load a signal from emodb_,
 and apply our augmentation to it.
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
+    :include-source:
 
     import audb
     import audiofile
@@ -70,29 +72,47 @@ and apply our augmentation to it.
     signal, sampling_rate = audiofile.read(files[0])
     signal_augmented = augment(signal, sampling_rate)
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
     audplot.waveform(signal, color=grey, text="Original\nAudio")
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
-    play(signal, rate=sampling_rate)
+    audiofile.write(
+        audeer.path(static_dir, "usage-original0.wav"),
+        signal,
+        sampling_rate,
+    )
 
-.. empty line for some extra space
+.. raw:: html
 
-|
+    <p style="margin-left: 24px;">
+        <audio controls src="media/usage-original0.wav"></audio>
+    </p>
 
-.. code-block:: python
+
+.. plot::
+    :context: close-figs
 
     audplot.waveform(signal_augmented, color=red, text="Augmented\nAudio")
 
-.. code-block:: python
+.. plot::
+    :context: close-figs
 
-    play(signal_augmented, rate=sampling_rate)
+    audiofile.write(
+    audeer.path(static_dir, "usage-augmented0.wav"),
+        signal_augmented,
+        sampling_rate,
+    )
 
-.. empty line for some extra space
+.. raw:: html
 
-|
+    <p style="margin-left: 24px;">
+        <audio controls src="media/usage-augmented0.wav"></audio>
+    </p>
+
 
 
 Augment files in memory

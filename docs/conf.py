@@ -56,6 +56,8 @@ plot_pre_code = (
     "import matplotlib.pyplot as plt\n"
     "media_dir = audeer.mkdir("
     f"'{current_dir}', '..', 'build', 'html', 'api', 'media')\n"
+    "static_dir = audeer.mkdir("
+    f"'{current_dir}', '..', 'build', 'html', 'media')\n"
     "plt.rcParams['font.size'] = 13"
 )
 
