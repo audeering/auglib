@@ -14,10 +14,10 @@ __all__ = []
 
 # Dynamically get the version of the installed module
 try:
-    import pkg_resources
+    import importlib.metadata
 
-    __version__ = pkg_resources.get_distribution(__name__).version  # pragma: no cover
+    __version__ = importlib.metadata.version(__name__)
 except Exception:  # pragma: no cover
-    pkg_resources = None  # pragma: no cover
+    importlib = None  # pragma: no cover
 finally:
-    del pkg_resources
+    del importlib
