@@ -188,9 +188,9 @@ into our :mod:`auglib` augmentation chain.
         r"""Custom augmentation using audiomentations."""
         import audiomentations
         compose = audiomentations.Compose([
-            audiomentations.AddGaussianNoise(min_amplitude=0.001, max_amplitude=0.015, p=p),
-            audiomentations.TimeStretch(min_rate=0.8, max_rate=1.25, p=p),
-            audiomentations.PitchShift(min_semitones=-4, max_semitones=4, p=p),
+            audiomentations.AddGaussianNoise(min_amplitude=0.015, p=p),
+            audiomentations.TimeStretch(max_rate=0.8, p=p),
+            audiomentations.PitchShift(max_semitones=-2, p=p),
         ])
         return compose(signal, sampling_rate)
 
