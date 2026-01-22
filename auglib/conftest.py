@@ -6,7 +6,7 @@ from sybil.parsers.rest import DocTestParser
 
 
 pytest_collect_file = Sybil(
-    parsers=[DocTestParser(optionflags=NORMALIZE_WHITESPACE + ELLIPSIS)],
+    parsers=[DocTestParser(optionflags=NORMALIZE_WHITESPACE | ELLIPSIS)],
     patterns=["*.py"],
     excludes=["core/transform.py"],
 ).pytest()

@@ -22,7 +22,7 @@ def execute_in_tmpdir(tmpdir_factory):
 
 pytest_collect_file = Sybil(
     parsers=[
-        DocTestParser(optionflags=NORMALIZE_WHITESPACE + ELLIPSIS),
+        DocTestParser(optionflags=NORMALIZE_WHITESPACE | ELLIPSIS),
         CodeBlockParser(language="python", evaluator=PythonEvaluator()),
     ],
     patterns=["*.rst"],
