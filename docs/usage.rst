@@ -208,9 +208,9 @@ pointing to the files of the dataset.
 ... )
 >>> index = db.files
 >>> augment.augment(index, cache_root="cache")
-MultiIndex([('.../cache/.../03a01Fa.wav', ...),
-            ('.../cache/.../03a01Nc.wav', ...),
-            ('.../cache/.../03a01Wa.wav', ...)],
+MultiIndex([('...cache...03a01Fa.wav', ...),
+            ('...cache...03a01Nc.wav', ...),
+            ('...cache...03a01Wa.wav', ...)],
            names=['file', 'start', 'end'])
 
 The augmented files are stored inside the ``cache_root`` folder.
@@ -229,9 +229,9 @@ a series will be returned:
 >>> y = db["files"]["speaker"].get()
 >>> augment.augment(y, cache_root="cache")
 file                        start   end
-.../cache/.../03a01Fa.wav  0 days  0 days 00:00:01.898250       3
-.../cache/.../03a01Nc.wav  0 days  0 days 00:00:01.611250       3
-.../cache/.../03a01Wa.wav  0 days  0 days 00:00:01.877812500    3
+...cache...03a01Fa.wav  0 days  0 days 00:00:01.898250       3
+...cache...03a01Nc.wav  0 days  0 days 00:00:01.611250       3
+...cache...03a01Wa.wav  0 days  0 days 00:00:01.877812500    3
 Name: speaker, dtype: ...
 Categories ...
 
