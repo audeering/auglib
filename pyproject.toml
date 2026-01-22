@@ -63,6 +63,7 @@ dev = [
     'audplot >=1.4.5',
     'numba >=0.63.1',
     'numpy >=1.24.0',
+    'pandas <3.0',  # https://github.com/audeering/audformat/issues/487
     'pedalboard >=0.4.0',
     'praat-parselmouth',
     'pyarrow',
