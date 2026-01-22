@@ -60,6 +60,7 @@ to different inputs.
 
 .. plot::
     :context: close-figs
+    :include-source:
 
     import auglib
 
