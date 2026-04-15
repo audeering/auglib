@@ -62,7 +62,11 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
 
     - name: OSX - install audio packages
-      run: brew install ffmpeg mediainfo
+      run: |
+        brew uninstall --ignore-dependencies ffmpeg || true
+        brew tap homebrew-ffmpeg/ffmpeg
+        brew install homebrew-ffmpeg/ffmpeg/ffmpeg --with-opencore-amr
+        brew install mediainfo
       if: matrix.os == 'macOS-latest'
 
     - name: Windows - install audio packages
