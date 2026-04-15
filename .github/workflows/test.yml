@@ -56,9 +56,10 @@ jobs:
       run: micromamba install sox
 
     - name: Ubuntu - install audio packages
-      run: |
-        sudo apt-get update
-        sudo apt-get install --no-install-recommends --yes libsndfile1 ffmpeg libavcodec-extra
+      uses: awalsh128/cache-apt-pkgs-action@acb598e5ddbc6f68a970c5da0688d2f3a9f04d05  # v1.6.0
+      with:
+        packages: libsndfile1 ffmpeg libavcodec-extra
+        version: 1.0
       if: matrix.os == 'ubuntu-latest'
 
     - name: OSX - install audio packages
