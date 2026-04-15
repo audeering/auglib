@@ -62,7 +62,12 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
 
     - name: OSX - install audio packages
-      run: micromamba install --yes -c conda-forge ffmpeg mediainfo
+      run: |
+        curl -L -o ffmpeg.zip https://evermeet.cx/ffmpeg/getrelease/ffmpeg/zip
+        unzip -o ffmpeg.zip
+        sudo mv -f ffmpeg /usr/local/bin/ffmpeg
+        sudo chmod +x /usr/local/bin/ffmpeg
+        brew install mediainfo
       if: matrix.os == 'macOS-latest'
 
     - name: Windows - install audio packages
