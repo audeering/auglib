@@ -18,16 +18,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest, macOS-latest, windows-latest ]
+        os: [ ubuntu-24.04, macOS-latest, windows-latest ]
         python-version: [ '3.12' ]
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             python-version: '3.10'
             tasks: tests
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             python-version: '3.11'
             tasks: tests
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             python-version: '3.13'
             tasks: tests
 
@@ -58,9 +58,9 @@ jobs:
     - name: Ubuntu - install audio packages
       uses: awalsh128/cache-apt-pkgs-action@acb598e5ddbc6f68a970c5da0688d2f3a9f04d05  # v1.6.0
       with:
-        packages: libsndfile1 ffmpeg libavcodec-extra
-        version: 1.0
-      if: matrix.os == 'ubuntu-latest'
+        packages: libsndfile1 ffmpeg libavcodec-extra60
+        version: 2.0
+      if: matrix.os == 'ubuntu-24.04'
 
     - name: OSX - install audio packages
       run: |
@@ -86,4 +86,4 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         file: ./coverage.xml
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.os == 'ubuntu-24.04'
