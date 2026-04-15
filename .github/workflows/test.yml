@@ -62,11 +62,7 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
 
     - name: OSX - install audio packages
-      run: |
-        brew uninstall --ignore-dependencies ffmpeg || true
-        brew tap homebrew-ffmpeg/ffmpeg
-        brew install homebrew-ffmpeg/ffmpeg/ffmpeg --with-opencore-amr
-        brew install mediainfo
+      run: micromamba install --yes -c conda-forge ffmpeg mediainfo
       if: matrix.os == 'macOS-latest'
 
     - name: Windows - install audio packages
