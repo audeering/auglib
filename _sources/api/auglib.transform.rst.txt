@@ -7,7 +7,7 @@ auglib.transform
 comes with a number of transforms,
 that can augment an audio signal.
 
-.. jupyter-execute::
+.. code-block:: python
 
     import auglib
     import numpy as np
@@ -20,7 +20,7 @@ that can augment an audio signal.
 Transforms can be combined
 using :class:`auglib.transform.Compose`.
 
-.. jupyter-execute::
+.. code-block:: python
 
     transform = auglib.transform.Compose(
         [
@@ -33,7 +33,7 @@ using :class:`auglib.transform.Compose`.
 You can add your own Python based transform
 using :class:`auglib.transform.Function`.
 
-.. jupyter-execute::
+.. code-block:: python
 
     def repeat(signal, sampling_rate, repeats):
         import numpy as np

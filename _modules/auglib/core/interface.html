@@ -28,8 +28,6 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/audeering.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/jupyter-sphinx.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/thebelab.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/plot_directive.css" type="text/css" />
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -66,7 +64,7 @@
             
             
               <div class="version">
-                v1.0.4
+                v1.0.5
               </div>
             
           
@@ -146,25 +144,29 @@
            <div itemprop="articleBody">
             
   <h1>Source code for auglib.core.interface</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">typing</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 
-<span class="kn">import</span> <span class="nn">audeer</span>
-<span class="kn">import</span> <span class="nn">audformat</span>
-<span class="kn">import</span> <span class="nn">audinterface</span>
-<span class="kn">from</span> <span class="nn">audinterface.core.utils</span> <span class="kn">import</span> <span class="n">preprocess_signal</span>
-<span class="kn">import</span> <span class="nn">audiofile</span>
-<span class="kn">import</span> <span class="nn">audobject</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="kn">import</span> <span class="nn">auglib</span>
-<span class="kn">from</span> <span class="nn">auglib.core</span> <span class="kn">import</span> <span class="n">transform</span>
-<span class="kn">from</span> <span class="nn">auglib.core.seed</span> <span class="kn">import</span> <span class="n">seed</span> <span class="k">as</span> <span class="n">seed_func</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">audeer</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">audformat</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">audinterface</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">audinterface.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">preprocess_signal</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">audiofile</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">audobject</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">auglib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">auglib.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">transform</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">auglib.core.seed</span><span class="w"> </span><span class="kn">import</span> <span class="n">seed</span> <span class="k">as</span> <span class="n">seed_func</span>
 
 
-<div class="viewcode-block" id="Augment"><a class="viewcode-back" href="../../../api/auglib.Augment.html#auglib.Augment">[docs]</a><span class="k">class</span> <span class="nc">Augment</span><span class="p">(</span><span class="n">audinterface</span><span class="o">.</span><span class="n">Process</span><span class="p">,</span> <span class="n">audobject</span><span class="o">.</span><span class="n">Object</span><span class="p">):</span>
+<div class="viewcode-block" id="Augment">
+<a class="viewcode-back" href="../../../api/auglib.Augment.html#auglib.Augment">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Augment</span><span class="p">(</span><span class="n">audinterface</span><span class="o">.</span><span class="n">Process</span><span class="p">,</span> <span class="n">audobject</span><span class="o">.</span><span class="n">Object</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Augmentation interface.</span>
 
 <span class="sd">    Provides an interface for :class:`auglib.Transform`</span>
@@ -282,16 +284,16 @@
             <span class="s2">&quot;verbose&quot;</span><span class="p">,</span>
         <span class="p">]</span>
     <span class="p">)</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">transform</span><span class="p">:</span> <span class="n">transform</span><span class="o">.</span><span class="n">Base</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">sampling_rate</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">resample</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">channels</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">mixdown</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">keep_nat</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">num_workers</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">multiprocessing</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -319,7 +321,7 @@
         <span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">short_id</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">short_id</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Short flavor ID.</span>
@@ -330,9 +332,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">[</span><span class="o">-</span><span class="mi">8</span><span class="p">:]</span>
 
-<div class="viewcode-block" id="Augment.augment"><a class="viewcode-back" href="../../../api/auglib.Augment.html#auglib.Augment.augment">[docs]</a>    <span class="k">def</span> <span class="nf">augment</span><span class="p">(</span>
+<div class="viewcode-block" id="Augment.augment">
+<a class="viewcode-back" href="../../../api/auglib.Augment.html#auglib.Augment.augment">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">augment</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">data</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">],</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
         <span class="n">cache_root</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">data_root</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -340,7 +344,7 @@
         <span class="n">modified_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">num_variants</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">force</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Augment an index, column, or table conform to audformat.</span>
 
 <span class="sd">        Creates ``num_variants`` copies of the segments referenced in the index</span>
@@ -431,7 +435,7 @@
 
         <span class="k">if</span> <span class="n">cache_root</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Import here to avoid circular import</span>
-            <span class="kn">from</span> <span class="nn">auglib.core.cache</span> <span class="kn">import</span> <span class="n">default_cache_root</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">auglib.core.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_cache_root</span>
 
             <span class="n">cache_root</span> <span class="o">=</span> <span class="n">default_cache_root</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
@@ -493,7 +497,7 @@
                     <span class="n">non_nat_index</span><span class="p">,</span>
                     <span class="n">cache_root_idx</span><span class="p">,</span>
                     <span class="n">remove_root</span><span class="p">,</span>
-                    <span class="sa">f</span><span class="s2">&quot;Augment (</span><span class="si">{</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="n">num_variants</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;Augment (</span><span class="si">{</span><span class="n">idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="n">num_variants</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
                 <span class="p">)</span>
                 <span class="n">pd</span><span class="o">.</span><span class="n">to_pickle</span><span class="p">(</span>
                     <span class="n">augmented_index</span><span class="p">,</span>
@@ -518,7 +522,8 @@
 
         <span class="k">return</span> <span class="n">augmented_data</span></div>
 
-    <span class="k">def</span> <span class="nf">_augment_index</span><span class="p">(</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_augment_index</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">index</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">,</span>
         <span class="n">cache_root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -562,7 +567,7 @@
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">augmented_index</span>
 
-    <span class="k">def</span> <span class="nf">_augment_file_to_cache</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_augment_file_to_cache</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">start</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">,</span>
@@ -604,7 +609,7 @@
         <span class="k">return</span> <span class="n">duration</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_process_func</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_process_func</span><span class="p">(</span>
         <span class="n">signal</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">sampling_rate</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">transform</span><span class="p">:</span> <span class="n">auglib</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">Base</span><span class="p">,</span>
@@ -636,7 +641,8 @@
         <span class="k">return</span> <span class="n">augmented_signal</span></div>
 
 
-<span class="k">def</span> <span class="nf">_apply_nat_mask</span><span class="p">(</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_apply_nat_mask</span><span class="p">(</span>
     <span class="n">index</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">,</span>
     <span class="n">mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">:</span>
@@ -652,11 +658,11 @@
     <span class="k">return</span> <span class="n">index</span>
 
 
-<span class="k">def</span> <span class="nf">_augmented_files</span><span class="p">(</span>
-    <span class="n">files</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_augmented_files</span><span class="p">(</span>
+    <span class="n">files</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
     <span class="n">cache_root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">remove_root</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return destination path for augmented files.</span>
 
 <span class="sd">    If files contain the same filename several times,</span>
@@ -707,7 +713,7 @@
 
     <span class="k">if</span> <span class="n">remove_root</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 
-        <span class="k">def</span> <span class="nf">join</span><span class="p">(</span><span class="n">path1</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path2</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">join</span><span class="p">(</span><span class="n">path1</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path2</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
             <span class="n">seps</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">altsep</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">altsep</span> <span class="k">else</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span>
             <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
                 <span class="n">path1</span><span class="p">,</span>
@@ -720,9 +726,7 @@
         <span class="n">dirs</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">file</span><span class="p">)</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">unique_files</span><span class="p">]</span>
         <span class="n">common_root</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">common_directory</span><span class="p">(</span><span class="n">dirs</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">audeer</span><span class="o">.</span><span class="n">common_directory</span><span class="p">([</span><span class="n">remove_root</span><span class="p">,</span> <span class="n">common_root</span><span class="p">])</span> <span class="o">==</span> <span class="n">remove_root</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Cannot remove &#39;</span><span class="si">{</span><span class="n">remove_root</span><span class="si">}</span><span class="s2">&#39; &quot;</span> <span class="sa">f</span><span class="s2">&quot;from &#39;</span><span class="si">{</span><span class="n">common_root</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
-            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot remove &#39;</span><span class="si">{</span><span class="n">remove_root</span><span class="si">}</span><span class="s2">&#39; from &#39;</span><span class="si">{</span><span class="n">common_root</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
         <span class="n">augmented_files</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">file</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">remove_root</span><span class="p">,</span> <span class="n">cache_root</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">augmented_files</span>
         <span class="p">]</span>
@@ -742,7 +746,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/07/08 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/05/21 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
@@ -750,7 +754,7 @@
   <div role="contentinfo">
     <p>
         
-      &copy; 2019-2024 audEERING GmbH
+      &copy; 2019-2026 audEERING GmbH
     </p>
   </div> 
 
@@ -774,21 +778,16 @@
     
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-        <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/underscore.js"></script>
-        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="../../../_static/doctools.js"></script>
-        <script src="../../../_static/sphinx_highlight.js"></script>
-        <script src="../../../_static/thebelab-helper.js"></script>
-        <script src="../../../_static/clipboard.min.js"></script>
-        <script src="../../../_static/copybutton.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+        <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../../../_static/copybutton.js?v=ccdb6887"></script>
     
 
   
 
+  <script type="text/javascript" src="../../../_static/js/jquery.js"></script>
   <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
   <script type="text/javascript">

@@ -5,7 +5,8 @@
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>auglib.transform &mdash; Documentation</title>
@@ -28,8 +29,6 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/audeering.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/jupyter-sphinx.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/thebelab.css" type="text/css" />
   <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
@@ -68,7 +67,7 @@
             
             
               <div class="version">
-                v1.0.4
+                v1.0.5
               </div>
             
           
@@ -179,15 +178,13 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-auglib.transform">
-<span id="auglib-transform"></span><h1>auglib.transform<a class="headerlink" href="#module-auglib.transform" title="Permalink to this heading">¶</a></h1>
+  <section id="module-auglib.transform">
+<span id="auglib-transform"></span><h1>auglib.transform<a class="headerlink" href="#module-auglib.transform" title="Link to this heading">¶</a></h1>
 <p><a class="reference internal" href="#module-auglib.transform" title="auglib.transform"><code class="xref py py-mod docutils literal notranslate"><span class="pre">auglib.transform</span></code></a>
 comes with a number of transforms,
 that can augment an audio signal.</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">auglib</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">auglib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="n">sampling_rate</span> <span class="o">=</span> <span class="mi">8000</span>
 <span class="n">signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
@@ -195,18 +192,9 @@ that can augment an audio signal.</p>
 <span class="n">transform</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>array([[0.31622776, 0.31622776, 0.31622776, 0.31622776]], dtype=float32)
-</pre></div>
-</div>
-</div>
-</div>
 <p>Transforms can be combined
 using <a class="reference internal" href="auglib.transform.Compose.html#auglib.transform.Compose" title="auglib.transform.Compose"><code class="xref py py-class docutils literal notranslate"><span class="pre">auglib.transform.Compose</span></code></a>.</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">transform</span> <span class="o">=</span> <span class="n">auglib</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">Compose</span><span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">transform</span> <span class="o">=</span> <span class="n">auglib</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">Compose</span><span class="p">(</span>
     <span class="p">[</span>
         <span class="n">auglib</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">HighPass</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="mi">3000</span><span class="p">),</span>
         <span class="n">auglib</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">Clip</span><span class="p">(),</span>
@@ -215,30 +203,16 @@ using <a class="reference internal" href="auglib.transform.Compose.html#auglib.t
 <span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-</div>
-</div>
 <p>You can add your own Python based transform
 using <a class="reference internal" href="auglib.transform.Function.html#auglib.transform.Function" title="auglib.transform.Function"><code class="xref py py-class docutils literal notranslate"><span class="pre">auglib.transform.Function</span></code></a>.</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">repeat</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">,</span> <span class="n">repeats</span><span class="p">):</span>
-    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">repeat</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">,</span> <span class="n">repeats</span><span class="p">):</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">repeats</span><span class="p">)</span>
 
 <span class="n">transform</span> <span class="o">=</span> <span class="n">auglib</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">repeat</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;repeats&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-</div>
-</div>
 <table class="autosummary longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="auglib.transform.Base.html#auglib.transform.Base" title="auglib.transform.Base"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Base</span></code></a></p></td>
 <td><p>Base class for transforms applied to a signal.</p></td>
@@ -332,7 +306,7 @@ using <a class="reference internal" href="auglib.transform.Function.html#auglib.
 </tr>
 </tbody>
 </table>
-</div>
+</section>
 
 
            </div>
@@ -357,7 +331,7 @@ using <a class="reference internal" href="auglib.transform.Function.html#auglib.
         
         
         
-          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/07/08 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/05/21 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
@@ -365,7 +339,7 @@ using <a class="reference internal" href="auglib.transform.Function.html#auglib.
   <div role="contentinfo">
     <p>
         
-      &copy; 2019-2024 audEERING GmbH
+      &copy; 2019-2026 audEERING GmbH
     </p>
   </div> 
 
@@ -389,21 +363,16 @@ using <a class="reference internal" href="auglib.transform.Function.html#auglib.
     
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
-        <script src="../_static/thebelab-helper.js"></script>
-        <script src="../_static/clipboard.min.js"></script>
-        <script src="../_static/copybutton.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../_static/copybutton.js?v=ccdb6887"></script>
     
 
   
 
+  <script type="text/javascript" src="../_static/js/jquery.js"></script>
   <script type="text/javascript" src="../_static/js/theme.js"></script>
 
   <script type="text/javascript">

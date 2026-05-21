@@ -28,8 +28,6 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/audeering.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/jupyter-sphinx.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/thebelab.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/plot_directive.css" type="text/css" />
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -66,7 +64,7 @@
             
             
               <div class="version">
-                v1.0.4
+                v1.0.5
               </div>
             
           
@@ -146,32 +144,42 @@
            <div itemprop="articleBody">
             
   <h1>Source code for auglib.core.observe</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">random</span>
-<span class="kn">import</span> <span class="nn">typing</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">MutableSequence</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
 
-<span class="kn">import</span> <span class="nn">audobject</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">audobject</span>
 
 
-<div class="viewcode-block" id="Base"><a class="viewcode-back" href="../../../api/auglib.observe.Base.html#auglib.observe.Base">[docs]</a><span class="k">class</span> <span class="nc">Base</span><span class="p">(</span><span class="n">audobject</span><span class="o">.</span><span class="n">Object</span><span class="p">):</span>
+<div class="viewcode-block" id="Base">
+<a class="viewcode-back" href="../../../api/auglib.observe.Base.html#auglib.observe.Base">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Base</span><span class="p">(</span><span class="n">audobject</span><span class="o">.</span><span class="n">Object</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Interface for observable objects.</span>
 
 <span class="sd">    An observable object only reveals its value when it is called.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Base.__call__"><a class="viewcode-back" href="../../../api/auglib.observe.Base.html#auglib.observe.Base.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+<div class="viewcode-block" id="Base.__call__">
+<a class="viewcode-back" href="../../../api/auglib.observe.Base.html#auglib.observe.Base.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Observe next value.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            next value</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+</div>
 
 
-<div class="viewcode-block" id="Bool"><a class="viewcode-back" href="../../../api/auglib.observe.Bool.html#auglib.observe.Bool">[docs]</a><span class="k">class</span> <span class="nc">Bool</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Bool">
+<a class="viewcode-back" href="../../../api/auglib.observe.Bool.html#auglib.observe.Bool">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Bool</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Draw booleans with a given probability for True.</span>
 
 <span class="sd">    Args:</span>
@@ -179,13 +187,15 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">prob_true</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">prob_true</span> <span class="o">=</span> <span class="n">prob_true</span>
 
-<div class="viewcode-block" id="Bool.__call__"><a class="viewcode-back" href="../../../api/auglib.observe.Bool.html#auglib.observe.Bool.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<div class="viewcode-block" id="Bool.__call__">
+<a class="viewcode-back" href="../../../api/auglib.observe.Bool.html#auglib.observe.Bool.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Observe next boolean value.</span>
 
 <span class="sd">        Returns:</span>
@@ -201,10 +211,14 @@
 <span class="sd">            False</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prob_true</span></div></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prob_true</span></div>
+</div>
 
 
-<div class="viewcode-block" id="FloatNorm"><a class="viewcode-back" href="../../../api/auglib.observe.FloatNorm.html#auglib.observe.FloatNorm">[docs]</a><span class="k">class</span> <span class="nc">FloatNorm</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+
+<div class="viewcode-block" id="FloatNorm">
+<a class="viewcode-back" href="../../../api/auglib.observe.FloatNorm.html#auglib.observe.FloatNorm">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FloatNorm</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Draw floating point numbers from a normal (Gaussian) distribution.</span>
 
 <span class="sd">    Args:</span>
@@ -224,7 +238,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">mean</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">std</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
@@ -240,7 +254,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">maximum</span> <span class="o">=</span> <span class="n">maximum</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gen</span> <span class="o">=</span> <span class="n">_truncnorm</span>
 
-<div class="viewcode-block" id="FloatNorm.__call__"><a class="viewcode-back" href="../../../api/auglib.observe.FloatNorm.html#auglib.observe.FloatNorm.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<div class="viewcode-block" id="FloatNorm.__call__">
+<a class="viewcode-back" href="../../../api/auglib.observe.FloatNorm.html#auglib.observe.FloatNorm.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Observe next float value.</span>
 
 <span class="sd">        Returns:</span>
@@ -248,10 +264,14 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gen</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">std</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimum</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">value</span></div></div>
+        <span class="k">return</span> <span class="n">value</span></div>
+</div>
 
 
-<div class="viewcode-block" id="FloatUni"><a class="viewcode-back" href="../../../api/auglib.observe.FloatUni.html#auglib.observe.FloatUni">[docs]</a><span class="k">class</span> <span class="nc">FloatUni</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+
+<div class="viewcode-block" id="FloatUni">
+<a class="viewcode-back" href="../../../api/auglib.observe.FloatUni.html#auglib.observe.FloatUni">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FloatUni</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Draw floating point numbers from a uniform distribution.</span>
 
 <span class="sd">    Draws from a &quot;half-open&quot; interval defined by ``[low, high)``.</span>
@@ -271,7 +291,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">low</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">high</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
@@ -279,7 +299,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">low</span> <span class="o">=</span> <span class="n">low</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="o">=</span> <span class="n">high</span>
 
-<div class="viewcode-block" id="FloatUni.__call__"><a class="viewcode-back" href="../../../api/auglib.observe.FloatUni.html#auglib.observe.FloatUni.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<div class="viewcode-block" id="FloatUni.__call__">
+<a class="viewcode-back" href="../../../api/auglib.observe.FloatUni.html#auglib.observe.FloatUni.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Observe next float value.</span>
 
 <span class="sd">        Returns:</span>
@@ -287,10 +309,14 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">high</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">value</span></div></div>
+        <span class="k">return</span> <span class="n">value</span></div>
+</div>
 
 
-<div class="viewcode-block" id="IntUni"><a class="viewcode-back" href="../../../api/auglib.observe.IntUni.html#auglib.observe.IntUni">[docs]</a><span class="k">class</span> <span class="nc">IntUni</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+
+<div class="viewcode-block" id="IntUni">
+<a class="viewcode-back" href="../../../api/auglib.observe.IntUni.html#auglib.observe.IntUni">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">IntUni</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Draw integers from a uniform distribution.</span>
 
 <span class="sd">    Draws from the interval defined by ``[low, high]``.</span>
@@ -310,7 +336,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">low</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">high</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -318,7 +344,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">low</span> <span class="o">=</span> <span class="n">low</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="o">=</span> <span class="n">high</span>
 
-<div class="viewcode-block" id="IntUni.__call__"><a class="viewcode-back" href="../../../api/auglib.observe.IntUni.html#auglib.observe.IntUni.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<div class="viewcode-block" id="IntUni.__call__">
+<a class="viewcode-back" href="../../../api/auglib.observe.IntUni.html#auglib.observe.IntUni.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Observe next integer.</span>
 
 <span class="sd">        Returns:</span>
@@ -327,10 +355,14 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># self.high + 1 ensures upper bound is included</span>
         <span class="c1"># as np.random.randint excludes it</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span></div>
+</div>
 
 
-<div class="viewcode-block" id="List"><a class="viewcode-back" href="../../../api/auglib.observe.List.html#auglib.observe.List">[docs]</a><span class="k">class</span> <span class="nc">List</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+
+<div class="viewcode-block" id="List">
+<a class="viewcode-back" href="../../../api/auglib.observe.List.html#auglib.observe.List">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">List</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Iterate over a list of (observable) objects.</span>
 
 <span class="sd">    List can contain objects with any type.</span>
@@ -366,16 +398,16 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># import here to avoid circulate import error</span>
-    <span class="kn">from</span> <span class="nn">auglib.core.resolver</span> <span class="kn">import</span> <span class="n">ObservableListResolver</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">auglib.core.resolver</span><span class="w"> </span><span class="kn">import</span> <span class="n">ObservableListResolver</span>
 
     <span class="nd">@audobject</span><span class="o">.</span><span class="n">init_decorator</span><span class="p">(</span>
         <span class="n">resolvers</span><span class="o">=</span><span class="p">{</span>
             <span class="s2">&quot;elements&quot;</span><span class="p">:</span> <span class="n">ObservableListResolver</span><span class="p">,</span>
         <span class="p">}</span>
     <span class="p">)</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">elements</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">MutableSequence</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">],</span>
+        <span class="n">elements</span><span class="p">:</span> <span class="n">MutableSequence</span><span class="p">[</span><span class="nb">object</span><span class="p">],</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">shuffle</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">draw</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -389,10 +421,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_counter</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_iter</span> <span class="o">=</span> <span class="kc">False</span>
 
-    <span class="k">def</span> <span class="nf">_draw</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_draw</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span>
 
-    <span class="k">def</span> <span class="nf">_next</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_next</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shuffle</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_counter</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">)</span>
         <span class="n">element</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_counter</span><span class="p">]</span>
@@ -402,7 +434,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_iter</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">return</span> <span class="n">element</span>
 
-<div class="viewcode-block" id="List.__call__"><a class="viewcode-back" href="../../../api/auglib.observe.List.html#auglib.observe.List.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">:</span>
+<div class="viewcode-block" id="List.__call__">
+<a class="viewcode-back" href="../../../api/auglib.observe.List.html#auglib.observe.List.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Observe next value from list.</span>
 
 <span class="sd">        Returns:</span>
@@ -414,23 +448,27 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">observe</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_next</span><span class="p">())</span></div>
 
-    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># noqa: D105</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># noqa: D105</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_counter</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_iter</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="bp">self</span>
 
-    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># noqa: D105</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># noqa: D105</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># noqa: D105</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># noqa: D105</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">StopIteration</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="observe"><a class="viewcode-back" href="../../../api/auglib.observe.observe.html#auglib.observe.observe">[docs]</a><span class="k">def</span> <span class="nf">observe</span><span class="p">(</span>
-    <span class="n">x</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">,</span> <span class="n">Base</span><span class="p">],</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">:</span>
+
+<div class="viewcode-block" id="observe">
+<a class="viewcode-back" href="../../../api/auglib.observe.observe.html#auglib.observe.observe">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">observe</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">:</span> <span class="nb">object</span> <span class="o">|</span> <span class="n">Base</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Convenient function to observe a value.</span>
 
 <span class="sd">    Returns ``x()`` if ``x`` is of type :class:`auglib.observe.Base`,</span>
@@ -457,7 +495,8 @@
     <span class="k">return</span> <span class="n">x</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">Base</span><span class="p">)</span> <span class="k">else</span> <span class="n">x</span></div>
 
 
-<span class="k">def</span> <span class="nf">_truncnorm</span><span class="p">(</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_truncnorm</span><span class="p">(</span>
     <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">minimum</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
@@ -500,7 +539,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/07/08 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/05/21 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
@@ -508,7 +547,7 @@
   <div role="contentinfo">
     <p>
         
-      &copy; 2019-2024 audEERING GmbH
+      &copy; 2019-2026 audEERING GmbH
     </p>
   </div> 
 
@@ -532,21 +571,16 @@
     
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-        <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/underscore.js"></script>
-        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="../../../_static/doctools.js"></script>
-        <script src="../../../_static/sphinx_highlight.js"></script>
-        <script src="../../../_static/thebelab-helper.js"></script>
-        <script src="../../../_static/clipboard.min.js"></script>
-        <script src="../../../_static/copybutton.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+        <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../../../_static/copybutton.js?v=ccdb6887"></script>
     
 
   
 
+  <script type="text/javascript" src="../../../_static/js/jquery.js"></script>
   <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
   <script type="text/javascript">
