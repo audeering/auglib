@@ -30,6 +30,9 @@ jobs:
           - os: ubuntu-24.04
             python-version: '3.13'
             tasks: tests
+          - os: ubuntu-24.04
+            python-version: '3.14'
+            tasks: tests
 
     steps:
     - uses: actions/checkout@v4
