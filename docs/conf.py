@@ -71,7 +71,7 @@ intersphinx_mapping = {
     "parselmouth": ("https://parselmouth.readthedocs.io/en/stable", None),
     "pedalboard": ("https://spotify.github.io/pedalboard", None),
     "python": ("https://docs.python.org/3/", None),
-    "torch": ("https://pytorch.org/docs/stable/", None),
+    "torch": ("https://docs.pytorch.org/docs/stable/", None),
 }
 
 # Matplot plot_directive settings
@@ -98,4 +98,5 @@ html_title = title
 linkcheck_ignore = [
     r"https://sail.usc.edu/",
     "https://www.sphinx-doc.org",
+    "https://docs.pytorch.org",
 ]
