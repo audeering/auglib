@@ -7,6 +7,19 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 1.0.5 (2026-05-21)
+--------------------------
+
+* Added: support for Python 3.12
+* Added: support for Python 3.13
+* Added: support for Python 3.14
+* Changed: require ``audformat>=1.4.2``
+* Changed: require ``audinterface>=1.3.2``
+* Changed: exclude ``tests/`` and ``docs/`` folders from the Python package
+* Fixed: support ``pandas>=3.0``
+* Removed: support for Python 3.9
+
+
 Version 1.0.4 (2024-07-08)
 --------------------------
 
