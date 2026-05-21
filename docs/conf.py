@@ -98,4 +98,5 @@ html_title = title
 linkcheck_ignore = [
     r"https://sail.usc.edu/",
     "https://www.sphinx-doc.org",
+    "https://docs.pytorch.org",
 ]
