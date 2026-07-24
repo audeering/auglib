@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                v1.0.5
+                v1.1.0
               </div>
             
           
@@ -109,6 +109,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#version-1-1-0-2026-07-24">Version 1.1.0 (2026-07-24)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#version-1-0-5-2026-05-21">Version 1.0.5 (2026-05-21)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#version-1-0-4-2024-07-08">Version 1.0.4 (2024-07-08)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#version-1-0-3-2024-05-14">Version 1.0.3 (2024-05-14)</a></li>
@@ -207,6 +208,17 @@
 <p>All notable changes to this project will be documented in this file.</p>
 <p>The format is based on <a class="reference external" href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>,
 and this project adheres to <a class="reference external" href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<section id="version-1-1-0-2026-07-24">
+<h2>Version 1.1.0 (2026-07-24)<a class="headerlink" href="#version-1-1-0-2026-07-24" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fixed: use strict index hash for caching augmentations.
+Before, the same cache was used for indices
+that only differed in their order,
+and the returned results could be in an incorrect order.
+This means that caches that were created with an older version
+will not be reused with this version.</p></li>
+</ul>
+</section>
 <section id="version-1-0-5-2026-05-21">
 <h2>Version 1.0.5 (2026-05-21)<a class="headerlink" href="#version-1-0-5-2026-05-21" title="Link to this heading">¶</a></h2>
 <ul class="simple">
@@ -789,7 +801,7 @@ called outside the root directory</p></li>
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/05/21 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/07/24 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
