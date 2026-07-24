@@ -570,6 +570,8 @@ def test_augment_cache(tmpdir):
     index_overlap = augmented_indices_nat[0].intersection(augmented_indices[0])
     assert len(index_overlap) == 0
 
+    # Test index with different order
+    # see https://github.com/audeering/auglib/issues/57
     # augment index in reverse order
     reverse_index_rel = index_rel[::-1]
     augmented_indices_reverse = augment.augment(
