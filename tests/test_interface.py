@@ -430,6 +430,7 @@ def test_augment(
 
     index_hash = audformat.utils.hash(
         audformat.utils.to_segmented_index(index, allow_nat=True),
+        strict=True,
     )
     expected_root = os.path.join(
         cache_root,
@@ -660,6 +661,7 @@ def test_augment_cache_nat(
 
     index_hash = audformat.utils.hash(
         audformat.utils.to_segmented_index(index, allow_nat=True),
+        strict=True,
     )
     expected_root = os.path.join(
         cache_root,
@@ -1086,6 +1088,7 @@ def test_augment_variants(
     for idx in range(num_variants):
         index_hash = audformat.utils.hash(
             audformat.utils.to_segmented_index(index, allow_nat=True),
+            strict=True,
         )
         cache_root_idx = os.path.join(
             cache_root,
