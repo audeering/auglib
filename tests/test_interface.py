@@ -570,6 +570,19 @@ def test_augment_cache(tmpdir):
     index_overlap = augmented_indices_nat[0].intersection(augmented_indices[0])
     assert len(index_overlap) == 0
 
+    # augment index in reverse order with relative and absolute files names
+    # as filewise and segmented (without NaT)
+    reverse_index_rel = index_rel[::-1]
+    augmented_indices_reverse = augment.augment(
+        reverse_index_rel,
+        cache_root=cache_root,
+        data_root=root,
+    )
+    # assert augmented indices don't overlap with augmented indices with reverse index
+    # as they should have a different cache root
+    index_overlap = augmented_indices_reverse.intersection(augmented_indices[0])
+    assert len(index_overlap) == 0
+
 
 @pytest.mark.parametrize("keep_nat_first", [True, False])
 @pytest.mark.parametrize("modified_only", [True, False])
