@@ -7,6 +7,17 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 1.1.0 (2026-07-24)
+--------------------------
+
+* Fixed: use strict index hash for caching augmentations.
+  Before, the same cache was used for indices
+  that only differed in their order,
+  and the returned results could be in an incorrect order.
+  This means that caches that were created with an older version
+  will not be reused with this version.
+
+
 Version 1.0.5 (2026-05-21)
 --------------------------
 
