@@ -575,14 +575,14 @@ def test_augment_cache(tmpdir):
     # see https://github.com/audeering/auglib/issues/57
     # augment index in reverse order
     reverse_index_rel = index_rel[::-1]
-    augmented_indices_reverse = augment.augment(
+    augmented_index_reverse = augment.augment(
         reverse_index_rel,
         cache_root=cache_root,
         data_root=root,
     )
     # assert augmented indices don't overlap with augmented indices with reverse index
     # as they should have a different cache root
-    index_overlap = augmented_indices_reverse.intersection(augmented_indices[0])
+    index_overlap = augmented_index_reverse.intersection(augmented_indices[0])
     assert len(index_overlap) == 0
 
 
