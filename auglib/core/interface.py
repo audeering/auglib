@@ -279,7 +279,7 @@ class Augment(audinterface.Process, audobject.Object):
         if data_root is not None:
             index = audformat.utils.expand_file_path(index, data_root)
 
-        index_hash = audformat.utils.hash(index)
+        index_hash = audformat.utils.hash(index, strict=True)
 
         # figure out cache root
 
