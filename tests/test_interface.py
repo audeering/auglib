@@ -430,6 +430,7 @@ def test_augment(
 
     index_hash = audformat.utils.hash(
         audformat.utils.to_segmented_index(index, allow_nat=True),
+        strict=True,
     )
     expected_root = os.path.join(
         cache_root,
@@ -481,6 +482,146 @@ def test_augment(
     )
     expected_df = df.set_axis(expected_index)
     pd.testing.assert_frame_equal(augmented_df, expected_df)
+
+
+def test_augment_multiple_orders(tmpdir):
+    # Test augmenting index in multiple different orders
+    # https://github.com/audeering/auglib/issues/57
+
+    # Create the same index three times but different orders
+    indices = [
+        audformat.segmented_index(
+            ["f1.wav", "f2.wav", "f1.wav", "f2.wav"],
+            [0.2, 0.0, 0.0, 0.3],
+            [1.0, 0.3, 0.2, 1.0],
+        ),
+        audformat.segmented_index(
+            ["f1.wav", "f1.wav", "f2.wav", "f2.wav"],
+            [0.2, 0.0, 0.0, 0.3],
+            [1.0, 0.2, 0.3, 1.0],
+        ),
+        audformat.segmented_index(
+            ["f2.wav", "f2.wav", "f1.wav", "f1.wav"],
+            [0.3, 0.0, 0.0, 0.2],
+            [1.0, 0.3, 0.2, 1.0],
+        ),
+    ]
+    signal = np.array([[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]], dtype="float32")
+    sampling_rate = 10
+    transform = auglib.transform.Function(lambda x, _: x + 1)
+    expected_indices = [
+        audformat.segmented_index(
+            ["f1-0.wav", "f2-0.wav", "f1-1.wav", "f2-1.wav"],
+            [0, 0, 0, 0],
+            [0.8, 0.3, 0.2, 0.7],
+        ),
+        audformat.segmented_index(
+            ["f1-0.wav", "f1-1.wav", "f2-0.wav", "f2-1.wav"],
+            [0, 0, 0, 0],
+            [0.8, 0.2, 0.3, 0.7],
+        ),
+        audformat.segmented_index(
+            ["f2-0.wav", "f2-1.wav", "f1-0.wav", "f1-1.wav"],
+            [0, 0, 0, 0],
+            [0.7, 0.3, 0.2, 0.8],
+        ),
+    ]
+    expected_signals_list = [
+        (
+            np.array([[3, 4, 5, 6, 7, 8, 9, 10]], dtype="float32"),
+            np.array([[1, 2, 3]], dtype="float32"),
+            np.array([[1, 2]], dtype="float32"),
+            np.array([[4, 5, 6, 7, 8, 9, 10]], dtype="float32"),
+        ),
+        (
+            np.array([[3, 4, 5, 6, 7, 8, 9, 10]], dtype="float32"),
+            np.array([[1, 2]], dtype="float32"),
+            np.array([[1, 2, 3]], dtype="float32"),
+            np.array([[4, 5, 6, 7, 8, 9, 10]], dtype="float32"),
+        ),
+        (
+            np.array([[4, 5, 6, 7, 8, 9, 10]], dtype="float32"),
+            np.array([[1, 2, 3]], dtype="float32"),
+            np.array([[1, 2]], dtype="float32"),
+            np.array([[3, 4, 5, 6, 7, 8, 9, 10]], dtype="float32"),
+        ),
+    ]
+
+    # create interface
+    augment = auglib.Augment(
+        transform,
+        sampling_rate=sampling_rate,
+    )
+
+    # create input files and expand path
+    root = os.path.join(tmpdir, "input")
+    cache_root = os.path.join(tmpdir, "cache")
+    index = audformat.utils.expand_file_path(indices[0], root)
+    files = index.get_level_values("file").unique()
+    for file in files:
+        audeer.mkdir(os.path.dirname(file))
+        audiofile.write(file, signal, sampling_rate)
+
+    # Process all index orders with the same cache
+    # and make sure the result is as expected
+    for index, expected_index, expected_signals in zip(
+        indices, expected_indices, expected_signals_list
+    ):
+        index = audformat.utils.expand_file_path(index, root)
+        index_hash = audformat.utils.hash(
+            audformat.utils.to_segmented_index(index, allow_nat=True),
+            strict=True,
+        )
+        expected_root = os.path.join(
+            cache_root,
+            augment.short_id,
+            index_hash,
+            str(0),
+        )
+        expected_index = audformat.utils.expand_file_path(
+            expected_index,
+            expected_root,
+        )
+
+        # augment index
+
+        augmented_index = augment.augment(
+            index,
+            cache_root=cache_root,
+            remove_root=root,
+            force=False,
+        )
+        pd.testing.assert_index_equal(augmented_index, expected_index)
+
+        expected_files = augmented_index.get_level_values("file").unique()
+        for file, signal in zip(expected_files, expected_signals):
+            tmp_file = os.path.join(tmpdir, "tmp.wav")
+            audiofile.write(tmp_file, signal, sampling_rate)
+            assert filecmp.cmp(file, tmp_file)
+
+        # augment series
+
+        y = pd.Series(0.0, index=index)
+        augmented_y = augment.augment(
+            y,
+            cache_root=cache_root,
+            remove_root=root,
+            force=False,
+        )
+        expected_y = y.set_axis(expected_index)
+        pd.testing.assert_series_equal(augmented_y, expected_y)
+
+        # augment frame
+
+        df = pd.DataFrame({"a": 0.0, "b": 1.0}, index=index)
+        augmented_df = augment.augment(
+            df,
+            cache_root=cache_root,
+            remove_root=root,
+            force=False,
+        )
+        expected_df = df.set_axis(expected_index)
+        pd.testing.assert_frame_equal(augmented_df, expected_df)
 
 
 def test_augment_cache(tmpdir):
@@ -570,6 +711,20 @@ def test_augment_cache(tmpdir):
     index_overlap = augmented_indices_nat[0].intersection(augmented_indices[0])
     assert len(index_overlap) == 0
 
+    # Test index with different order
+    # see https://github.com/audeering/auglib/issues/57
+    # augment index in reverse order
+    reverse_index_rel = index_rel[::-1]
+    augmented_index_reverse = augment.augment(
+        reverse_index_rel,
+        cache_root=cache_root,
+        data_root=root,
+    )
+    # assert augmented indices don't overlap with augmented indices with reverse index
+    # as they should have a different cache root
+    index_overlap = augmented_index_reverse.intersection(augmented_indices[0])
+    assert len(index_overlap) == 0
+
 
 @pytest.mark.parametrize("keep_nat_first", [True, False])
 @pytest.mark.parametrize("modified_only", [True, False])
@@ -646,6 +801,7 @@ def test_augment_cache_nat(
 
     index_hash = audformat.utils.hash(
         audformat.utils.to_segmented_index(index, allow_nat=True),
+        strict=True,
     )
     expected_root = os.path.join(
         cache_root,
@@ -1072,6 +1228,7 @@ def test_augment_variants(
     for idx in range(num_variants):
         index_hash = audformat.utils.hash(
             audformat.utils.to_segmented_index(index, allow_nat=True),
+            strict=True,
         )
         cache_root_idx = os.path.join(
             cache_root,
