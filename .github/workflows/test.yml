@@ -35,16 +35,16 @@ jobs:
             tasks: tests
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Cache emodb
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: ~/audb/emodb/1.4.1
         key: emodb-1.4.1
 
     - name: Set up Python ${{ matrix.python-version }} with Micromamba
-      uses: mamba-org/setup-micromamba@v2
+      uses: mamba-org/setup-micromamba@v3
       with:
         cache-environment: true
         environment-name: .venv
@@ -85,8 +85,8 @@ jobs:
       run: uv run --active pytest
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v7
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        file: ./coverage.xml
+        files: ./coverage.xml
       if: matrix.os == 'ubuntu-24.04'
