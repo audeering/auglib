@@ -44,7 +44,7 @@ jobs:
         key: emodb-1.4.1
 
     - name: Set up Python ${{ matrix.python-version }} with Micromamba
-      uses: mamba-org/setup-micromamba@v2
+      uses: mamba-org/setup-micromamba@v3
       with:
         cache-environment: true
         environment-name: .venv
