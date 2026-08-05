@@ -16,47 +16,47 @@ jobs:
       group: ${{ github.workflow }}-${{ github.ref }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 2
 
     - name: Cache air
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: ~/audb/air/1.4.2
         key: air-1.4.2
 
     - name: Cache cough-speech-sneeze
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: ~/audb/cough-speech-sneeze/2.0.1
         key: cough-speech-sneeze-2.0.1
 
     - name: Cache emodb
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: ~/audb/emodb/1.4.1
         key: emodb-1.4.1
 
     - name: Cache micirp
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: ~/audb/micirp/1.0.0
         key: micirp-1.0.0
 
     - name: Cache musan
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: ~/audb/musan/1.0.0
         key: musan-1.0.0
 
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v7
       with:
         python-version: '3.12'
 
     - name: Install uv
-      uses: astral-sh/setup-uv@v5
+      uses: astral-sh/setup-uv@v9.0.0
 
     # PyPI package
     - name: Build Python package
