@@ -1,12 +1,12 @@
 import datetime
 import os
-
-import toml
+import tomllib
 
 import audeer
 
 
-config = toml.load(audeer.path("..", "pyproject.toml"))
+with open(audeer.path("..", "pyproject.toml"), "rb") as fp:
+    config = tomllib.load(fp)
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
 
