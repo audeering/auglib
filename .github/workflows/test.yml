@@ -22,9 +22,6 @@ jobs:
         python-version: [ '3.12' ]
         include:
           - os: ubuntu-24.04
-            python-version: '3.10'
-            tasks: tests
-          - os: ubuntu-24.04
             python-version: '3.11'
             tasks: tests
           - os: ubuntu-24.04
