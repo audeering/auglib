@@ -7,6 +7,7 @@ auglib
 **auglib** is an augmentation library,
 which provides transforms_
 to modify audio signals_ and files_.
+DEBUG
 
 .. code-block:: python
 
